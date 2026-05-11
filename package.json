@@ -13,7 +13,8 @@
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
     "e2e": "playwright test",
-    "e2e:install": "playwright install"
+    "e2e:install": "playwright install",
+    "puzzles:promote": "cd gen && PYTHONPATH=src .venv/bin/python -m generator.cli promote --src out/classic --dest ../src/puzzles/classic"
   },
   "dependencies": {
     "idb": "^8.0.3",

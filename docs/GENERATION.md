@@ -1,6 +1,8 @@
-# Generation Pipeline — Python + Z3
+# Generation Pipeline — Python (Z3 deferred)
 
-> **Status:** Stub. Phase 1 implements the Classic generator end-to-end; subsequent variant phases extend.
+> **Status:** Phase 1 (Classic) shipped pure-Python; Z3 deferred to a variant phase.
+>
+> **Deviation from the original plan:** Z3 was specified for generation, but `z3-solver` has no Python 3.14 wheel yet (cmake-from-source fails on Windows). For 9×9 Classic, a hand-written backtracker with constraint propagation is faster than Z3 anyway (~10ms uniqueness checks). Z3 will be introduced when a variant — Killer cages, Skyscraper visibility — genuinely needs SAT-style constraint encoding. `z3-solver` is registered as an optional extra in `gen/pyproject.toml` to keep the door open.
 
 ## Why offline?
 

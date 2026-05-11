@@ -40,3 +40,9 @@ dev-dist
 
 # OS / misc
 Thumbs.db
+
+# Python venv and caches
+gen/.venv/
+gen/.pytest_cache/
+gen/**/__pycache__/
+.claude/

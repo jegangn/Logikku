@@ -1,0 +1,1 @@
+"""Logikku offline puzzle generator."""

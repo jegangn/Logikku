@@ -59,4 +59,12 @@ describe('difficultyFromSE', () => {
     expect(difficultyFromSE(7.0)).toBe('expert')
     expect(difficultyFromSE(9.5)).toBe('diabolical')
   })
+
+  it('boundary values fall into the higher band', () => {
+    expect(difficultyFromSE(1.5)).toBe('easy')
+    expect(difficultyFromSE(2.5)).toBe('medium')
+    expect(difficultyFromSE(4.0)).toBe('hard')
+    expect(difficultyFromSE(6.0)).toBe('expert')
+    expect(difficultyFromSE(8.0)).toBe('diabolical')
+  })
 })

@@ -45,18 +45,27 @@ export function gradePuzzle(grid: Grid): GradeResult {
   }
 }
 
+const TIER_BANDS: Record<number, readonly [number, number]> = {
+  1: [1.0, 2.4],
+  2: [2.7, 3.9],
+  3: [4.1, 5.9],
+  4: [6.1, 7.9],
+}
+
 function computeSE(hardestTier: number, steps: ReadonlyArray<Step>): number {
-  const base = hardestTier * 1.5 + 0.5
-  const harderSteps = steps.filter((s) => s.tier === hardestTier).length
-  const adjustment = Math.min(1.0, harderSteps * 0.1)
-  return Math.round((base + adjustment) * 10) / 10
+  const band = TIER_BANDS[hardestTier]
+  if (!band) return hardestTier === 0 ? 0 : 9.0
+  const [lo, hi] = band
+  const hardSteps = steps.filter((s) => s.tier === hardestTier).length
+  const ratio = Math.min(1, hardSteps / 12)
+  return Math.round((lo + (hi - lo) * ratio) * 10) / 10
 }
 
 export function difficultyFromSE(se: number): Difficulty {
-  if (se <= 1.5) return 'very-easy'
-  if (se <= 2.5) return 'easy'
-  if (se <= 4.0) return 'medium'
-  if (se <= 6.0) return 'hard'
-  if (se <= 8.0) return 'expert'
+  if (se < 1.5) return 'very-easy'
+  if (se < 2.5) return 'easy'
+  if (se < 4.0) return 'medium'
+  if (se < 6.0) return 'hard'
+  if (se < 8.0) return 'expert'
   return 'diabolical'
 }

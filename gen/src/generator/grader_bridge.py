@@ -1,0 +1,73 @@
+"""Long-running grader subprocess wrapping the TS engine.
+
+Spawns `bun tools/grade.ts` once and communicates over stdin/stdout, so we
+amortize Node startup cost across thousands of puzzles.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+BUN_PATH = Path(os.environ.get("USERPROFILE", os.path.expanduser("~"))) / ".bun" / "bin" / "bun.exe"
+GRADE_SCRIPT = REPO_ROOT / "tools" / "grade.ts"
+
+
+class GraderBridge:
+    def __init__(self, bun: Path | str | None = None, script: Path | str | None = None):
+        self._bun = Path(bun) if bun else BUN_PATH
+        self._script = Path(script) if script else GRADE_SCRIPT
+        if not self._bun.exists():
+            for cand in ("bun", "bun.exe"):
+                from shutil import which
+                p = which(cand)
+                if p:
+                    self._bun = Path(p)
+                    break
+        if not self._bun.exists():
+            raise FileNotFoundError(f"bun not found at {self._bun}")
+        if not self._script.exists():
+            raise FileNotFoundError(f"grade.ts not found at {self._script}")
+        self._proc: subprocess.Popen[str] | None = None
+
+    def __enter__(self) -> "GraderBridge":
+        self._proc = subprocess.Popen(
+            [str(self._bun), "run", str(self._script)],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=sys.stderr,
+            cwd=str(REPO_ROOT),
+            text=True,
+            bufsize=1,
+        )
+        return self
+
+    def __exit__(self, *exc) -> None:
+        self.close()
+
+    def close(self) -> None:
+        if self._proc and self._proc.poll() is None:
+            try:
+                if self._proc.stdin:
+                    self._proc.stdin.close()
+            except Exception:
+                pass
+            try:
+                self._proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self._proc.kill()
+
+    def grade(self, puzzle: str) -> dict:
+        if not self._proc or not self._proc.stdin or not self._proc.stdout:
+            raise RuntimeError("GraderBridge not entered")
+        self._proc.stdin.write(puzzle + "\n")
+        self._proc.stdin.flush()
+        line = self._proc.stdout.readline()
+        if not line:
+            raise RuntimeError("grader subprocess returned no data")
+        return json.loads(line)

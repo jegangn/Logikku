@@ -50,4 +50,17 @@ _(empty)_
 
 ## Generation
 
-_(empty)_
+### Diabolical band requires advanced techniques (or strict digging) to populate — 2026-05-11
+With the Phase-0 grader, "diabolical" SE=9.0 is reserved for puzzles that defeat all Tier-1–4 techniques and require backtracking. Random-dig-with-symmetry produces puzzles that overwhelmingly solve via techniques, so the acceptance rate for diabolical is ~0. Phase 1 ships 4 bands (easy, medium, hard, expert); diabolical is deferred to a future phase that either (a) adds advanced techniques to the grader and re-categorizes the existing expert puzzles, or (b) implements aggressive digging that intentionally produces 17-clue starting positions.
+
+### Grader SE formula must match user-facing difficulty labels — 2026-05-11
+Original `tier * 1.5 + 0.5` was too aggressive: tier-1-only puzzles graded as SE 3.0 = medium, leaving "easy" band empty and breaking the generator. Replaced with banded formula: tier 1 → 1.0–2.4 (easy/very-easy), tier 2 → 2.7–3.9 (medium), tier 3 → 4.1–5.9 (hard), tier 4 → 6.1–7.9 (expert).
+
+### Click's Unicode arrow doesn't survive Windows cp1252 stdout — 2026-05-11
+`click.echo("... → ...")` raises `UnicodeEncodeError` on Windows even with `PYTHONIOENCODING=utf-8` if the parent process inherits cp1252. Use plain ASCII (`->`) in CLI output or call `click.echo(..., color=False)` after configuring sys.stdout reconfigure.
+
+### `python -m generator.cli` needs PYTHONPATH=src when not installed — 2026-05-11
+`pyproject.toml` sets `pythonpath = ["src"]` under `[tool.pytest.ini_options]` which works only for pytest. Plain `python -m` needs `PYTHONPATH=src` prefix, or do `pip install -e .` to install the package editably.
+
+### z3-solver has no Python 3.14 wheel (Nov 2025); cmake build fails on Windows — 2026-05-11
+Pure-Python backtracker is faster anyway for 9×9 Classic. Defer Z3 to a variant phase (Killer cages are the strongest candidate for SAT encoding).
