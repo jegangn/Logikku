@@ -1,10 +1,14 @@
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { Home } from '@/ui/pages/Home'
+import { Play } from '@/ui/pages/Play'
+
 export default function App() {
   return (
-    <main className="min-h-dvh flex items-center justify-center bg-slate-950 text-slate-100">
-      <div className="text-center">
-        <h1 className="text-5xl font-semibold tracking-tight">Logikku</h1>
-        <p className="mt-3 text-slate-400">Sudoku, every variant.</p>
-      </div>
-    </main>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/play" element={<Play />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
