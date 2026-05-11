@@ -22,7 +22,23 @@ Vitest's default include glob is `**/*.{test,spec}.?(c|m)[jt]s?(x)`, which catch
 
 ## Engine
 
-_(empty)_
+### Techniques must iterate `grid.constraints[*].regions`, never `classicRegions(shape)` — 2026-05-11
+For the engine to remain variant-pluggable, technique implementations must walk `grid.constraints[*].regions` (via the `regionsOf(grid)` helper in `_technique.ts`). Hardcoding `classicRegions(shape)` works for Phase 0 but silently breaks once X-Diagonal, Hyper, Jigsaw etc. add their own regions. Caught while writing Hidden Single.
+
+### A technique can short-circuit a later one if fixtures don't isolate the pattern — 2026-05-11
+First-match-wins iteration order means a Pointing test that places candidates carelessly may trigger a Row Hidden Single or Naked Pair before Claiming fires. Build fixtures that ONLY admit the pattern under test, even if that means manually erasing candidates in unrelated cells.
+
+### Hidden Subset of size N must filter to digits appearing in 2..N cells — 2026-05-11
+Including digits with exactly 1 candidate cell in a region would overlap with `hiddenSingle` (Tier 1). Excluding solved cells (`cell.value !== null`) and digits already placed in the region is also required — `propagate` does not always clear candidates before a technique runs.
+
+### Bilocation graph construction in Simple Coloring — 2026-05-11
+The bipartite color trap (two same-color cells share a peer) is impossible *within* the bilocation graph itself (any cycle in a bipartite graph is even). Same-color collisions only happen through non-bilocation peer relations — i.e. two cells in the same row/col/box but in a region where the digit has >2 candidates. Don't try to find the contradiction by re-walking the bilocation edges.
+
+### X-Wing fixture construction — 2026-05-11
+Stray candidates placed in cover columns can themselves form a different X-Wing that fires first. Fix: rows you want EXCLUDED from the X-Wing must have either ≥3 candidates for the digit (fail the `cols.length <= size` filter) or exactly 1 candidate (fail the `>= 2` filter).
+
+### Vitest coverage requires `@vitest/coverage-v8` and the Node runtime — 2026-05-11
+Running `bun --bun vitest --coverage` reports 0% because Bun's runtime bypasses V8's coverage hooks. Use `bunx vitest run --coverage` (Node runtime) or alias to a separate script. Also: install `@vitest/coverage-v8` as a dev dep — it's not bundled with Vitest 4.
 
 ## UI
 
