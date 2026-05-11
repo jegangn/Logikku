@@ -14,7 +14,9 @@
     "test:ui": "vitest --ui",
     "e2e": "playwright test",
     "e2e:install": "playwright install",
-    "puzzles:promote": "cd gen && PYTHONPATH=src .venv/bin/python -m generator.cli promote --src out/classic --dest ../src/puzzles/classic"
+    "puzzles:promote": "cd gen && PYTHONPATH=src .venv/bin/python -m generator.cli promote --src out/classic --dest ../src/puzzles/classic",
+    "pwa:assets": "node scripts/gen-pwa-assets.mjs",
+    "lighthouse": "node scripts/lighthouse-check.mjs"
   },
   "dependencies": {
     "idb": "^8.0.3",
@@ -36,12 +38,15 @@
     "@vitejs/plugin-react": "^6.0.1",
     "@vitest/coverage-v8": "^4.1.5",
     "@vitest/ui": "^4.1.5",
+    "chrome-launcher": "^1.2.1",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "fake-indexeddb": "^6.2.5",
     "globals": "^17.6.0",
     "happy-dom": "^20.9.0",
+    "lighthouse": "^13.3.0",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4.3.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",

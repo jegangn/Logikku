@@ -67,6 +67,15 @@ export const en = {
     reset: 'Reset stats',
     confirmReset: 'Reset all stats to zero?',
   },
+
+  pwa: {
+    updateAvailable: 'Update available',
+    updateHint: 'A newer version of Logikku is ready.',
+    refresh: 'Refresh',
+    dismiss: 'Later',
+    installPrompt: 'Tap Share → Add to Home Screen for the best experience.',
+    installDismiss: 'Got it',
+  },
 } as const
 
 export type Strings = typeof en

@@ -6,6 +6,7 @@ import { Settings } from '@/ui/pages/Settings'
 import { Stats } from '@/ui/pages/Stats'
 import { useSettingsStore } from '@/state/settingsStore'
 import { applyTheme, watchSystemTheme } from '@/theme'
+import { UpdatePrompt } from '@/pwa/UpdatePrompt'
 
 export default function App() {
   const theme = useSettingsStore((s) => s.theme)
@@ -40,6 +41,7 @@ export default function App() {
         <Route path="/settings" element={<Settings />} />
         <Route path="/stats" element={<Stats />} />
       </Routes>
+      <UpdatePrompt />
     </BrowserRouter>
   )
 }

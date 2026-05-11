@@ -153,7 +153,10 @@ export function Play() {
   }
 
   return (
-    <main className="min-h-dvh flex flex-col items-center px-3 py-4 gap-4">
+    <main
+      data-noselect="true"
+      className="min-h-dvh flex flex-col items-center px-3 py-4 gap-4"
+    >
       <Toolbar
         puzzleLabel={`Classic · ${DIFFICULTY_LABELS[difficulty]}`}
         canUndo={historyIndex >= 0}

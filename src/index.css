@@ -61,6 +61,12 @@ html[data-theme="light"] {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
+  [data-noselect="true"],
+  [data-noselect="true"] * {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
     20%, 60% { transform: translateX(-3px); }

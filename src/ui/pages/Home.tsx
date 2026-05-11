@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import type { Difficulty } from '@/engine'
 import { hasBank } from '@/puzzles'
 import { mostRecentUnfinished, type SavedGame } from '@/storage/db'
+import { InstallBanner } from '@/pwa/InstallBanner'
 
 const DIFFICULTIES: ReadonlyArray<Difficulty> = [
   'easy',
@@ -83,6 +84,8 @@ export function Home() {
             )}
           </div>
         </section>
+
+        <InstallBanner />
 
         <nav className="mt-10 flex items-center justify-center gap-6 text-sm text-[var(--color-text-muted)]">
           <Link
