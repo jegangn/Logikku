@@ -32,6 +32,8 @@ export function Play() {
   const historyIndex = useGameStore((s) => s.historyIndex)
   const historyLen = useGameStore((s) => s.history.length)
   const completedAt = useGameStore((s) => s.completedAt)
+  const lockedCells = useGameStore((s) => s.lockedCells)
+  const shakeKey = useGameStore((s) => s.lastShakeKey)
 
   const loadPuzzle = useGameStore((s) => s.loadPuzzle)
   const select = useGameStore((s) => s.select)
@@ -160,7 +162,13 @@ export function Play() {
         onUndo={undo}
         onRedo={redo}
       />
-      <Board grid={grid} selected={selected} onSelect={select} />
+      <Board
+        grid={grid}
+        selected={selected}
+        lockedCells={lockedCells}
+        shakeKey={shakeKey}
+        onSelect={select}
+      />
       <InputPad
         mode={mode}
         disabled={completedAt !== null}

@@ -21,11 +21,33 @@
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
+html[data-theme="light"] {
+  --color-bg: #faf9f6;
+  --color-surface: #ffffff;
+  --color-surface-2: #f3f1ec;
+  --color-border: #e3e0d8;
+  --color-border-strong: #b8b3a6;
+  --color-text: #1d1c22;
+  --color-text-muted: #5a5763;
+  --color-text-faint: #8d8a96;
+  --color-accent: #6a4bd9;
+  --color-accent-soft: rgba(106, 75, 217, 0.12);
+  --color-accent-strong: #4d2dbf;
+  --color-conflict: #c63864;
+  --color-conflict-soft: rgba(198, 56, 100, 0.12);
+  --color-given: #1d1c22;
+  --color-entered: #6a4bd9;
+  color-scheme: light;
+}
+
 @layer base {
   html,
   body,
   #root {
     height: 100%;
+  }
+  html {
+    color-scheme: dark;
   }
   body {
     margin: 0;
@@ -35,10 +57,18 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     font-variant-numeric: tabular-nums;
-    color-scheme: dark;
     overscroll-behavior: contain;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-3px); }
+    40%, 80% { transform: translateX(3px); }
+  }
+  [data-locked="true"] {
+    animation: shake 0.4s ease-in-out;
+    transform-origin: center;
   }
   button {
     font: inherit;

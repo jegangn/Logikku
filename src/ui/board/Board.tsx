@@ -7,12 +7,14 @@ import { cellAt, peersOf } from '@/engine'
 export interface BoardProps {
   readonly grid: Grid
   readonly selected: Coord | null
+  readonly lockedCells?: ReadonlySet<string>
+  readonly shakeKey?: number
   readonly onSelect: (coord: Coord) => void
 }
 
 const CELL_SIZE = 64
 
-export function Board({ grid, selected, onSelect }: BoardProps) {
+export function Board({ grid, selected, lockedCells, shakeKey = 0, onSelect }: BoardProps) {
   const size = grid.shape.size
   const boardPx = size * CELL_SIZE
 
@@ -48,6 +50,8 @@ export function Board({ grid, selected, onSelect }: BoardProps) {
           peerHighlight={peerHighlight}
           sameValueHighlight={sameValue}
           conflict={conflictSet.has(key)}
+          locked={lockedCells?.has(key) ?? false}
+          shakeKey={shakeKey}
           onSelect={onSelect}
         />,
       )

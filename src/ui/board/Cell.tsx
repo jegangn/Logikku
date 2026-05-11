@@ -11,6 +11,8 @@ export interface CellProps {
   readonly peerHighlight: boolean
   readonly sameValueHighlight: boolean
   readonly conflict: boolean
+  readonly locked: boolean
+  readonly shakeKey: number
   readonly onSelect: (coord: Coord) => void
 }
 
@@ -25,6 +27,8 @@ function CellImpl(props: CellProps) {
     peerHighlight,
     sameValueHighlight,
     conflict,
+    locked,
+    shakeKey,
     onSelect,
   } = props
 
@@ -40,10 +44,12 @@ function CellImpl(props: CellProps) {
 
   return (
     <g
+      key={`${coord.r}-${coord.c}-${locked ? shakeKey : 'free'}`}
       data-testid={`cell-${coord.r}-${coord.c}`}
       data-selected={selected ? 'true' : 'false'}
       data-conflict={conflict ? 'true' : 'false'}
       data-given={given ? 'true' : 'false'}
+      data-locked={locked ? 'true' : 'false'}
       onPointerDown={() => onSelect(coord)}
       role="gridcell"
       aria-label={ariaLabel(coord, value, given)}

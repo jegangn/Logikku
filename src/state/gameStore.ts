@@ -12,6 +12,7 @@ import {
   type Grid,
 } from '@/engine'
 import type { SavedCell, SavedGame, SavedHistoryEntry } from '@/storage/db'
+import { useSettingsStore } from './settingsStore'
 
 export type InputMode = 'value' | 'pencil' | 'erase'
 
@@ -45,6 +46,8 @@ export interface GameState {
   resumeAt: number | null
   paused: boolean
   completedAt: string | null
+  lockedCells: ReadonlySet<string>
+  lastShakeKey: number
 
   loadPuzzle: (args: {
     id: string
@@ -158,6 +161,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   resumeAt: null,
   paused: false,
   completedAt: null,
+  lockedCells: new Set(),
+  lastShakeKey: 0,
 
   loadPuzzle: ({ id, variant, difficulty, givens }) => {
     const now = new Date().toISOString()
@@ -176,6 +181,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       resumeAt: Date.now(),
       paused: false,
       completedAt: null,
+      lockedCells: new Set(),
+      lastShakeKey: 0,
     })
   },
 
@@ -197,6 +204,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       resumeAt: Date.now(),
       paused: false,
       completedAt: saved.completedAt,
+      lockedCells: new Set(),
+      lastShakeKey: 0,
     })
   },
 
@@ -254,6 +263,11 @@ export const useGameStore = create<GameState>((set, get) => ({
       targetAfter: after,
       peerRemovals,
     }, set)
+
+    const strict = useSettingsStore.getState().strictMode
+    if (strict && cellConflicts(next, selected)) {
+      lockCell(selected, get, set)
+    }
   },
 
   erase: () => {
@@ -263,6 +277,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     const cell = cellAt(grid, selected)
     if (cell.given) return
     if (cell.value === null && cell.candidates.size === 0) return
+    if (state.lockedCells.has(`${selected.r},${selected.c}`)) return
 
     const next = cloneGrid(grid)
     const nextCell = cellAt(next, selected)
@@ -280,12 +295,13 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   undo: () => {
-    const { grid, history, historyIndex } = get()
-    if (!grid || historyIndex < 0) return
-    const entry = history[historyIndex]!
-    const next = cloneGrid(grid)
+    const state = get()
+    if (!state.grid || state.historyIndex < 0) return
+    const entry = state.history[state.historyIndex]!
+    if (state.lockedCells.has(`${entry.coord.r},${entry.coord.c}`)) return
+    const next = cloneGrid(state.grid)
     revertEntry(next, entry)
-    set({ grid: next, historyIndex: historyIndex - 1, completedAt: null })
+    set({ grid: next, historyIndex: state.historyIndex - 1, completedAt: null })
   },
 
   redo: () => {
@@ -323,6 +339,39 @@ export const useGameStore = create<GameState>((set, get) => ({
 }))
 
 type SetFn = (partial: Partial<GameState>) => void
+
+const LOCK_DURATION_MS = 5000
+
+function lockCell(coord: Coord, get: () => GameState, set: SetFn): void {
+  const key = `${coord.r},${coord.c}`
+  const cur = get().lockedCells
+  if (cur.has(key)) return
+  const next = new Set(cur)
+  next.add(key)
+  set({ lockedCells: next, lastShakeKey: get().lastShakeKey + 1 })
+  setTimeout(() => {
+    const after = get().lockedCells
+    if (!after.has(key)) return
+    const updated = new Set(after)
+    updated.delete(key)
+    set({ lockedCells: updated })
+  }, LOCK_DURATION_MS)
+}
+
+function cellConflicts(grid: Grid, coord: Coord): boolean {
+  const cell = cellAt(grid, coord)
+  if (cell.value === null) return false
+  for (const constraint of grid.constraints) {
+    for (const region of constraint.regions) {
+      if (!region.cells.some((c) => c.r === coord.r && c.c === coord.c)) continue
+      for (const peer of region.cells) {
+        if (peer.r === coord.r && peer.c === coord.c) continue
+        if (cellAt(grid, peer).value === cell.value) return true
+      }
+    }
+  }
+  return false
+}
 
 function pushAndApply(
   state: GameState,

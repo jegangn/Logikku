@@ -83,6 +83,24 @@ export function Home() {
             )}
           </div>
         </section>
+
+        <nav className="mt-10 flex items-center justify-center gap-6 text-sm text-[var(--color-text-muted)]">
+          <Link
+            to="/stats"
+            data-testid="link-stats"
+            className="hover:text-[var(--color-text)]"
+          >
+            Stats
+          </Link>
+          <span className="text-[var(--color-text-faint)]">·</span>
+          <Link
+            to="/settings"
+            data-testid="link-settings"
+            className="hover:text-[var(--color-text)]"
+          >
+            Settings
+          </Link>
+        </nav>
       </div>
     </main>
   )

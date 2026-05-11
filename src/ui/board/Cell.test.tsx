@@ -23,6 +23,8 @@ describe('Cell', () => {
         peerHighlight={false}
         sameValueHighlight={false}
         conflict={false}
+        locked={false}
+        shakeKey={0}
         onSelect={() => {}}
       />,
     )
@@ -41,6 +43,8 @@ describe('Cell', () => {
         peerHighlight={false}
         sameValueHighlight={false}
         conflict={false}
+        locked={false}
+        shakeKey={0}
         onSelect={() => {}}
       />,
     )
@@ -62,6 +66,8 @@ describe('Cell', () => {
         peerHighlight={false}
         sameValueHighlight={false}
         conflict={false}
+        locked={false}
+        shakeKey={0}
         onSelect={() => {}}
       />,
     )
@@ -81,6 +87,8 @@ describe('Cell', () => {
         peerHighlight={false}
         sameValueHighlight={false}
         conflict={false}
+        locked={false}
+        shakeKey={0}
         onSelect={() => {}}
       />,
     )
