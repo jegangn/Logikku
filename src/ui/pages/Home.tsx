@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Difficulty } from '@/engine'
 import { hasBank } from '@/puzzles'
+import { mostRecentUnfinished, type SavedGame } from '@/storage/db'
 
 const DIFFICULTIES: ReadonlyArray<Difficulty> = [
   'easy',
@@ -21,6 +23,12 @@ const DIFFICULTY_LABELS: Record<Difficulty, string> = {
 }
 
 export function Home() {
+  const [continueGame, setContinueGame] = useState<SavedGame | null>(null)
+
+  useEffect(() => {
+    void mostRecentUnfinished().then(setContinueGame)
+  }, [])
+
   return (
     <main className="min-h-dvh flex flex-col items-center justify-center px-6 py-10">
       <div className="w-full max-w-md">
@@ -31,7 +39,29 @@ export function Home() {
           Sudoku, every variant.
         </p>
 
-        <section className="mt-10">
+        {continueGame && (
+          <Link
+            to={`/play?variant=${continueGame.variant}&difficulty=${continueGame.difficulty}&puzzleId=${continueGame.id}`}
+            data-testid="continue-card"
+            className="mt-8 block rounded-xl border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-5 py-4 hover:bg-[var(--color-accent-soft)] active:scale-[0.99] transition-transform"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-xs uppercase tracking-wider text-[var(--color-accent-strong)] font-medium">
+                  Continue
+                </div>
+                <div className="mt-1 text-base font-medium">
+                  {continueGame.variant.charAt(0).toUpperCase() +
+                    continueGame.variant.slice(1)}{' '}
+                  · {DIFFICULTY_LABELS[continueGame.difficulty]}
+                </div>
+              </div>
+              <span className="text-[var(--color-accent-strong)]">→</span>
+            </div>
+          </Link>
+        )}
+
+        <section className="mt-8">
           <h2 className="text-sm uppercase tracking-wider text-[var(--color-text-faint)] mb-3">
             Classic Sudoku
           </h2>

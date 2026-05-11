@@ -41,9 +41,9 @@ function CellImpl(props: CellProps) {
   return (
     <g
       data-testid={`cell-${coord.r}-${coord.c}`}
-      data-selected={selected || undefined}
-      data-conflict={conflict || undefined}
-      data-given={given || undefined}
+      data-selected={selected ? 'true' : 'false'}
+      data-conflict={conflict ? 'true' : 'false'}
+      data-given={given ? 'true' : 'false'}
       onPointerDown={() => onSelect(coord)}
       role="gridcell"
       aria-label={ariaLabel(coord, value, given)}

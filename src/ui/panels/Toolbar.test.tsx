@@ -3,16 +3,45 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Toolbar } from './Toolbar'
 
+function setup(overrides: Partial<React.ComponentProps<typeof Toolbar>> = {}) {
+  const props = {
+    puzzleLabel: 'Classic · Easy',
+    canUndo: true,
+    canRedo: true,
+    onNew: vi.fn(),
+    onUndo: vi.fn(),
+    onRedo: vi.fn(),
+    ...overrides,
+  }
+  render(<Toolbar {...props} />)
+  return props
+}
+
 describe('Toolbar', () => {
   it('shows the puzzle label', () => {
-    render(<Toolbar puzzleLabel="Classic · Easy" onNew={() => {}} />)
+    setup()
     expect(screen.getByText('Classic · Easy')).toBeInTheDocument()
   })
 
-  it('calls onNew when New button is tapped', async () => {
-    const onNew = vi.fn()
-    render(<Toolbar puzzleLabel="Classic · Easy" onNew={onNew} />)
+  it('fires onNew on New button', async () => {
+    const props = setup()
     await userEvent.setup().click(screen.getByTestId('new-btn'))
-    expect(onNew).toHaveBeenCalled()
+    expect(props.onNew).toHaveBeenCalled()
+  })
+
+  it('fires onUndo on Undo button when enabled', async () => {
+    const props = setup({ canUndo: true })
+    await userEvent.setup().click(screen.getByTestId('undo-btn'))
+    expect(props.onUndo).toHaveBeenCalled()
+  })
+
+  it('disables Undo when canUndo is false', () => {
+    setup({ canUndo: false })
+    expect(screen.getByTestId('undo-btn')).toBeDisabled()
+  })
+
+  it('disables Redo when canRedo is false', () => {
+    setup({ canRedo: false })
+    expect(screen.getByTestId('redo-btn')).toBeDisabled()
   })
 })

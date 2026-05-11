@@ -19,7 +19,7 @@ test('selecting a cell and entering a digit places the value', async ({ page }) 
     for (let c = 0; c < 9 && !emptyCell; c++) {
       const target = page.getByTestId(`cell-${r}-${c}`)
       const given = await target.getAttribute('data-given')
-      if (!given) emptyCell = { target, r, c }
+      if (given === 'false') emptyCell = { target, r, c }
     }
   }
   expect(emptyCell).not.toBeNull()
@@ -36,7 +36,7 @@ test('pencil mode adds pencil marks', async ({ page }) => {
     for (let c = 0; c < 9 && !emptyCell; c++) {
       const target = page.getByTestId(`cell-${r}-${c}`)
       const given = await target.getAttribute('data-given')
-      if (!given) emptyCell = target
+      if (given === 'false') emptyCell = target
     }
   }
   await emptyCell!.click()

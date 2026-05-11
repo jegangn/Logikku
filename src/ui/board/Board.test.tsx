@@ -32,7 +32,7 @@ describe('Board', () => {
     const sel = screen.getByTestId('cell-4-4')
     expect(sel.getAttribute('data-selected')).toBe('true')
     const other = screen.getByTestId('cell-0-0')
-    expect(other.getAttribute('data-selected')).toBeNull()
+    expect(other.getAttribute('data-selected')).toBe('false')
   })
 
   it('calls onSelect when a cell is clicked', async () => {
@@ -55,7 +55,7 @@ describe('Board', () => {
     expect(screen.getByTestId('cell-0-1').getAttribute('data-conflict')).toBe(
       'true',
     )
-    expect(screen.getByTestId('cell-1-1').getAttribute('data-conflict')).toBeNull()
+    expect(screen.getByTestId('cell-1-1').getAttribute('data-conflict')).toBe('false')
   })
 
   it('exposes an aria-label for screen readers', () => {

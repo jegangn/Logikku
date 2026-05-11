@@ -1,9 +1,10 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Board } from '@/ui/board/Board'
 import { InputPad } from '@/ui/panels/InputPad'
 import { Toolbar } from '@/ui/panels/Toolbar'
 import { useGameStore } from '@/state/gameStore'
+import { flushSave, tryHydrate, wireGamePersistence } from '@/state/persistence'
 import { pickPuzzle } from '@/puzzles'
 import type { Difficulty, Digit } from '@/engine'
 
@@ -18,30 +19,78 @@ const DIFFICULTY_LABELS: Record<Difficulty, string> = {
 }
 
 export function Play() {
-  const [params] = useSearchParams()
+  const [params, setParams] = useSearchParams()
   const navigate = useNavigate()
   const variant = params.get('variant') ?? 'classic'
   const difficulty = (params.get('difficulty') as Difficulty | null) ?? 'easy'
+  const puzzleIdParam = params.get('puzzleId')
 
   const grid = useGameStore((s) => s.grid)
   const selected = useGameStore((s) => s.selected)
   const mode = useGameStore((s) => s.mode)
   const puzzleId = useGameStore((s) => s.puzzleId)
+  const historyIndex = useGameStore((s) => s.historyIndex)
+  const historyLen = useGameStore((s) => s.history.length)
+  const completedAt = useGameStore((s) => s.completedAt)
+
   const loadPuzzle = useGameStore((s) => s.loadPuzzle)
   const select = useGameStore((s) => s.select)
   const setMode = useGameStore((s) => s.setMode)
   const input = useGameStore((s) => s.input)
   const erase = useGameStore((s) => s.erase)
+  const undo = useGameStore((s) => s.undo)
+  const redo = useGameStore((s) => s.redo)
+  const pause = useGameStore((s) => s.pause)
+  const resume = useGameStore((s) => s.resume)
+
+  const hydrationRunRef = useRef<string | null>(null)
 
   useEffect(() => {
-    const puzzle = pickPuzzle(variant, difficulty, Math.floor(Math.random() * 100000))
-    loadPuzzle(puzzle.id, puzzle.givens)
-  }, [variant, difficulty, loadPuzzle])
+    const cleanup = wireGamePersistence()
+    return () => {
+      void flushSave()
+      cleanup()
+    }
+  }, [])
+
+  useEffect(() => {
+    const target = puzzleIdParam
+    const key = `${variant}:${difficulty}:${target ?? 'random'}`
+    if (hydrationRunRef.current === key) return
+    hydrationRunRef.current = key
+
+    async function go() {
+      if (target) {
+        const hydrated = await tryHydrate(target)
+        if (hydrated) return
+      }
+      const next = pickPuzzle(variant, difficulty, Math.floor(Math.random() * 100000))
+      const hydratedNew = await tryHydrate(next.id)
+      if (!hydratedNew) {
+        loadPuzzle({ id: next.id, variant, difficulty, givens: next.givens })
+      }
+      if (!target) {
+        hydrationRunRef.current = `${variant}:${difficulty}:${next.id}`
+        setParams({ variant, difficulty, puzzleId: next.id }, { replace: true })
+      }
+    }
+    void go()
+  }, [variant, difficulty, puzzleIdParam, loadPuzzle, setParams])
+
+  useEffect(() => {
+    function onVisibility() {
+      if (document.visibilityState === 'hidden') pause()
+      else resume()
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [pause, resume])
 
   const handleNew = useCallback(() => {
-    const puzzle = pickPuzzle(variant, difficulty, Math.floor(Math.random() * 100000))
-    loadPuzzle(puzzle.id, puzzle.givens)
-  }, [variant, difficulty, loadPuzzle])
+    const next = pickPuzzle(variant, difficulty, Math.floor(Math.random() * 100000))
+    loadPuzzle({ id: next.id, variant, difficulty, givens: next.givens })
+    setParams({ variant, difficulty, puzzleId: next.id }, { replace: true })
+  }, [variant, difficulty, loadPuzzle, setParams])
 
   const moveSelection = useCallback(
     (dr: number, dc: number) => {
@@ -59,6 +108,18 @@ export function Play() {
   useEffect(() => {
     function onKey(ev: KeyboardEvent) {
       if (ev.target instanceof HTMLInputElement) return
+      const mod = ev.metaKey || ev.ctrlKey
+      if (mod && (ev.key === 'z' || ev.key === 'Z')) {
+        if (ev.shiftKey) redo()
+        else undo()
+        ev.preventDefault()
+        return
+      }
+      if (mod && (ev.key === 'y' || ev.key === 'Y')) {
+        redo()
+        ev.preventDefault()
+        return
+      }
       if (ev.key >= '1' && ev.key <= '9') {
         input(Number(ev.key) as Digit)
         ev.preventDefault()
@@ -79,7 +140,7 @@ export function Play() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [input, erase, moveSelection, setMode, mode])
+  }, [input, erase, moveSelection, setMode, mode, undo, redo])
 
   if (!grid) {
     return (
@@ -93,15 +154,28 @@ export function Play() {
     <main className="min-h-dvh flex flex-col items-center px-3 py-4 gap-4">
       <Toolbar
         puzzleLabel={`Classic · ${DIFFICULTY_LABELS[difficulty]}`}
+        canUndo={historyIndex >= 0}
+        canRedo={historyIndex < historyLen - 1}
         onNew={handleNew}
+        onUndo={undo}
+        onRedo={redo}
       />
       <Board grid={grid} selected={selected} onSelect={select} />
       <InputPad
         mode={mode}
+        disabled={completedAt !== null}
         onDigit={input}
         onErase={erase}
         onModeChange={setMode}
       />
+      {completedAt !== null && (
+        <p
+          data-testid="completed-banner"
+          className="text-[var(--color-accent-strong)] font-medium"
+        >
+          Solved!
+        </p>
+      )}
       <button
         type="button"
         onClick={() => navigate('/')}
