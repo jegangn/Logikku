@@ -4,16 +4,16 @@ import { createClassicConstraint } from '@/engine/constraints/classic'
 import { CLASSIC_9, parsePuzzle } from '@/engine/grid'
 import { gradePuzzle } from '@/engine/grader/se'
 
-const DIFFICULTIES = ['very-easy', 'easy', 'medium', 'hard', 'expert', 'diabolical'] as const
+const DIFFICULTIES = ['very-easy', 'easy', 'medium', 'hard', 'tough', 'expert', 'diabolical'] as const
 
 describe('puzzles index', () => {
   it('discovers at least one variant via import.meta.glob', () => {
     expect(listBanks().length).toBeGreaterThan(0)
   })
 
-  it('exposes the Classic variant with easy/medium/hard/expert bands populated', () => {
+  it('exposes the Classic variant with easy/medium/hard/tough/expert bands populated', () => {
     const present = listBanks().filter((b) => b.variant === 'classic').map((b) => b.difficulty)
-    const required = ['easy', 'medium', 'hard', 'expert'] as const
+    const required = ['easy', 'medium', 'hard', 'tough', 'expert'] as const
     for (const d of required) {
       expect(present).toContain(d)
     }

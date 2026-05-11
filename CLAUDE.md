@@ -76,6 +76,14 @@ prompts/           # phase-00 .. phase-20 implementation prompts
 - **Tailwind only.** No `.css` files beyond `index.css` (the v4 entry).
 - **Path alias `@/*` → `src/*`.** Use it for cross-module imports.
 
+## Difficulty bands
+
+User-facing difficulty labels (per `docs/ARCHITECTURE.md` § Grader):
+
+`very-easy` · `easy` · `medium` · `hard` · `tough` · `expert` · `diabolical`
+
+`tough` sits between hard and expert (one or two tier-4 patterns); `diabolical` is reserved for puzzles that defeat the current technique set entirely.
+
 ## Storage strategy
 
 Saved data lives in IndexedDB (durable on installed PWAs in iOS 16.4+). Cleared only by manual "Clear Safari Data" or device wipe. Mitigation: **manual JSON export/import** in Settings → Backup (Phase 4). Single-file JSON via Files app. When Capacitor wrap lands (Phase 21), iCloud KVS becomes optional.

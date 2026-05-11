@@ -19,7 +19,8 @@ DIFFICULTY_BANDS: dict[str, tuple[float, float, int]] = {
     "easy": (1.5, 2.4, 44),
     "medium": (2.5, 3.9, 52),
     "hard": (4.0, 5.9, 56),
-    "expert": (6.0, 7.9, 60),
+    "tough": (6.0, 6.4, 58),
+    "expert": (6.5, 7.9, 60),
     "diabolical": (8.0, 99.9, 64),
 }
 

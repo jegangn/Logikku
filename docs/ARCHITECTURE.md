@@ -81,14 +81,15 @@ The technique solver is what the **grader** uses to compute the Sudoku Explainer
 
 SE-style rating band: `{ minTechnique, maxTechnique, score }`. Maps to user-facing difficulty:
 
-| SE | Label |
-|---|---|
-| 1.0–1.5 | Very Easy |
-| 1.6–2.5 | Easy |
-| 2.6–4.0 | Medium |
-| 4.1–6.0 | Hard |
-| 6.1–8.0 | Expert |
-| 8.1+ | Diabolical |
+| SE | Label | Typical technique requirement |
+|---|---|---|
+| 1.0–1.4 | Very Easy | Only naked / hidden singles, few steps |
+| 1.5–2.4 | Easy | Naked / hidden singles |
+| 2.5–3.9 | Medium | + Locked Candidates (pointing / claiming) |
+| 4.0–5.9 | Hard | + Naked / Hidden Pairs / Triples / Quads |
+| 6.0–6.4 | Tough | + One or two tier-4 patterns (X-Wing, XY-Wing, …) |
+| 6.5–7.9 | Expert | Multiple tier-4 patterns interlocking |
+| 8.0+ | Diabolical | Cannot be solved by current technique set; backtracking required |
 
 Variant-specific techniques (e.g. Killer Cage 45 rule) extend the technique list and contribute to the grade.
 

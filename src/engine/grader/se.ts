@@ -2,7 +2,14 @@ import { techniqueSolve } from '../solver/techniqueSolver'
 import { backtrackingSolve } from '../solver/backtrack'
 import type { Grid, Step } from '../types'
 
-export type Difficulty = 'very-easy' | 'easy' | 'medium' | 'hard' | 'expert' | 'diabolical'
+export type Difficulty =
+  | 'very-easy'
+  | 'easy'
+  | 'medium'
+  | 'hard'
+  | 'tough'
+  | 'expert'
+  | 'diabolical'
 
 export interface GradeResult {
   readonly solvable: boolean
@@ -48,8 +55,8 @@ export function gradePuzzle(grid: Grid): GradeResult {
 const TIER_BANDS: Record<number, readonly [number, number]> = {
   1: [1.0, 2.4],
   2: [2.7, 3.9],
-  3: [4.1, 5.9],
-  4: [6.1, 7.9],
+  3: [4.0, 5.9],
+  4: [6.0, 7.9],
 }
 
 function computeSE(hardestTier: number, steps: ReadonlyArray<Step>): number {
@@ -66,6 +73,7 @@ export function difficultyFromSE(se: number): Difficulty {
   if (se < 2.5) return 'easy'
   if (se < 4.0) return 'medium'
   if (se < 6.0) return 'hard'
+  if (se < 6.5) return 'tough'
   if (se < 8.0) return 'expert'
   return 'diabolical'
 }
