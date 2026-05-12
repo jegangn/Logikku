@@ -96,6 +96,7 @@ export interface Constraint {
   propagate(grid: Grid): Eliminations
   validate(grid: Grid): boolean
   techniques?(): ReadonlyArray<Technique>
+  findConflicts?(grid: Grid): ReadonlyArray<Coord>
 }
 
 export interface Technique {

@@ -13,8 +13,11 @@ import process from 'node:process'
 import readline from 'node:readline'
 import {
   CLASSIC_9,
+  createAntiKingConstraint,
+  createAntiKnightConstraint,
   createClassicConstraint,
   createHyperConstraint,
+  createNonConsecutiveConstraint,
   createXDiagonalConstraint,
   parsePuzzle,
   gradePuzzle,
@@ -30,6 +33,9 @@ const rl = readline.createInterface({
 const classicConstraint = createClassicConstraint({ shape: CLASSIC_9 })
 const xDiagonalConstraint = createXDiagonalConstraint({ shape: CLASSIC_9 })
 const hyperConstraint = createHyperConstraint({ shape: CLASSIC_9 })
+const antiKnightConstraint = createAntiKnightConstraint({ shape: CLASSIC_9 })
+const antiKingConstraint = createAntiKingConstraint({ shape: CLASSIC_9 })
+const nonConsecutiveConstraint = createNonConsecutiveConstraint({ shape: CLASSIC_9 })
 
 function constraintsForVariant(variant: string): ReadonlyArray<Constraint> {
   switch (variant) {
@@ -39,6 +45,12 @@ function constraintsForVariant(variant: string): ReadonlyArray<Constraint> {
       return [classicConstraint, xDiagonalConstraint]
     case 'hyper':
       return [classicConstraint, hyperConstraint]
+    case 'anti-knight':
+      return [classicConstraint, antiKnightConstraint]
+    case 'anti-king':
+      return [classicConstraint, antiKingConstraint]
+    case 'non-consecutive':
+      return [classicConstraint, nonConsecutiveConstraint]
     default:
       throw new Error(`unknown variant: ${variant}`)
   }

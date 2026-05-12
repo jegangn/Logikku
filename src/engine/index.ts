@@ -27,6 +27,12 @@ export {
   hyperRegions,
   HYPER_WINDOW_ORIGINS,
 } from './constraints/hyper'
+export { createAntiKnightConstraint, KNIGHT_OFFSETS } from './constraints/anti-knight'
+export { createAntiKingConstraint, KING_OFFSETS } from './constraints/anti-king'
+export {
+  createNonConsecutiveConstraint,
+  ORTHOGONAL_OFFSETS,
+} from './constraints/non-consecutive'
 export { backtrackingSolve } from './solver/backtrack'
 export { techniqueSolve, ALL_TECHNIQUES } from './solver/techniqueSolver'
 export { gradePuzzle, difficultyFromSE } from './grader/se'

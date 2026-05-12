@@ -3,6 +3,7 @@ import type { Grid, Step, Technique } from '../types'
 import { nakedSingle } from './techniques/nakedSingle'
 import { hiddenSingle } from './techniques/hiddenSingle'
 import { diagonalHiddenSingle } from './techniques/diagonalHiddenSingle'
+import { forbiddenPairElimination } from './techniques/forbiddenPairElimination'
 import { lockedCandidatesPointing } from './techniques/lockedCandidatesPointing'
 import { lockedCandidatesClaiming } from './techniques/lockedCandidatesClaiming'
 import { nakedPair, nakedTriple, nakedQuad } from './techniques/nakedSubset'
@@ -12,6 +13,7 @@ import { xyWing } from './techniques/xyWing'
 import { simpleColoring } from './techniques/simpleColoring'
 
 export const ALL_TECHNIQUES: ReadonlyArray<Technique> = [
+  forbiddenPairElimination,
   nakedSingle,
   diagonalHiddenSingle,
   hiddenSingle,

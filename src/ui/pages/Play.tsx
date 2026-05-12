@@ -22,6 +22,9 @@ const VARIANT_LABELS: Record<string, string> = {
   classic: 'Classic',
   'x-diagonal': 'X-Sudoku',
   hyper: 'Hyper',
+  'anti-knight': 'Anti-Knight',
+  'anti-king': 'Anti-King',
+  'non-consecutive': 'Non-Consecutive',
 }
 
 export function Play() {

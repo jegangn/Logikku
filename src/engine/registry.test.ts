@@ -39,9 +39,26 @@ describe('ConstraintRegistry', () => {
     expect(c.regions).toHaveLength(4)
   })
 
-  const STUB_KINDS = ALL_CONSTRAINT_KINDS.filter(
-    (k) => k !== 'classic' && k !== 'x-diagonal' && k !== 'hyper',
+  it.each(['anti-knight', 'anti-king', 'non-consecutive'] as const)(
+    'creates a %s constraint that is fully functional',
+    (kind) => {
+      const c = ConstraintRegistry.create(kind, { shape: CLASSIC_9 })
+      expect(c.kind).toBe(kind)
+      const grid = createGrid(CLASSIC_9, [c])
+      expect(c.validate(grid)).toBe(true)
+      expect(typeof c.findConflicts).toBe('function')
+    },
   )
+
+  const IMPLEMENTED_KINDS = new Set([
+    'classic',
+    'x-diagonal',
+    'hyper',
+    'anti-knight',
+    'anti-king',
+    'non-consecutive',
+  ])
+  const STUB_KINDS = ALL_CONSTRAINT_KINDS.filter((k) => !IMPLEMENTED_KINDS.has(k))
 
   it('creates stubs for every remaining kind that throw NotImplementedError on propagate/validate', () => {
     const grid = createGrid(CLASSIC_9)

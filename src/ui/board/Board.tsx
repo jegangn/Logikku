@@ -156,6 +156,11 @@ function computeConflicts(grid: Grid): ReadonlySet<string> {
         }
       }
     }
+    if (constraint.findConflicts) {
+      for (const co of constraint.findConflicts(grid)) {
+        out.add(`${co.r},${co.c}`)
+      }
+    }
   }
   return out
 }

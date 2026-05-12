@@ -3,8 +3,11 @@ import {
   CLASSIC_9,
   cellAt,
   cloneGrid,
+  createAntiKingConstraint,
+  createAntiKnightConstraint,
   createClassicConstraint,
   createHyperConstraint,
+  createNonConsecutiveConstraint,
   createXDiagonalConstraint,
   parsePuzzle,
   peersOf,
@@ -103,6 +106,15 @@ function constraintsForVariant(variant: string): ReadonlyArray<Constraint> {
   }
   if (variant === 'hyper') {
     return [classic, createHyperConstraint({ shape: CLASSIC_9 })]
+  }
+  if (variant === 'anti-knight') {
+    return [classic, createAntiKnightConstraint({ shape: CLASSIC_9 })]
+  }
+  if (variant === 'anti-king') {
+    return [classic, createAntiKingConstraint({ shape: CLASSIC_9 })]
+  }
+  if (variant === 'non-consecutive') {
+    return [classic, createNonConsecutiveConstraint({ shape: CLASSIC_9 })]
   }
   return [classic]
 }
@@ -385,6 +397,11 @@ function cellConflicts(grid: Grid, coord: Coord): boolean {
       for (const peer of region.cells) {
         if (peer.r === coord.r && peer.c === coord.c) continue
         if (cellAt(grid, peer).value === cell.value) return true
+      }
+    }
+    if (constraint.findConflicts) {
+      for (const co of constraint.findConflicts(grid)) {
+        if (co.r === coord.r && co.c === coord.c) return true
       }
     }
   }

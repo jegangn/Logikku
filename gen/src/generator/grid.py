@@ -14,6 +14,7 @@ CLASSIC_9 = Shape(size=9, box_rows=3, box_cols=3)
 
 
 ExtraRegions = list[frozenset[tuple[int, int]]]
+Offsets = list[tuple[int, int]]
 
 
 def peers_of(
@@ -21,6 +22,7 @@ def peers_of(
     c: int,
     shape: Shape,
     extra_regions: ExtraRegions | None = None,
+    extra_same_offsets: Offsets | None = None,
 ) -> list[tuple[int, int]]:
     n = shape.size
     out: set[tuple[int, int]] = set()
@@ -43,7 +45,32 @@ def peers_of(
             for pr, pc in region:
                 if (pr, pc) != (r, c):
                     out.add((pr, pc))
+    if extra_same_offsets:
+        for dr, dc in extra_same_offsets:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < n and 0 <= nc < n and (nr, nc) != (r, c):
+                out.add((nr, nc))
     return sorted(out)
+
+
+ORTHOGONAL_NEIGHBOURS: tuple[tuple[int, int], ...] = (
+    (-1, 0),
+    (1, 0),
+    (0, -1),
+    (0, 1),
+)
+
+
+def orthogonal_neighbours(
+    r: int, c: int, shape: Shape
+) -> list[tuple[int, int]]:
+    n = shape.size
+    out: list[tuple[int, int]] = []
+    for dr, dc in ORTHOGONAL_NEIGHBOURS:
+        nr, nc = r + dr, c + dc
+        if 0 <= nr < n and 0 <= nc < n:
+            out.append((nr, nc))
+    return out
 
 
 def empty_grid(shape: Shape) -> list[list[int]]:
@@ -73,6 +100,8 @@ def initial_candidates(
     grid: list[list[int]],
     shape: Shape,
     extra_regions: ExtraRegions | None = None,
+    extra_same_offsets: Offsets | None = None,
+    non_consecutive: bool = False,
 ) -> list[list[set[int]]]:
     n = shape.size
     cands = [[set(range(1, n + 1)) for _ in range(n)] for _ in range(n)]
@@ -81,6 +110,12 @@ def initial_candidates(
             v = grid[r][c]
             if v != 0:
                 cands[r][c] = set()
-                for pr, pc in peers_of(r, c, shape, extra_regions):
+                for pr, pc in peers_of(r, c, shape, extra_regions, extra_same_offsets):
                     cands[pr][pc].discard(v)
+                if non_consecutive:
+                    for nr, nc in orthogonal_neighbours(r, c, shape):
+                        if 1 <= v - 1:
+                            cands[nr][nc].discard(v - 1)
+                        if v + 1 <= n:
+                            cands[nr][nc].discard(v + 1)
     return cands

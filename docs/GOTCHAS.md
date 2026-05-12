@@ -82,3 +82,18 @@ X-Sudoku medium acceptance is ~0.5% because diagonals add a deep tier-1 channel.
 
 ### Pytest stalls when run alongside an active GraderBridge — 2026-05-12
 `test_bridge.py` spawns its own `bun tools/grade.ts`. Running pytest concurrently with a `python -m generator gen` that's also using a GraderBridge causes both bun processes to fight for stdio buffers, and pytest's bridge test hangs indefinitely. Either run pytest before kicking off generation, or wait for generation to fully finish.
+
+### Pair-inequality constraints need a non-region conflict path — 2026-05-12
+Anti-Knight/Anti-King flag a pair as "no shared digit", and Non-Consecutive flags "differ by 1". Both express forbidden pairs, not "all distinct within a region". Modelling each pair as a 2-cell region works for same-digit-forbidden (anti-knight, anti-king) but breaks down for the |a-b|=1 predicate — that's not a region rule. We added an optional `findConflicts(grid): Coord[]` method to the `Constraint` interface and made `computeConflicts` (Board) + `cellConflicts` (gameStore strict-mode) call both region-iteration AND `findConflicts`. Cleanest extension point for future predicate-based variants (Greater-Than will likely use the same hook).
+
+### `setValue` propagates classic peers only — pair constraints fix it via a technique — 2026-05-12
+`grid.setValue` in TS uses `peersOf` which is row/col/box only. Anti-knight peers don't get their candidates updated on placement. Rather than rebuild `setValue` to consult all constraints (expensive, error-prone), we added a `forbidden-pair-elimination` tier-1 technique that walks pair-inequality constraints and emits removals. Runs first in `ALL_TECHNIQUES` so naked-single/hidden-single see updated candidates.
+
+### Anti-King orthogonal offsets are redundant with classic — keep them anyway in TS, drop them in Python — 2026-05-12
+Anti-King is "no two cells a king's move apart share a digit". Orthogonal king moves (1 up/down/left/right) ARE classic row/col peers, so adding them to anti-king's offset list is redundant. In the TS engine I left all 8 offsets (lets the constraint declare its full rule and double-work is idempotent). In the Python generator I dropped them to 4 diagonals (smaller `extra_same_offsets` = faster backtracker fill).
+
+### Dense pair-inequality constraints make digging brutally slow — 2026-05-12
+Anti-Knight adds 8 extra same-digit peers per cell. Every `count_solutions` call during `dig` has to explore a much smaller candidate space, so each uniqueness check is slow AND fewer holes preserve uniqueness. At max_removals=50 (hard band), throughput drops to roughly 1 emitted puzzle per minute solo — emergent from the constraint's structure, not a bug. Phase 8 ships smaller hard/expert banks (~15 / ~10 each) because the cost-per-puzzle is real. Future variants with similarly dense pair constraints should expect this and cap targets, not chase 50/band.
+
+### Generator parallelism is roughly a wash under CPU contention — 2026-05-12
+Tried running 3 variants in parallel (anti-knight + anti-king + non-consecutive). Each gen spawns its own bun grader subprocess. With 6 active processes (3 python + 3 bun) on 8 cores, each runs at ~30% of its single-process speed. Aggregate throughput is roughly the same as serial, and per-band wall clock is 3x longer. Serial is simpler to monitor and not meaningfully slower. Phase 8 ended up running sequentially via `gen/scripts/phase8_banks.sh`.
