@@ -112,12 +112,78 @@ export function cloneGrid(grid: Grid): Grid {
   return { shape: grid.shape, cells, constraints: grid.constraints }
 }
 
+export function peersFromConstraints(
+  coord: Coord,
+  grid: Grid,
+): ReadonlyArray<Coord> {
+  if (grid.constraints.length === 0) {
+    return peersOf(coord, grid.shape)
+  }
+  const seen = new Set<string>()
+  const out: Coord[] = []
+  for (const constraint of grid.constraints) {
+    for (const region of constraint.regions) {
+      let inRegion = false
+      for (const cell of region.cells) {
+        if (cell.r === coord.r && cell.c === coord.c) {
+          inRegion = true
+          break
+        }
+      }
+      if (!inRegion) continue
+      for (const cell of region.cells) {
+        if (cell.r === coord.r && cell.c === coord.c) continue
+        const key = `${cell.r},${cell.c}`
+        if (seen.has(key)) continue
+        seen.add(key)
+        out.push({ r: cell.r, c: cell.c })
+      }
+    }
+  }
+  return out
+}
+
 export function setValue(grid: Grid, coord: Coord, digit: Digit): void {
   const cell = cellAt(grid, coord)
   cell.value = digit
   cell.candidates.clear()
-  for (const p of peersOf(coord, grid.shape)) {
+  for (const p of peersFromConstraints(coord, grid)) {
     cellAt(grid, p).candidates.delete(digit)
+  }
+}
+
+/**
+ * Reset every empty cell's candidates to the full 1..size set, then eliminate
+ * digits placed elsewhere within each constraint region. Use after attaching
+ * variant constraints (jigsaw, etc.) whose region topology differs from
+ * `parsePuzzle`'s classic peer-elim.
+ */
+export function recomputeCandidates(grid: Grid): void {
+  const size = grid.shape.size
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      const cell = cellAt(grid, { r, c })
+      if (cell.value !== null) {
+        cell.candidates.clear()
+      } else {
+        const next = new Set<Digit>()
+        for (let d = 1; d <= size; d++) next.add(d)
+        cell.candidates = next
+      }
+    }
+  }
+  for (const constraint of grid.constraints) {
+    for (const region of constraint.regions) {
+      for (const coord of region.cells) {
+        const cell = cellAt(grid, coord)
+        if (cell.value === null) continue
+        const v = cell.value
+        for (const peer of region.cells) {
+          if (peer.r === coord.r && peer.c === coord.c) continue
+          cellAt(grid, peer).candidates.delete(v)
+        }
+      }
+    }
   }
 }
 

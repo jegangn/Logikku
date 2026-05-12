@@ -23,6 +23,7 @@ def peers_of(
     shape: Shape,
     extra_regions: ExtraRegions | None = None,
     extra_same_offsets: Offsets | None = None,
+    use_classic_box: bool = True,
 ) -> list[tuple[int, int]]:
     n = shape.size
     out: set[tuple[int, int]] = set()
@@ -32,12 +33,13 @@ def peers_of(
     for rr in range(n):
         if rr != r:
             out.add((rr, c))
-    br = (r // shape.box_rows) * shape.box_rows
-    bc = (c // shape.box_cols) * shape.box_cols
-    for rr in range(br, br + shape.box_rows):
-        for cc in range(bc, bc + shape.box_cols):
-            if (rr, cc) != (r, c):
-                out.add((rr, cc))
+    if use_classic_box:
+        br = (r // shape.box_rows) * shape.box_rows
+        bc = (c // shape.box_cols) * shape.box_cols
+        for rr in range(br, br + shape.box_rows):
+            for cc in range(bc, bc + shape.box_cols):
+                if (rr, cc) != (r, c):
+                    out.add((rr, cc))
     if extra_regions:
         for region in extra_regions:
             if (r, c) not in region:
@@ -102,6 +104,7 @@ def initial_candidates(
     extra_regions: ExtraRegions | None = None,
     extra_same_offsets: Offsets | None = None,
     non_consecutive: bool = False,
+    use_classic_box: bool = True,
 ) -> list[list[set[int]]]:
     n = shape.size
     cands = [[set(range(1, n + 1)) for _ in range(n)] for _ in range(n)]
@@ -110,7 +113,14 @@ def initial_candidates(
             v = grid[r][c]
             if v != 0:
                 cands[r][c] = set()
-                for pr, pc in peers_of(r, c, shape, extra_regions, extra_same_offsets):
+                for pr, pc in peers_of(
+                    r,
+                    c,
+                    shape,
+                    extra_regions,
+                    extra_same_offsets,
+                    use_classic_box=use_classic_box,
+                ):
                     cands[pr][pc].discard(v)
                 if non_consecutive:
                     for nr, nc in orthogonal_neighbours(r, c, shape):

@@ -50,6 +50,23 @@ describe('ConstraintRegistry', () => {
     },
   )
 
+  it('creates a Jigsaw constraint with default classic boxes and validates', () => {
+    const c = ConstraintRegistry.create('jigsaw', { shape: CLASSIC_9 })
+    expect(c.kind).toBe('jigsaw')
+    const grid = createGrid(CLASSIC_9, [c])
+    expect(c.validate(grid)).toBe(true)
+    // 9 rows + 9 cols + 9 pieces
+    expect(c.regions).toHaveLength(27)
+  })
+
+  it('creates an Even-Odd constraint with default empty mask', () => {
+    const c = ConstraintRegistry.create('even-odd', { shape: CLASSIC_9 })
+    expect(c.kind).toBe('even-odd')
+    const grid = createGrid(CLASSIC_9, [c])
+    expect(c.validate(grid)).toBe(true)
+    expect(typeof c.findConflicts).toBe('function')
+  })
+
   const IMPLEMENTED_KINDS = new Set([
     'classic',
     'x-diagonal',
@@ -57,6 +74,8 @@ describe('ConstraintRegistry', () => {
     'anti-knight',
     'anti-king',
     'non-consecutive',
+    'jigsaw',
+    'even-odd',
   ])
   const STUB_KINDS = ALL_CONSTRAINT_KINDS.filter((k) => !IMPLEMENTED_KINDS.has(k))
 

@@ -8,11 +8,13 @@ export {
   serializePuzzle,
   cellAt,
   peersOf,
+  peersFromConstraints,
   classicRegions,
   cloneGrid,
   setValue,
   applyEliminations,
   coordKey,
+  recomputeCandidates,
 } from './grid'
 export { ConstraintRegistry, ALL_CONSTRAINT_KINDS } from './registry'
 export { createClassicConstraint } from './constraints/classic'
@@ -33,6 +35,17 @@ export {
   createNonConsecutiveConstraint,
   ORTHOGONAL_OFFSETS,
 } from './constraints/non-consecutive'
+export {
+  createJigsawConstraint,
+  defaultClassicJigsawPieces,
+  flatToCoords,
+} from './constraints/jigsaw'
+export type { JigsawParams } from './constraints/jigsaw'
+export {
+  createEvenOddConstraint,
+  parityGridOf,
+} from './constraints/even-odd'
+export type { EvenOddParams, Parity } from './constraints/even-odd'
 export { backtrackingSolve } from './solver/backtrack'
 export { techniqueSolve, ALL_TECHNIQUES } from './solver/techniqueSolver'
 export { gradePuzzle, difficultyFromSE } from './grader/se'

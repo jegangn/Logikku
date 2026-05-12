@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Cell } from './Cell'
 import { OverlayLayer } from './OverlayLayer'
 import type { Coord, Digit, Grid } from '@/engine'
-import { cellAt, peersOf } from '@/engine'
+import { cellAt, peersFromConstraints } from '@/engine'
 
 export interface BoardProps {
   readonly grid: Grid
@@ -10,6 +10,10 @@ export interface BoardProps {
   readonly variant?: string
   readonly lockedCells?: ReadonlySet<string>
   readonly shakeKey?: number
+  /** Jigsaw: per-cell piece id, length size*size. */
+  readonly jigsawPieceMap?: ReadonlyArray<number>
+  /** Even-Odd: parity mask string, length size*size. */
+  readonly parityMask?: string
   readonly onSelect: (coord: Coord) => void
 }
 
@@ -21,6 +25,8 @@ export function Board({
   variant,
   lockedCells,
   shakeKey = 0,
+  jigsawPieceMap,
+  parityMask,
   onSelect,
 }: BoardProps) {
   const size = grid.shape.size
@@ -28,8 +34,8 @@ export function Board({
 
   const peerSet = useMemo(() => {
     if (!selected) return new Set<string>()
-    return new Set(peersOf(selected, grid.shape).map((p) => `${p.r},${p.c}`))
-  }, [selected, grid.shape])
+    return new Set(peersFromConstraints(selected, grid).map((p) => `${p.r},${p.c}`))
+  }, [selected, grid])
 
   const selectedValue = selected ? cellAt(grid, selected).value : null
 
@@ -82,11 +88,18 @@ export function Board({
         fill="var(--color-surface)"
       />
       {rows}
-      <GridLines size={size} cellSize={CELL_SIZE} shape={grid.shape} />
+      <GridLines
+        size={size}
+        cellSize={CELL_SIZE}
+        shape={grid.shape}
+        suppressBoxLines={variant === 'jigsaw'}
+      />
       <OverlayLayer
         gridSize={size}
         cellSize={CELL_SIZE}
         {...(variant !== undefined ? { variant } : {})}
+        {...(jigsawPieceMap !== undefined ? { jigsawPieceMap } : {})}
+        {...(parityMask !== undefined ? { parityMask } : {})}
       />
     </svg>
   )
@@ -96,17 +109,21 @@ function GridLines({
   size,
   cellSize,
   shape,
+  suppressBoxLines = false,
 }: {
   size: number
   cellSize: number
   shape: Grid['shape']
+  suppressBoxLines?: boolean
 }) {
   const lines: React.ReactElement[] = []
   const total = size * cellSize
   for (let i = 0; i <= size; i++) {
-    const heavy = i % shape.boxCols === 0
-    const stroke = heavy ? 'var(--color-border-strong)' : 'var(--color-border)'
-    const w = heavy ? 2.5 : 1
+    const heavy = !suppressBoxLines && i % shape.boxCols === 0
+    const isEdge = i === 0 || i === size
+    const stroke =
+      heavy || isEdge ? 'var(--color-border-strong)' : 'var(--color-border)'
+    const w = heavy || isEdge ? 2.5 : 1
     lines.push(
       <line
         key={`v-${i}`}
@@ -120,9 +137,11 @@ function GridLines({
     )
   }
   for (let i = 0; i <= size; i++) {
-    const heavy = i % shape.boxRows === 0
-    const stroke = heavy ? 'var(--color-border-strong)' : 'var(--color-border)'
-    const w = heavy ? 2.5 : 1
+    const heavy = !suppressBoxLines && i % shape.boxRows === 0
+    const isEdge = i === 0 || i === size
+    const stroke =
+      heavy || isEdge ? 'var(--color-border-strong)' : 'var(--color-border)'
+    const w = heavy || isEdge ? 2.5 : 1
     lines.push(
       <line
         key={`h-${i}`}

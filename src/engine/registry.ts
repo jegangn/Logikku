@@ -5,6 +5,8 @@ import { createHyperConstraint } from './constraints/hyper'
 import { createAntiKnightConstraint } from './constraints/anti-knight'
 import { createAntiKingConstraint } from './constraints/anti-king'
 import { createNonConsecutiveConstraint } from './constraints/non-consecutive'
+import { createJigsawConstraint } from './constraints/jigsaw'
+import { createEvenOddConstraint } from './constraints/even-odd'
 import { createStubConstraint } from './constraints/_stub'
 
 export const ALL_CONSTRAINT_KINDS: ReadonlyArray<ConstraintKind> = [
@@ -44,6 +46,8 @@ register('hyper', (p) => createHyperConstraint(p as object))
 register('anti-knight', (p) => createAntiKnightConstraint(p as object))
 register('anti-king', (p) => createAntiKingConstraint(p as object))
 register('non-consecutive', (p) => createNonConsecutiveConstraint(p as object))
+register('jigsaw', (p) => createJigsawConstraint(p as object))
+register('even-odd', (p) => createEvenOddConstraint(p as object))
 for (const kind of ALL_CONSTRAINT_KINDS) {
   if (registry.has(kind)) continue
   register(kind, () => createStubConstraint(kind))

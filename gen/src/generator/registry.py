@@ -11,8 +11,10 @@ from .anti_king import ANTI_KING_DIFFICULTY_BANDS, generate_anti_king
 from .anti_knight import ANTI_KNIGHT_DIFFICULTY_BANDS, generate_anti_knight
 from .classic import DIFFICULTY_BANDS as CLASSIC_BANDS
 from .classic import GeneratedPuzzle, generate_classic
+from .even_odd import EVEN_ODD_DIFFICULTY_BANDS, generate_even_odd
 from .grader_bridge import GraderBridge
 from .hyper import HYPER_DIFFICULTY_BANDS, generate_hyper
+from .jigsaw import JIGSAW_DIFFICULTY_BANDS, generate_jigsaw
 from .non_consecutive import (
     NON_CONSECUTIVE_DIFFICULTY_BANDS,
     generate_non_consecutive,
@@ -29,6 +31,8 @@ REGISTRY: dict[str, GeneratorFn] = {
     "anti-knight": generate_anti_knight,
     "anti-king": generate_anti_king,
     "non-consecutive": generate_non_consecutive,
+    "jigsaw": generate_jigsaw,
+    "even-odd": generate_even_odd,
 }
 
 
@@ -39,6 +43,8 @@ BANDS_BY_VARIANT: dict[str, dict[str, tuple[float, float, int]]] = {
     "anti-knight": ANTI_KNIGHT_DIFFICULTY_BANDS,
     "anti-king": ANTI_KING_DIFFICULTY_BANDS,
     "non-consecutive": NON_CONSECUTIVE_DIFFICULTY_BANDS,
+    "jigsaw": JIGSAW_DIFFICULTY_BANDS,
+    "even-odd": EVEN_ODD_DIFFICULTY_BANDS,
 }
 
 

@@ -25,10 +25,16 @@ def random_solved(
     extra_regions: ExtraRegions | None = None,
     extra_same_offsets: Offsets | None = None,
     non_consecutive: bool = False,
+    use_classic_box: bool = True,
 ) -> list[list[int]]:
     grid = [[0] * shape.size for _ in range(shape.size)]
     cands = initial_candidates(
-        grid, shape, extra_regions, extra_same_offsets, non_consecutive
+        grid,
+        shape,
+        extra_regions,
+        extra_same_offsets,
+        non_consecutive,
+        use_classic_box=use_classic_box,
     )
     if not _backtrack_fill(
         grid,
@@ -38,6 +44,7 @@ def random_solved(
         extra_regions=extra_regions,
         extra_same_offsets=extra_same_offsets,
         non_consecutive=non_consecutive,
+        use_classic_box=use_classic_box,
     ):
         raise RuntimeError("failed to fill grid (should be impossible)")
     return grid
@@ -50,10 +57,16 @@ def count_solutions(
     extra_regions: ExtraRegions | None = None,
     extra_same_offsets: Offsets | None = None,
     non_consecutive: bool = False,
+    use_classic_box: bool = True,
 ) -> int:
     g = [row[:] for row in grid]
     cands = initial_candidates(
-        g, shape, extra_regions, extra_same_offsets, non_consecutive
+        g,
+        shape,
+        extra_regions,
+        extra_same_offsets,
+        non_consecutive,
+        use_classic_box=use_classic_box,
     )
     return _backtrack_count(
         g,
@@ -64,6 +77,7 @@ def count_solutions(
         extra_regions=extra_regions,
         extra_same_offsets=extra_same_offsets,
         non_consecutive=non_consecutive,
+        use_classic_box=use_classic_box,
     )
 
 
@@ -109,6 +123,7 @@ def _backtrack_fill(
     extra_regions: ExtraRegions | None = None,
     extra_same_offsets: Offsets | None = None,
     non_consecutive: bool = False,
+    use_classic_box: bool = True,
 ) -> bool:
     cell = _pick_cell(grid, cands, shape)
     if cell is None:
@@ -116,7 +131,14 @@ def _backtrack_fill(
     r, c, choices = cell
     options = list(choices)
     rng.shuffle(options)
-    peers = peers_of(r, c, shape, extra_regions, extra_same_offsets)
+    peers = peers_of(
+        r,
+        c,
+        shape,
+        extra_regions,
+        extra_same_offsets,
+        use_classic_box=use_classic_box,
+    )
     for d in options:
         grid[r][c] = d
         removed = _apply_placement(cands, r, c, d, peers, shape, non_consecutive)
@@ -130,6 +152,7 @@ def _backtrack_fill(
             extra_regions,
             extra_same_offsets,
             non_consecutive,
+            use_classic_box=use_classic_box,
         ):
             return True
         grid[r][c] = 0
@@ -147,6 +170,7 @@ def _backtrack_count(
     extra_regions: ExtraRegions | None = None,
     extra_same_offsets: Offsets | None = None,
     non_consecutive: bool = False,
+    use_classic_box: bool = True,
 ) -> int:
     if found >= limit:
         return found
@@ -154,7 +178,14 @@ def _backtrack_count(
     if cell is None:
         return found + 1
     r, c, choices = cell
-    peers = peers_of(r, c, shape, extra_regions, extra_same_offsets)
+    peers = peers_of(
+        r,
+        c,
+        shape,
+        extra_regions,
+        extra_same_offsets,
+        use_classic_box=use_classic_box,
+    )
     for d in choices:
         grid[r][c] = d
         removed = _apply_placement(cands, r, c, d, peers, shape, non_consecutive)
@@ -169,6 +200,7 @@ def _backtrack_count(
             extra_regions,
             extra_same_offsets,
             non_consecutive,
+            use_classic_box=use_classic_box,
         )
         grid[r][c] = 0
         cands[r][c] = saved

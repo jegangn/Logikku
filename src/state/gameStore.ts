@@ -6,11 +6,15 @@ import {
   createAntiKingConstraint,
   createAntiKnightConstraint,
   createClassicConstraint,
+  createEvenOddConstraint,
   createHyperConstraint,
+  createJigsawConstraint,
   createNonConsecutiveConstraint,
   createXDiagonalConstraint,
+  flatToCoords,
   parsePuzzle,
-  peersOf,
+  peersFromConstraints,
+  recomputeCandidates,
   type Constraint,
   type Coord,
   type Difficulty,
@@ -54,12 +58,18 @@ export interface GameState {
   completedAt: string | null
   lockedCells: ReadonlySet<string>
   lastShakeKey: number
+  /** Jigsaw: per-cell piece id, length size*size. Populated when variant=jigsaw. */
+  jigsawPieceMap: ReadonlyArray<number> | null
+  /** Even-Odd: parity mask string, length size*size. Populated when variant=even-odd. */
+  parityMask: string | null
 
   loadPuzzle: (args: {
     id: string
     variant: string
     difficulty: Difficulty
     givens: string
+    regions?: ReadonlyArray<ReadonlyArray<number>>
+    parityMask?: string
   }) => void
   hydrate: (saved: SavedGame) => void
   select: (coord: Coord | null) => void
@@ -99,7 +109,24 @@ function isComplete(grid: Grid): boolean {
   return true
 }
 
-function constraintsForVariant(variant: string): ReadonlyArray<Constraint> {
+function constraintsForVariant(
+  variant: string,
+  options: {
+    regions?: ReadonlyArray<ReadonlyArray<number>>
+    parityMask?: string
+  } = {},
+): ReadonlyArray<Constraint> {
+  // Jigsaw REPLACES the classic box partition with its own pieces.
+  if (variant === 'jigsaw') {
+    const pieces = (options.regions ?? []).map((r) =>
+      flatToCoords(r, CLASSIC_9.size),
+    )
+    if (pieces.length === 0) {
+      // Fall back to classic boxes if no per-puzzle pieces supplied.
+      return [createClassicConstraint({ shape: CLASSIC_9 })]
+    }
+    return [createJigsawConstraint({ shape: CLASSIC_9, pieces })]
+  }
   const classic = createClassicConstraint({ shape: CLASSIC_9 })
   if (variant === 'x-diagonal') {
     return [classic, createXDiagonalConstraint({ shape: CLASSIC_9 })]
@@ -116,12 +143,40 @@ function constraintsForVariant(variant: string): ReadonlyArray<Constraint> {
   if (variant === 'non-consecutive') {
     return [classic, createNonConsecutiveConstraint({ shape: CLASSIC_9 })]
   }
+  if (variant === 'even-odd') {
+    const parityMask = options.parityMask ?? '.'.repeat(CLASSIC_9.size * CLASSIC_9.size)
+    return [classic, createEvenOddConstraint({ shape: CLASSIC_9, parityMask })]
+  }
   return [classic]
 }
 
-function freshGridFromGivens(givens: string, variant: string): Grid {
-  const constraints = constraintsForVariant(variant)
+function pieceMapFromRegions(
+  regions: ReadonlyArray<ReadonlyArray<number>> | undefined,
+  size: number,
+): ReadonlyArray<number> | null {
+  if (!regions || regions.length === 0) return null
+  const out = new Array<number>(size * size).fill(-1)
+  for (let i = 0; i < regions.length; i++) {
+    for (const flat of regions[i]!) out[flat] = i
+  }
+  return out
+}
+
+function freshGridFromGivens(
+  givens: string,
+  variant: string,
+  options: {
+    regions?: ReadonlyArray<ReadonlyArray<number>>
+    parityMask?: string
+  } = {},
+): Grid {
+  const constraints = constraintsForVariant(variant, options)
   const grid: Grid = { ...parsePuzzle(givens, CLASSIC_9), constraints }
+  // Jigsaw needs a candidate reset because parsePuzzle eliminated classic box
+  // peers that aren't the real peer set for this puzzle.
+  if (variant === 'jigsaw') {
+    recomputeCandidates(grid)
+  }
   for (let r = 0; r < grid.shape.size; r++) {
     for (let c = 0; c < grid.shape.size; c++) {
       const cell = cellAt(grid, { r, c })
@@ -135,8 +190,12 @@ function gridFromSnapshot(
   givens: string,
   variant: string,
   cells: ReadonlyArray<SavedCell>,
+  options: {
+    regions?: ReadonlyArray<ReadonlyArray<number>>
+    parityMask?: string
+  } = {},
 ): Grid {
-  const grid = freshGridFromGivens(givens, variant)
+  const grid = freshGridFromGivens(givens, variant, options)
   for (let i = 0; i < cells.length; i++) {
     const saved = cells[i]!
     const r = Math.floor(i / grid.shape.size)
@@ -193,11 +252,16 @@ export const useGameStore = create<GameState>((set, get) => ({
   completedAt: null,
   lockedCells: new Set(),
   lastShakeKey: 0,
+  jigsawPieceMap: null,
+  parityMask: null,
 
-  loadPuzzle: ({ id, variant, difficulty, givens }) => {
+  loadPuzzle: ({ id, variant, difficulty, givens, regions, parityMask }) => {
     const now = new Date().toISOString()
+    const opts: { regions?: ReadonlyArray<ReadonlyArray<number>>; parityMask?: string } = {}
+    if (regions !== undefined) opts.regions = regions
+    if (parityMask !== undefined) opts.parityMask = parityMask
     set({
-      grid: freshGridFromGivens(givens, variant),
+      grid: freshGridFromGivens(givens, variant, opts),
       puzzleId: id,
       variant,
       difficulty,
@@ -213,11 +277,18 @@ export const useGameStore = create<GameState>((set, get) => ({
       completedAt: null,
       lockedCells: new Set(),
       lastShakeKey: 0,
+      jigsawPieceMap: pieceMapFromRegions(regions, CLASSIC_9.size),
+      parityMask: parityMask ?? null,
     })
   },
 
   hydrate: (saved) => {
-    const grid = gridFromSnapshot(saved.givens, saved.variant, saved.cells)
+    const regions = saved.regions
+    const parityMask = saved.parityMask
+    const opts: { regions?: ReadonlyArray<ReadonlyArray<number>>; parityMask?: string } = {}
+    if (regions !== undefined) opts.regions = regions
+    if (parityMask !== undefined) opts.parityMask = parityMask
+    const grid = gridFromSnapshot(saved.givens, saved.variant, saved.cells, opts)
     const history: HistoryEntry[] = saved.history.map(savedHistoryToEntry)
     set({
       grid,
@@ -236,6 +307,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       completedAt: saved.completedAt,
       lockedCells: new Set(),
       lastShakeKey: 0,
+      jigsawPieceMap: pieceMapFromRegions(regions, CLASSIC_9.size),
+      parityMask: parityMask ?? null,
     })
   },
 
@@ -278,7 +351,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     nextCell.value = digit
     nextCell.candidates = new Set()
     const peerRemovals: Array<{ coord: Coord; digit: Digit }> = []
-    for (const p of peersOf(selected, next.shape)) {
+    for (const p of peersFromConstraints(selected, next)) {
       const peer = cellAt(next, p)
       if (peer.candidates.has(digit)) {
         peer.candidates.delete(digit)
@@ -478,6 +551,10 @@ export function serializeGameForSave(state: GameState): SavedGame | null {
     state.paused || !state.resumeAt
       ? state.elapsedMs
       : state.elapsedMs + (Date.now() - state.resumeAt)
+  const pieceMap = state.jigsawPieceMap
+  const regions: number[][] | undefined = pieceMap
+    ? pieceMapToRegions(pieceMap)
+    : undefined
   return {
     id: state.puzzleId,
     variant: state.variant,
@@ -490,5 +567,20 @@ export function serializeGameForSave(state: GameState): SavedGame | null {
     startedAt: state.startedAt,
     lastPlayedAt: new Date().toISOString(),
     completedAt: state.completedAt,
+    ...(regions ? { regions } : {}),
+    ...(state.parityMask ? { parityMask: state.parityMask } : {}),
   }
+}
+
+function pieceMapToRegions(
+  pieceMap: ReadonlyArray<number>,
+): number[][] {
+  const out: number[][] = []
+  for (let i = 0; i < pieceMap.length; i++) {
+    const piece = pieceMap[i]!
+    if (piece < 0) continue
+    while (out.length <= piece) out.push([])
+    out[piece]!.push(i)
+  }
+  return out
 }

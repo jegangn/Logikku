@@ -25,6 +25,8 @@ const VARIANT_LABELS: Record<string, string> = {
   'anti-knight': 'Anti-Knight',
   'anti-king': 'Anti-King',
   'non-consecutive': 'Non-Consecutive',
+  jigsaw: 'Jigsaw',
+  'even-odd': 'Even-Odd',
 }
 
 export function Play() {
@@ -43,6 +45,8 @@ export function Play() {
   const completedAt = useGameStore((s) => s.completedAt)
   const lockedCells = useGameStore((s) => s.lockedCells)
   const shakeKey = useGameStore((s) => s.lastShakeKey)
+  const jigsawPieceMap = useGameStore((s) => s.jigsawPieceMap)
+  const parityMask = useGameStore((s) => s.parityMask)
 
   const loadPuzzle = useGameStore((s) => s.loadPuzzle)
   const select = useGameStore((s) => s.select)
@@ -78,7 +82,14 @@ export function Play() {
       const next = pickPuzzle(variant, difficulty, Math.floor(Math.random() * 100000))
       const hydratedNew = await tryHydrate(next.id)
       if (!hydratedNew) {
-        loadPuzzle({ id: next.id, variant, difficulty, givens: next.givens })
+        loadPuzzle({
+          id: next.id,
+          variant,
+          difficulty,
+          givens: next.givens,
+          ...(next.regions ? { regions: next.regions } : {}),
+          ...(next.parityMask ? { parityMask: next.parityMask } : {}),
+        })
       }
       if (!target) {
         hydrationRunRef.current = `${variant}:${difficulty}:${next.id}`
@@ -99,7 +110,14 @@ export function Play() {
 
   const handleNew = useCallback(() => {
     const next = pickPuzzle(variant, difficulty, Math.floor(Math.random() * 100000))
-    loadPuzzle({ id: next.id, variant, difficulty, givens: next.givens })
+    loadPuzzle({
+      id: next.id,
+      variant,
+      difficulty,
+      givens: next.givens,
+      ...(next.regions ? { regions: next.regions } : {}),
+      ...(next.parityMask ? { parityMask: next.parityMask } : {}),
+    })
     setParams({ variant, difficulty, puzzleId: next.id }, { replace: true })
   }, [variant, difficulty, loadPuzzle, setParams])
 
@@ -180,6 +198,8 @@ export function Play() {
         variant={variant}
         lockedCells={lockedCells}
         shakeKey={shakeKey}
+        {...(jigsawPieceMap ? { jigsawPieceMap } : {})}
+        {...(parityMask ? { parityMask } : {})}
         onSelect={select}
       />
       <InputPad

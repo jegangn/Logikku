@@ -59,6 +59,23 @@ function assertRecord(r: unknown, key: BankKey): asserts r is PuzzleRecord {
       `bank ${key.variant}/${key.difficulty}: record difficulty=${String(obj['difficulty'])} mismatch`,
     )
   }
+  if (obj['regions'] !== undefined) {
+    if (!Array.isArray(obj['regions'])) {
+      throw new Error(`bank ${key.variant}/${key.difficulty}: 'regions' must be an array`)
+    }
+    for (const region of obj['regions'] as unknown[]) {
+      if (!Array.isArray(region) || region.some((v) => typeof v !== 'number')) {
+        throw new Error(
+          `bank ${key.variant}/${key.difficulty}: each region must be a number[]`,
+        )
+      }
+    }
+  }
+  if (obj['parityMask'] !== undefined && typeof obj['parityMask'] !== 'string') {
+    throw new Error(
+      `bank ${key.variant}/${key.difficulty}: 'parityMask' must be a string`,
+    )
+  }
 }
 
 export function getBank(variant: string, difficulty: Difficulty): PuzzleBank {
