@@ -64,3 +64,12 @@ Original `tier * 1.5 + 0.5` was too aggressive: tier-1-only puzzles graded as SE
 
 ### z3-solver has no Python 3.14 wheel (Nov 2025); cmake build fails on Windows — 2026-05-11
 Pure-Python backtracker is faster anyway for 9×9 Classic. Defer Z3 to a variant phase (Killer cages are the strongest candidate for SAT encoding).
+
+### X-Sudoku diagonal-aware peers via `extra_regions`, not a new constraint type — 2026-05-12
+Refactored `peers_of`, `initial_candidates`, `random_solved`, `count_solutions`, and `dig` to take an optional `extra_regions: list[frozenset[(r,c)]]`. Each region whose membership includes the cell is unioned into the peer set. Cleaner than a per-variant peer function — the next variant (Hyper, Anti-Knight via offsets) just provides its regions. Anti-knight will need a different shape (offset-based, not region-based), so don't over-generalize this until Phase 8.
+
+### TS-side grader needs a variant prefix on stdin lines — 2026-05-12
+The long-running `tools/grade.ts` originally hardcoded `[classicConstraint]`. Now reads `<variant>\t<puzzle>` per line and looks up the constraint set via a small switch. Bare puzzle strings still parse as classic for backward compat. Python `GraderBridge.grade(puzzle, variant="classic")` writes the prefix.
+
+### Diagonal hidden single is redundant with hidden single but useful for labeling — 2026-05-12
+`hiddenSingle` already iterates `regionsOf(grid)` which includes diagonal regions from the x-diagonal constraint. So it already "finds" diagonal singles automatically. The dedicated `diagonalHiddenSingle` technique adds a distinct id/label so graded steps can be attributed to the diagonal scope. Tier is 1 (same as the generic version), runs first in `ALL_TECHNIQUES` so diagonal-decisive placements get the diagonal label.

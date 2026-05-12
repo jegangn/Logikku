@@ -13,7 +13,15 @@ class Shape:
 CLASSIC_9 = Shape(size=9, box_rows=3, box_cols=3)
 
 
-def peers_of(r: int, c: int, shape: Shape) -> list[tuple[int, int]]:
+ExtraRegions = list[frozenset[tuple[int, int]]]
+
+
+def peers_of(
+    r: int,
+    c: int,
+    shape: Shape,
+    extra_regions: ExtraRegions | None = None,
+) -> list[tuple[int, int]]:
     n = shape.size
     out: set[tuple[int, int]] = set()
     for cc in range(n):
@@ -28,6 +36,13 @@ def peers_of(r: int, c: int, shape: Shape) -> list[tuple[int, int]]:
         for cc in range(bc, bc + shape.box_cols):
             if (rr, cc) != (r, c):
                 out.add((rr, cc))
+    if extra_regions:
+        for region in extra_regions:
+            if (r, c) not in region:
+                continue
+            for pr, pc in region:
+                if (pr, pc) != (r, c):
+                    out.add((pr, pc))
     return sorted(out)
 
 
@@ -54,7 +69,11 @@ def string_to_grid(s: str, shape: Shape) -> list[list[int]]:
     return grid
 
 
-def initial_candidates(grid: list[list[int]], shape: Shape) -> list[list[set[int]]]:
+def initial_candidates(
+    grid: list[list[int]],
+    shape: Shape,
+    extra_regions: ExtraRegions | None = None,
+) -> list[list[set[int]]]:
     n = shape.size
     cands = [[set(range(1, n + 1)) for _ in range(n)] for _ in range(n)]
     for r in range(n):
@@ -62,6 +81,6 @@ def initial_candidates(grid: list[list[int]], shape: Shape) -> list[list[set[int
             v = grid[r][c]
             if v != 0:
                 cands[r][c] = set()
-                for pr, pc in peers_of(r, c, shape):
+                for pr, pc in peers_of(r, c, shape, extra_regions):
                     cands[pr][pc].discard(v)
     return cands

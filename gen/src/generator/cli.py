@@ -9,7 +9,7 @@ import click
 
 from .classic import DIFFICULTY_BANDS, write_bank
 from .grader_bridge import GraderBridge
-from .registry import get_generator, list_variants
+from .registry import bands_for, get_generator, list_variants
 
 
 @click.group()
@@ -51,7 +51,7 @@ def gen(
     if all_bands:
         if not out_dir:
             raise click.UsageError("--all requires --out-dir")
-        bands = sorted(DIFFICULTY_BANDS.keys())
+        bands = sorted(bands_for(variant).keys())
         with GraderBridge() as grader:
             total = 0
             for band in bands:

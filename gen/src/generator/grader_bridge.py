@@ -62,10 +62,10 @@ class GraderBridge:
             except subprocess.TimeoutExpired:
                 self._proc.kill()
 
-    def grade(self, puzzle: str) -> dict:
+    def grade(self, puzzle: str, variant: str = "classic") -> dict:
         if not self._proc or not self._proc.stdin or not self._proc.stdout:
             raise RuntimeError("GraderBridge not entered")
-        self._proc.stdin.write(puzzle + "\n")
+        self._proc.stdin.write(f"{variant}\t{puzzle}\n")
         self._proc.stdin.flush()
         line = self._proc.stdout.readline()
         if not line:

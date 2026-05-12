@@ -1,5 +1,6 @@
 import type { Constraint, ConstraintKind } from './types'
 import { createClassicConstraint } from './constraints/classic'
+import { createXDiagonalConstraint } from './constraints/x-diagonal'
 import { createStubConstraint } from './constraints/_stub'
 
 export const ALL_CONSTRAINT_KINDS: ReadonlyArray<ConstraintKind> = [
@@ -34,8 +35,9 @@ function register(kind: ConstraintKind, factory: Factory): void {
 }
 
 register('classic', (p) => createClassicConstraint(p as object))
+register('x-diagonal', (p) => createXDiagonalConstraint(p as object))
 for (const kind of ALL_CONSTRAINT_KINDS) {
-  if (kind === 'classic') continue
+  if (registry.has(kind)) continue
   register(kind, () => createStubConstraint(kind))
 }
 

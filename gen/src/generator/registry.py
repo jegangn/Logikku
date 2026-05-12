@@ -7,14 +7,23 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Iterator
 
+from .classic import DIFFICULTY_BANDS as CLASSIC_BANDS
 from .classic import GeneratedPuzzle, generate_classic
 from .grader_bridge import GraderBridge
+from .x_diagonal import X_DIFFICULTY_BANDS, generate_x_diagonal
 
 GeneratorFn = Callable[..., Iterator[GeneratedPuzzle]]
 
 
 REGISTRY: dict[str, GeneratorFn] = {
     "classic": generate_classic,
+    "x-diagonal": generate_x_diagonal,
+}
+
+
+BANDS_BY_VARIANT: dict[str, dict[str, tuple[float, float, int]]] = {
+    "classic": CLASSIC_BANDS,
+    "x-diagonal": X_DIFFICULTY_BANDS,
 }
 
 
@@ -22,6 +31,12 @@ def get_generator(variant: str) -> GeneratorFn:
     if variant not in REGISTRY:
         raise KeyError(f"variant '{variant}' has no generator registered yet")
     return REGISTRY[variant]
+
+
+def bands_for(variant: str) -> dict[str, tuple[float, float, int]]:
+    if variant not in BANDS_BY_VARIANT:
+        raise KeyError(f"variant '{variant}' has no difficulty bands")
+    return BANDS_BY_VARIANT[variant]
 
 
 def list_variants() -> list[str]:

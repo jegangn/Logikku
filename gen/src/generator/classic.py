@@ -111,5 +111,6 @@ def write_bank(path: Path, puzzles: Iterator[GeneratedPuzzle]) -> int:
     with path.open("w", encoding="utf-8", newline="\n") as f:
         for p in puzzles:
             f.write(json.dumps(p.to_dict(), separators=(",", ":")) + "\n")
+            f.flush()
             count += 1
     return count

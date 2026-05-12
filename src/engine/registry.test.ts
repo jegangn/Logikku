@@ -23,10 +23,21 @@ describe('ConstraintRegistry', () => {
     expect(c.validate(grid)).toBe(true)
   })
 
-  it('creates stubs for every other kind that throw NotImplementedError on propagate/validate', () => {
+  it('creates an X-Diagonal constraint that is fully functional', () => {
+    const c = ConstraintRegistry.create('x-diagonal', { shape: CLASSIC_9 })
+    expect(c.kind).toBe('x-diagonal')
+    const grid = createGrid(CLASSIC_9, [c])
+    expect(c.validate(grid)).toBe(true)
+    expect(c.regions).toHaveLength(2)
+  })
+
+  const STUB_KINDS = ALL_CONSTRAINT_KINDS.filter(
+    (k) => k !== 'classic' && k !== 'x-diagonal',
+  )
+
+  it('creates stubs for every remaining kind that throw NotImplementedError on propagate/validate', () => {
     const grid = createGrid(CLASSIC_9)
-    for (const kind of ALL_CONSTRAINT_KINDS) {
-      if (kind === 'classic') continue
+    for (const kind of STUB_KINDS) {
       const c = ConstraintRegistry.create(kind, {})
       expect(c.kind).toBe(kind)
       expect(() => c.propagate(grid)).toThrow(NotImplementedError)

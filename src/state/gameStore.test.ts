@@ -214,4 +214,16 @@ describe('gameStore', () => {
     expect(cellAt(restored.grid!, { r: 0, c: 0 }).value).toBe(5)
     expect(restored.historyIndex).toBe(0)
   })
+
+  it('loading an x-diagonal puzzle attaches the diagonal constraint', () => {
+    useGameStore.getState().loadPuzzle({
+      id: 'x-1',
+      variant: 'x-diagonal',
+      difficulty: 'easy',
+      givens: '0'.repeat(81),
+    })
+    const grid = useGameStore.getState().grid!
+    const kinds = grid.constraints.map((c) => c.kind).sort()
+    expect(kinds).toEqual(['classic', 'x-diagonal'])
+  })
 })

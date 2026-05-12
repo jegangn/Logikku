@@ -18,6 +18,11 @@ const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   diabolical: 'Diabolical',
 }
 
+const VARIANT_LABELS: Record<string, string> = {
+  classic: 'Classic',
+  'x-diagonal': 'X-Sudoku',
+}
+
 export function Play() {
   const [params, setParams] = useSearchParams()
   const navigate = useNavigate()
@@ -158,7 +163,7 @@ export function Play() {
       className="min-h-dvh flex flex-col items-center px-3 py-4 gap-4"
     >
       <Toolbar
-        puzzleLabel={`Classic · ${DIFFICULTY_LABELS[difficulty]}`}
+        puzzleLabel={`${VARIANT_LABELS[variant] ?? variant} · ${DIFFICULTY_LABELS[difficulty]}`}
         canUndo={historyIndex >= 0}
         canRedo={historyIndex < historyLen - 1}
         onNew={handleNew}
@@ -168,6 +173,7 @@ export function Play() {
       <Board
         grid={grid}
         selected={selected}
+        variant={variant}
         lockedCells={lockedCells}
         shakeKey={shakeKey}
         onSelect={select}

@@ -2,6 +2,7 @@ import { applyEliminations, cellAt, cloneGrid } from '../grid'
 import type { Grid, Step, Technique } from '../types'
 import { nakedSingle } from './techniques/nakedSingle'
 import { hiddenSingle } from './techniques/hiddenSingle'
+import { diagonalHiddenSingle } from './techniques/diagonalHiddenSingle'
 import { lockedCandidatesPointing } from './techniques/lockedCandidatesPointing'
 import { lockedCandidatesClaiming } from './techniques/lockedCandidatesClaiming'
 import { nakedPair, nakedTriple, nakedQuad } from './techniques/nakedSubset'
@@ -12,6 +13,7 @@ import { simpleColoring } from './techniques/simpleColoring'
 
 export const ALL_TECHNIQUES: ReadonlyArray<Technique> = [
   nakedSingle,
+  diagonalHiddenSingle,
   hiddenSingle,
   lockedCandidatesPointing,
   lockedCandidatesClaiming,
@@ -25,7 +27,7 @@ export const ALL_TECHNIQUES: ReadonlyArray<Technique> = [
   swordfish,
   xyWing,
   simpleColoring,
-].sort((a, b) => a.tier - b.tier)
+]
 
 export interface TechniqueSolveOptions {
   readonly techniques?: ReadonlyArray<Technique>

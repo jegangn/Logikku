@@ -7,6 +7,7 @@ import { cellAt, peersOf } from '@/engine'
 export interface BoardProps {
   readonly grid: Grid
   readonly selected: Coord | null
+  readonly variant?: string
   readonly lockedCells?: ReadonlySet<string>
   readonly shakeKey?: number
   readonly onSelect: (coord: Coord) => void
@@ -14,7 +15,14 @@ export interface BoardProps {
 
 const CELL_SIZE = 64
 
-export function Board({ grid, selected, lockedCells, shakeKey = 0, onSelect }: BoardProps) {
+export function Board({
+  grid,
+  selected,
+  variant,
+  lockedCells,
+  shakeKey = 0,
+  onSelect,
+}: BoardProps) {
   const size = grid.shape.size
   const boardPx = size * CELL_SIZE
 
@@ -75,7 +83,11 @@ export function Board({ grid, selected, lockedCells, shakeKey = 0, onSelect }: B
       />
       {rows}
       <GridLines size={size} cellSize={CELL_SIZE} shape={grid.shape} />
-      <OverlayLayer gridSize={size} cellSize={CELL_SIZE} />
+      <OverlayLayer
+        gridSize={size}
+        cellSize={CELL_SIZE}
+        {...(variant !== undefined ? { variant } : {})}
+      />
     </svg>
   )
 }

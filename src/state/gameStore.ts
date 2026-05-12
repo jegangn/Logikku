@@ -4,8 +4,10 @@ import {
   cellAt,
   cloneGrid,
   createClassicConstraint,
+  createXDiagonalConstraint,
   parsePuzzle,
   peersOf,
+  type Constraint,
   type Coord,
   type Difficulty,
   type Digit,
@@ -93,9 +95,17 @@ function isComplete(grid: Grid): boolean {
   return true
 }
 
-function freshGridFromGivens(givens: string): Grid {
-  const constraint = createClassicConstraint({ shape: CLASSIC_9 })
-  const grid: Grid = { ...parsePuzzle(givens, CLASSIC_9), constraints: [constraint] }
+function constraintsForVariant(variant: string): ReadonlyArray<Constraint> {
+  const classic = createClassicConstraint({ shape: CLASSIC_9 })
+  if (variant === 'x-diagonal') {
+    return [classic, createXDiagonalConstraint({ shape: CLASSIC_9 })]
+  }
+  return [classic]
+}
+
+function freshGridFromGivens(givens: string, variant: string): Grid {
+  const constraints = constraintsForVariant(variant)
+  const grid: Grid = { ...parsePuzzle(givens, CLASSIC_9), constraints }
   for (let r = 0; r < grid.shape.size; r++) {
     for (let c = 0; c < grid.shape.size; c++) {
       const cell = cellAt(grid, { r, c })
@@ -105,8 +115,12 @@ function freshGridFromGivens(givens: string): Grid {
   return grid
 }
 
-function gridFromSnapshot(givens: string, cells: ReadonlyArray<SavedCell>): Grid {
-  const grid = freshGridFromGivens(givens)
+function gridFromSnapshot(
+  givens: string,
+  variant: string,
+  cells: ReadonlyArray<SavedCell>,
+): Grid {
+  const grid = freshGridFromGivens(givens, variant)
   for (let i = 0; i < cells.length; i++) {
     const saved = cells[i]!
     const r = Math.floor(i / grid.shape.size)
@@ -167,7 +181,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   loadPuzzle: ({ id, variant, difficulty, givens }) => {
     const now = new Date().toISOString()
     set({
-      grid: freshGridFromGivens(givens),
+      grid: freshGridFromGivens(givens, variant),
       puzzleId: id,
       variant,
       difficulty,
@@ -187,7 +201,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   hydrate: (saved) => {
-    const grid = gridFromSnapshot(saved.givens, saved.cells)
+    const grid = gridFromSnapshot(saved.givens, saved.variant, saved.cells)
     const history: HistoryEntry[] = saved.history.map(savedHistoryToEntry)
     set({
       grid,

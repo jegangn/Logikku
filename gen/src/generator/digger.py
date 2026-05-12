@@ -7,7 +7,7 @@ from __future__ import annotations
 import random
 from typing import Literal
 
-from .grid import Shape
+from .grid import ExtraRegions, Shape
 from .solver import count_solutions
 
 Symmetry = Literal["rotational", "horizontal", "vertical", "none"]
@@ -33,6 +33,7 @@ def dig(
     rng: random.Random,
     symmetry: Symmetry = "rotational",
     max_removals: int | None = None,
+    extra_regions: ExtraRegions | None = None,
 ) -> list[list[int]]:
     """Dig holes while preserving unique solvability. Mutates a copy of grid."""
     g = [row[:] for row in grid]
@@ -55,7 +56,7 @@ def dig(
         saved = [(pr, pc, g[pr][pc]) for pr, pc in pair]
         for pr, pc, _ in saved:
             g[pr][pc] = 0
-        if count_solutions(g, shape, limit=2) == 1:
+        if count_solutions(g, shape, limit=2, extra_regions=extra_regions) == 1:
             removed += len(pair)
             seen.update((pr, pc) for pr, pc in pair)
             if removed >= cap:
