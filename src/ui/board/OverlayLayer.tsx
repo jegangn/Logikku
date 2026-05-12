@@ -1,5 +1,6 @@
 import type { PropsWithChildren } from 'react'
 import { XDiagonalOverlay } from './overlays/XDiagonalOverlay'
+import { HyperOverlay } from './overlays/HyperOverlay'
 
 export interface OverlayLayerProps {
   readonly gridSize: number
@@ -17,6 +18,9 @@ export function OverlayLayer({
     <g data-testid="overlay-layer">
       {variant === 'x-diagonal' && (
         <XDiagonalOverlay gridSize={gridSize} cellSize={cellSize} />
+      )}
+      {variant === 'hyper' && (
+        <HyperOverlay gridSize={gridSize} cellSize={cellSize} />
       )}
       {children}
     </g>

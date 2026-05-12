@@ -22,6 +22,11 @@ export {
   DIAGONAL_NW_SE_ID,
   DIAGONAL_NE_SW_ID,
 } from './constraints/x-diagonal'
+export {
+  createHyperConstraint,
+  hyperRegions,
+  HYPER_WINDOW_ORIGINS,
+} from './constraints/hyper'
 export { backtrackingSolve } from './solver/backtrack'
 export { techniqueSolve, ALL_TECHNIQUES } from './solver/techniqueSolver'
 export { gradePuzzle, difficultyFromSE } from './grader/se'

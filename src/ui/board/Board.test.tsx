@@ -5,6 +5,7 @@ import { Board } from './Board'
 import {
   CLASSIC_9,
   createClassicConstraint,
+  createHyperConstraint,
   createXDiagonalConstraint,
   parsePuzzle,
 } from '@/engine'
@@ -89,6 +90,59 @@ describe('Board', () => {
       <Board grid={grid} selected={null} variant="classic" onSelect={() => {}} />,
     )
     expect(screen.queryByTestId('x-diagonal-overlay')).toBeNull()
+  })
+
+  it('renders the hyper overlay when variant="hyper"', () => {
+    const classic = createClassicConstraint({ shape: CLASSIC_9 })
+    const hyper = createHyperConstraint({ shape: CLASSIC_9 })
+    const grid = {
+      ...parsePuzzle('0'.repeat(81), CLASSIC_9),
+      constraints: [classic, hyper],
+    }
+    render(
+      <Board
+        grid={grid}
+        selected={null}
+        variant="hyper"
+        onSelect={() => {}}
+      />,
+    )
+    expect(screen.getByTestId('hyper-overlay')).toBeInTheDocument()
+  })
+
+  it('detects conflicts inside a hyper window', () => {
+    const classic = createClassicConstraint({ shape: CLASSIC_9 })
+    const hyper = createHyperConstraint({ shape: CLASSIC_9 })
+    const givens =
+      '0'.repeat(10) +
+      '6' + // (1,1)
+      '0'.repeat(15) +
+      '6' + // (2,7)... wait, recompute below
+      '0'.repeat(54)
+    // Place two 6s inside window-1 (rows 1-3, cols 1-3): at (1,1) and (3,3).
+    const cells = '0'.repeat(81).split('')
+    cells[1 * 9 + 1] = '6'
+    cells[3 * 9 + 3] = '6'
+    const givens2 = cells.join('')
+    void givens
+    const grid = {
+      ...parsePuzzle(givens2, CLASSIC_9),
+      constraints: [classic, hyper],
+    }
+    render(
+      <Board
+        grid={grid}
+        selected={null}
+        variant="hyper"
+        onSelect={() => {}}
+      />,
+    )
+    expect(screen.getByTestId('cell-1-1').getAttribute('data-conflict')).toBe(
+      'true',
+    )
+    expect(screen.getByTestId('cell-3-3').getAttribute('data-conflict')).toBe(
+      'true',
+    )
   })
 
   it('detects conflicts on the NE-SW diagonal under x-diagonal', () => {

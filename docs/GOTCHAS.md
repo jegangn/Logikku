@@ -73,3 +73,12 @@ The long-running `tools/grade.ts` originally hardcoded `[classicConstraint]`. No
 
 ### Diagonal hidden single is redundant with hidden single but useful for labeling — 2026-05-12
 `hiddenSingle` already iterates `regionsOf(grid)` which includes diagonal regions from the x-diagonal constraint. So it already "finds" diagonal singles automatically. The dedicated `diagonalHiddenSingle` technique adds a distinct id/label so graded steps can be attributed to the diagonal scope. Tier is 1 (same as the generic version), runs first in `ALL_TECHNIQUES` so diagonal-decisive placements get the diagonal label.
+
+### Hyper / Windoku reuses the same extra_regions pipeline as X — 2026-05-12
+No new technique needed: existing locked-candidates / pair logic generalises to any region set because techniques iterate `regionsOf(grid)`. The hyper constraint adds 4 `kind: 'window'` regions; conflict detection, hidden-single deduction, and the backtracker all pick them up automatically. The constraint itself only needs to handle window-peer elimination (already a built-in pattern from X-Sudoku).
+
+### Hyper "medium" SE band is similarly narrow but for a different reason — 2026-05-12
+X-Sudoku medium acceptance is ~0.5% because diagonals add a deep tier-1 channel. Hyper medium acceptance is ~0.3% for the symmetric reason: four 3x3 windows add four extra row-/col-/box-like channels, so most dug puzzles either solve at tier 1 or jump to tier 3+. Tier-2-only (Locked Candidates) zone is thin. Same pragmatic fix: ship a smaller medium bank.
+
+### Pytest stalls when run alongside an active GraderBridge — 2026-05-12
+`test_bridge.py` spawns its own `bun tools/grade.ts`. Running pytest concurrently with a `python -m generator gen` that's also using a GraderBridge causes both bun processes to fight for stdio buffers, and pytest's bridge test hangs indefinitely. Either run pytest before kicking off generation, or wait for generation to fully finish.

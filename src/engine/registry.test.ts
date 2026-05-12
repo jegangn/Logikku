@@ -31,8 +31,16 @@ describe('ConstraintRegistry', () => {
     expect(c.regions).toHaveLength(2)
   })
 
+  it('creates a Hyper / Windoku constraint that is fully functional', () => {
+    const c = ConstraintRegistry.create('hyper', { shape: CLASSIC_9 })
+    expect(c.kind).toBe('hyper')
+    const grid = createGrid(CLASSIC_9, [c])
+    expect(c.validate(grid)).toBe(true)
+    expect(c.regions).toHaveLength(4)
+  })
+
   const STUB_KINDS = ALL_CONSTRAINT_KINDS.filter(
-    (k) => k !== 'classic' && k !== 'x-diagonal',
+    (k) => k !== 'classic' && k !== 'x-diagonal' && k !== 'hyper',
   )
 
   it('creates stubs for every remaining kind that throw NotImplementedError on propagate/validate', () => {

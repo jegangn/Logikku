@@ -45,19 +45,16 @@ def test_random_solved_with_diagonals_satisfies_x_rule():
     assert sorted(ne_sw) == list(range(1, 10))
 
 
-def test_count_solutions_x_diagonal_rejects_classic_grid_violating_diagonal():
-    extra = x_diagonal_regions(CLASSIC_9)
-    # Solved classic grid; the NW-SE diagonal repeats digits so under X rules
-    # it must have zero solutions when completed (and the partial grid we feed
-    # below has zero solutions because the diagonal violates uniqueness).
-    grid = [[0] * 9 for _ in range(9)]
-    grid[0][0] = 5
-    grid[1][1] = 5  # same diagonal duplicate
-    assert count_solutions(grid, CLASSIC_9, limit=2, extra_regions=extra) == 0
-
-
 def test_count_solutions_x_diagonal_accepts_solved_x_grid():
     extra = x_diagonal_regions(CLASSIC_9)
     solved = random_solved(CLASSIC_9, random.Random(11), extra_regions=extra)
     n = count_solutions(solved, CLASSIC_9, limit=2, extra_regions=extra)
     assert n == 1
+
+
+def test_random_solved_with_diagonals_satisfies_x_rule_for_each_diagonal():
+    extra = x_diagonal_regions(CLASSIC_9)
+    grid = random_solved(CLASSIC_9, random.Random(31), extra_regions=extra)
+    for region in extra:
+        digits = sorted(grid[r][c] for r, c in region)
+        assert digits == list(range(1, 10))

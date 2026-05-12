@@ -4,6 +4,7 @@ import {
   cellAt,
   cloneGrid,
   createClassicConstraint,
+  createHyperConstraint,
   createXDiagonalConstraint,
   parsePuzzle,
   peersOf,
@@ -99,6 +100,9 @@ function constraintsForVariant(variant: string): ReadonlyArray<Constraint> {
   const classic = createClassicConstraint({ shape: CLASSIC_9 })
   if (variant === 'x-diagonal') {
     return [classic, createXDiagonalConstraint({ shape: CLASSIC_9 })]
+  }
+  if (variant === 'hyper') {
+    return [classic, createHyperConstraint({ shape: CLASSIC_9 })]
   }
   return [classic]
 }

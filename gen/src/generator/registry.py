@@ -10,6 +10,7 @@ from typing import Iterator
 from .classic import DIFFICULTY_BANDS as CLASSIC_BANDS
 from .classic import GeneratedPuzzle, generate_classic
 from .grader_bridge import GraderBridge
+from .hyper import HYPER_DIFFICULTY_BANDS, generate_hyper
 from .x_diagonal import X_DIFFICULTY_BANDS, generate_x_diagonal
 
 GeneratorFn = Callable[..., Iterator[GeneratedPuzzle]]
@@ -18,12 +19,14 @@ GeneratorFn = Callable[..., Iterator[GeneratedPuzzle]]
 REGISTRY: dict[str, GeneratorFn] = {
     "classic": generate_classic,
     "x-diagonal": generate_x_diagonal,
+    "hyper": generate_hyper,
 }
 
 
 BANDS_BY_VARIANT: dict[str, dict[str, tuple[float, float, int]]] = {
     "classic": CLASSIC_BANDS,
     "x-diagonal": X_DIFFICULTY_BANDS,
+    "hyper": HYPER_DIFFICULTY_BANDS,
 }
 
 

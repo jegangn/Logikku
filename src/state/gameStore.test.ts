@@ -226,4 +226,18 @@ describe('gameStore', () => {
     const kinds = grid.constraints.map((c) => c.kind).sort()
     expect(kinds).toEqual(['classic', 'x-diagonal'])
   })
+
+  it('loading a hyper puzzle attaches the four-window constraint', () => {
+    useGameStore.getState().loadPuzzle({
+      id: 'h-1',
+      variant: 'hyper',
+      difficulty: 'easy',
+      givens: '0'.repeat(81),
+    })
+    const grid = useGameStore.getState().grid!
+    const kinds = grid.constraints.map((c) => c.kind).sort()
+    expect(kinds).toEqual(['classic', 'hyper'])
+    const hyper = grid.constraints.find((c) => c.kind === 'hyper')!
+    expect(hyper.regions).toHaveLength(4)
+  })
 })

@@ -14,6 +14,7 @@ import readline from 'node:readline'
 import {
   CLASSIC_9,
   createClassicConstraint,
+  createHyperConstraint,
   createXDiagonalConstraint,
   parsePuzzle,
   gradePuzzle,
@@ -28,6 +29,7 @@ const rl = readline.createInterface({
 
 const classicConstraint = createClassicConstraint({ shape: CLASSIC_9 })
 const xDiagonalConstraint = createXDiagonalConstraint({ shape: CLASSIC_9 })
+const hyperConstraint = createHyperConstraint({ shape: CLASSIC_9 })
 
 function constraintsForVariant(variant: string): ReadonlyArray<Constraint> {
   switch (variant) {
@@ -35,6 +37,8 @@ function constraintsForVariant(variant: string): ReadonlyArray<Constraint> {
       return [classicConstraint]
     case 'x-diagonal':
       return [classicConstraint, xDiagonalConstraint]
+    case 'hyper':
+      return [classicConstraint, hyperConstraint]
     default:
       throw new Error(`unknown variant: ${variant}`)
   }

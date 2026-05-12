@@ -21,6 +21,7 @@ const DIFFICULTY_LABELS: Record<Difficulty, string> = {
 const VARIANT_LABELS: Record<string, string> = {
   classic: 'Classic',
   'x-diagonal': 'X-Sudoku',
+  hyper: 'Hyper',
 }
 
 export function Play() {
