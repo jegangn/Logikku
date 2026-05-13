@@ -78,6 +78,14 @@ describe('ConstraintRegistry', () => {
     },
   )
 
+  it('creates a Thermometer constraint that is fully functional', () => {
+    const c = ConstraintRegistry.create('thermometer', { shape: CLASSIC_9 })
+    expect(c.kind).toBe('thermometer')
+    const grid = createGrid(CLASSIC_9, [c])
+    expect(c.validate(grid)).toBe(true)
+    expect(typeof c.findConflicts).toBe('function')
+  })
+
   const IMPLEMENTED_KINDS = new Set([
     'classic',
     'x-diagonal',
@@ -90,6 +98,7 @@ describe('ConstraintRegistry', () => {
     'kropki',
     'xv',
     'greater-than',
+    'thermometer',
   ])
   const STUB_KINDS = ALL_CONSTRAINT_KINDS.filter((k) => !IMPLEMENTED_KINDS.has(k))
 

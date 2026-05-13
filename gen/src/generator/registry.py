@@ -22,6 +22,7 @@ from .non_consecutive import (
     NON_CONSECUTIVE_DIFFICULTY_BANDS,
     generate_non_consecutive,
 )
+from .thermometer import THERMO_DIFFICULTY_BANDS, generate_thermometer
 from .x_diagonal import X_DIFFICULTY_BANDS, generate_x_diagonal
 from .xv import XV_DIFFICULTY_BANDS, generate_xv
 
@@ -41,6 +42,7 @@ REGISTRY: dict[str, GeneratorFn] = {
     "kropki": generate_kropki,
     "xv": generate_xv,
     "greater-than": generate_greater_than,
+    "thermometer": generate_thermometer,
 }
 
 
@@ -57,6 +59,7 @@ BANDS_BY_VARIANT: dict[str, dict[str, tuple[float, float, int]]] = {
     "kropki": KROPKI_DIFFICULTY_BANDS,
     "xv": XV_DIFFICULTY_BANDS,
     "greater-than": GT_DIFFICULTY_BANDS,
+    "thermometer": THERMO_DIFFICULTY_BANDS,
 }
 
 

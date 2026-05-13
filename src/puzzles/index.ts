@@ -76,6 +76,32 @@ function assertRecord(r: unknown, key: BankKey): asserts r is PuzzleRecord {
       `bank ${key.variant}/${key.difficulty}: 'parityMask' must be a string`,
     )
   }
+  if (obj['thermometers'] !== undefined) {
+    if (!Array.isArray(obj['thermometers'])) {
+      throw new Error(`bank ${key.variant}/${key.difficulty}: 'thermometers' must be an array`)
+    }
+    for (const thermo of obj['thermometers'] as unknown[]) {
+      if (typeof thermo !== 'object' || thermo === null) {
+        throw new Error(`bank ${key.variant}/${key.difficulty}: each thermometer must be an object`)
+      }
+      const t = thermo as Record<string, unknown>
+      if (typeof t['id'] !== 'string') {
+        throw new Error(`bank ${key.variant}/${key.difficulty}: thermometer id must be a string`)
+      }
+      if (!Array.isArray(t['path'])) {
+        throw new Error(`bank ${key.variant}/${key.difficulty}: thermometer path must be an array`)
+      }
+      for (const pt of t['path'] as unknown[]) {
+        if (typeof pt !== 'object' || pt === null) {
+          throw new Error(`bank ${key.variant}/${key.difficulty}: thermometer path entry must be {r,c}`)
+        }
+        const p = pt as Record<string, unknown>
+        if (typeof p['r'] !== 'number' || typeof p['c'] !== 'number') {
+          throw new Error(`bank ${key.variant}/${key.difficulty}: thermometer path entry must have numeric r,c`)
+        }
+      }
+    }
+  }
   if (obj['edges'] !== undefined) {
     if (!Array.isArray(obj['edges'])) {
       throw new Error(`bank ${key.variant}/${key.difficulty}: 'edges' must be an array`)

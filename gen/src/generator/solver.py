@@ -13,9 +13,11 @@ from .grid import (
     ExtraRegions,
     Offsets,
     Shape,
+    ThermoPaths,
     initial_candidates,
     orthogonal_neighbours,
     peers_of,
+    thermo_index,
 )
 
 
@@ -26,6 +28,7 @@ def random_solved(
     extra_same_offsets: Offsets | None = None,
     non_consecutive: bool = False,
     use_classic_box: bool = True,
+    thermometers: ThermoPaths | None = None,
 ) -> list[list[int]]:
     grid = [[0] * shape.size for _ in range(shape.size)]
     cands = initial_candidates(
@@ -35,7 +38,10 @@ def random_solved(
         extra_same_offsets,
         non_consecutive,
         use_classic_box=use_classic_box,
+        thermometers=thermometers,
     )
+    thermos = thermometers or []
+    thermo_idx = thermo_index(thermos) if thermos else {}
     if not _backtrack_fill(
         grid,
         cands,
@@ -45,6 +51,8 @@ def random_solved(
         extra_same_offsets=extra_same_offsets,
         non_consecutive=non_consecutive,
         use_classic_box=use_classic_box,
+        thermometers=thermos,
+        thermo_idx=thermo_idx,
     ):
         raise RuntimeError("failed to fill grid (should be impossible)")
     return grid
@@ -58,6 +66,7 @@ def count_solutions(
     extra_same_offsets: Offsets | None = None,
     non_consecutive: bool = False,
     use_classic_box: bool = True,
+    thermometers: ThermoPaths | None = None,
 ) -> int:
     g = [row[:] for row in grid]
     cands = initial_candidates(
@@ -67,7 +76,10 @@ def count_solutions(
         extra_same_offsets,
         non_consecutive,
         use_classic_box=use_classic_box,
+        thermometers=thermometers,
     )
+    thermos = thermometers or []
+    thermo_idx = thermo_index(thermos) if thermos else {}
     return _backtrack_count(
         g,
         cands,
@@ -78,6 +90,8 @@ def count_solutions(
         extra_same_offsets=extra_same_offsets,
         non_consecutive=non_consecutive,
         use_classic_box=use_classic_box,
+        thermometers=thermos,
+        thermo_idx=thermo_idx,
     )
 
 
@@ -89,6 +103,8 @@ def _apply_placement(
     peers: list[tuple[int, int]],
     shape: Shape,
     non_consecutive: bool,
+    thermometers: ThermoPaths | None = None,
+    thermo_idx: dict[tuple[int, int], list[tuple[int, int]]] | None = None,
 ) -> list[tuple[int, int, int]]:
     """Remove d from peer candidates; under non-consecutive also remove d±1
     from orthogonal neighbours. Returns the (pr, pc, digit) tuples removed so
@@ -104,6 +120,23 @@ def _apply_placement(
                 if 1 <= nd <= shape.size and nd in cands[nr][nc]:
                     cands[nr][nc].remove(nd)
                     removed.append((nr, nc, nd))
+    if thermometers and thermo_idx and (r, c) in thermo_idx:
+        for path_idx, pos in thermo_idx[(r, c)]:
+            path = thermometers[path_idx]
+            # Successors (positions > pos) must be > d.
+            for j in range(pos + 1, len(path)):
+                jr, jc = path[j]
+                for nd in list(cands[jr][jc]):
+                    if nd <= d:
+                        cands[jr][jc].remove(nd)
+                        removed.append((jr, jc, nd))
+            # Predecessors (positions < pos) must be < d.
+            for j in range(pos):
+                jr, jc = path[j]
+                for nd in list(cands[jr][jc]):
+                    if nd >= d:
+                        cands[jr][jc].remove(nd)
+                        removed.append((jr, jc, nd))
     return removed
 
 
@@ -124,6 +157,8 @@ def _backtrack_fill(
     extra_same_offsets: Offsets | None = None,
     non_consecutive: bool = False,
     use_classic_box: bool = True,
+    thermometers: ThermoPaths | None = None,
+    thermo_idx: dict[tuple[int, int], list[tuple[int, int]]] | None = None,
 ) -> bool:
     cell = _pick_cell(grid, cands, shape)
     if cell is None:
@@ -141,7 +176,17 @@ def _backtrack_fill(
     )
     for d in options:
         grid[r][c] = d
-        removed = _apply_placement(cands, r, c, d, peers, shape, non_consecutive)
+        removed = _apply_placement(
+            cands,
+            r,
+            c,
+            d,
+            peers,
+            shape,
+            non_consecutive,
+            thermometers=thermometers,
+            thermo_idx=thermo_idx,
+        )
         saved = cands[r][c]
         cands[r][c] = set()
         if _backtrack_fill(
@@ -153,6 +198,8 @@ def _backtrack_fill(
             extra_same_offsets,
             non_consecutive,
             use_classic_box=use_classic_box,
+            thermometers=thermometers,
+            thermo_idx=thermo_idx,
         ):
             return True
         grid[r][c] = 0
@@ -171,6 +218,8 @@ def _backtrack_count(
     extra_same_offsets: Offsets | None = None,
     non_consecutive: bool = False,
     use_classic_box: bool = True,
+    thermometers: ThermoPaths | None = None,
+    thermo_idx: dict[tuple[int, int], list[tuple[int, int]]] | None = None,
 ) -> int:
     if found >= limit:
         return found
@@ -188,7 +237,17 @@ def _backtrack_count(
     )
     for d in choices:
         grid[r][c] = d
-        removed = _apply_placement(cands, r, c, d, peers, shape, non_consecutive)
+        removed = _apply_placement(
+            cands,
+            r,
+            c,
+            d,
+            peers,
+            shape,
+            non_consecutive,
+            thermometers=thermometers,
+            thermo_idx=thermo_idx,
+        )
         saved = cands[r][c]
         cands[r][c] = set()
         found = _backtrack_count(
@@ -201,6 +260,8 @@ def _backtrack_count(
             extra_same_offsets,
             non_consecutive,
             use_classic_box=use_classic_box,
+            thermometers=thermometers,
+            thermo_idx=thermo_idx,
         )
         grid[r][c] = 0
         cands[r][c] = saved

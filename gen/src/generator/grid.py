@@ -16,6 +16,8 @@ CLASSIC_6 = Shape(size=6, box_rows=2, box_cols=3)
 
 ExtraRegions = list[frozenset[tuple[int, int]]]
 Offsets = list[tuple[int, int]]
+ThermoPath = list[tuple[int, int]]
+ThermoPaths = list[ThermoPath]
 
 
 def peers_of(
@@ -106,9 +108,21 @@ def initial_candidates(
     extra_same_offsets: Offsets | None = None,
     non_consecutive: bool = False,
     use_classic_box: bool = True,
+    thermometers: ThermoPaths | None = None,
 ) -> list[list[set[int]]]:
     n = shape.size
     cands = [[set(range(1, n + 1)) for _ in range(n)] for _ in range(n)]
+    if thermometers:
+        # Cell at position k of a length-L path must be in [k+1, n-(L-1-k)].
+        # If the same cell appears in multiple thermos (unusual but legal),
+        # intersect the bounds.
+        for path in thermometers:
+            L = len(path)
+            for k, (r, c) in enumerate(path):
+                lo = k + 1
+                hi = n - (L - 1 - k)
+                allowed = set(range(lo, hi + 1))
+                cands[r][c] &= allowed
     for r in range(n):
         for c in range(n):
             v = grid[r][c]
@@ -130,3 +144,14 @@ def initial_candidates(
                         if v + 1 <= n:
                             cands[nr][nc].discard(v + 1)
     return cands
+
+
+def thermo_index(
+    thermometers: ThermoPaths,
+) -> dict[tuple[int, int], list[tuple[int, int]]]:
+    """For each cell, list of (path_index, position_in_path) entries."""
+    idx: dict[tuple[int, int], list[tuple[int, int]]] = {}
+    for pi, path in enumerate(thermometers):
+        for k, (r, c) in enumerate(path):
+            idx.setdefault((r, c), []).append((pi, k))
+    return idx

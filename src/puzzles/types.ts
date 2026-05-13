@@ -25,6 +25,11 @@ export interface PuzzleRecord {
     readonly to: { readonly r: number; readonly c: number }
     readonly kind: string
   }>
+  /** Thermometer: paths from bulb to tip. */
+  readonly thermometers?: ReadonlyArray<{
+    readonly id: string
+    readonly path: ReadonlyArray<{ readonly r: number; readonly c: number }>
+  }>
 }
 
 export type PuzzleBank = ReadonlyArray<PuzzleRecord>

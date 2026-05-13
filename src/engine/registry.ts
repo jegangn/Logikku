@@ -10,6 +10,7 @@ import { createEvenOddConstraint } from './constraints/even-odd'
 import { createKropkiConstraint } from './constraints/kropki'
 import { createXVConstraint } from './constraints/xv'
 import { createGreaterThanConstraint } from './constraints/greater-than'
+import { createThermometerConstraint } from './constraints/thermometer'
 import { createStubConstraint } from './constraints/_stub'
 
 export const ALL_CONSTRAINT_KINDS: ReadonlyArray<ConstraintKind> = [
@@ -54,6 +55,7 @@ register('even-odd', (p) => createEvenOddConstraint(p as object))
 register('kropki', (p) => createKropkiConstraint(p as object))
 register('xv', (p) => createXVConstraint(p as object))
 register('greater-than', (p) => createGreaterThanConstraint(p as object))
+register('thermometer', (p) => createThermometerConstraint(p as object))
 for (const kind of ALL_CONSTRAINT_KINDS) {
   if (registry.has(kind)) continue
   register(kind, () => createStubConstraint(kind))

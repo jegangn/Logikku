@@ -32,6 +32,7 @@ const VARIANT_LABELS: Record<string, string> = {
   kropki: 'Kropki',
   xv: 'XV',
   'greater-than': 'Greater Than',
+  thermometer: 'Thermometer',
 }
 
 export function Play() {
@@ -53,6 +54,7 @@ export function Play() {
   const jigsawPieceMap = useGameStore((s) => s.jigsawPieceMap)
   const parityMask = useGameStore((s) => s.parityMask)
   const edges = useGameStore((s) => s.edges)
+  const thermometers = useGameStore((s) => s.thermometers)
 
   const loadPuzzle = useGameStore((s) => s.loadPuzzle)
   const select = useGameStore((s) => s.select)
@@ -98,6 +100,7 @@ export function Play() {
           ...(next.edges
             ? { edges: next.edges as ReadonlyArray<EdgeMarkRecord> }
             : {}),
+          ...(next.thermometers ? { thermometers: next.thermometers } : {}),
         })
       }
       if (!target) {
@@ -215,6 +218,7 @@ export function Play() {
         {...(jigsawPieceMap ? { jigsawPieceMap } : {})}
         {...(parityMask ? { parityMask } : {})}
         {...(edges ? { edges } : {})}
+        {...(thermometers ? { thermometers } : {})}
         onSelect={select}
       />
       <InputPad

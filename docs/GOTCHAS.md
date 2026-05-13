@@ -112,3 +112,9 @@ Phase 0 used `CLASSIC_9` as a default shape across the engine, generator, and st
 
 ### Strict-Kropki / strict-XV makes generation almost free — 2026-05-13
 Under strict semantics (absence-of-mark implies neither relation holds), the dot/mark mask placed from the solution acts as a *very* heavy constraint. Hard-band acceptance for Kropki was 3.7% (~27 attempts/puzzle) on first try — comparable to classic 9x9. We can dig aggressively without breaking uniqueness. Soft-Kropki (absence = unknown) would be much slower; we explicitly chose strict semantics in the engine.
+
+### Thermometer search blows up with too many / too long paths — 2026-05-13
+First attempt: 6 paths of length 3-7 per puzzle. The pure-Python backtracker handles up to ~3 paths comfortably, but cascading "successor must be > d / predecessor must be < d" eliminations on every placement compounds across paths. With 6 paths totalling 30+ constrained cells, `random_solved` and `count_solutions` both slow to ~30s/attempt. Fix: trim to 4 paths of length 3-5 per puzzle (THERMO_PATHS_PER_PUZZLE=4, THERMO_MAX_LEN=5 in gen/src/generator/thermometer.py). Resulting attempt time is ~10ms, accept rate >25% even on hard band.
+
+### Thermometer SE bands cap at tier-1 — 2026-05-13
+Same shape as Mini 6x6: thermometer marks are strong tier-1-effective eliminations (length-based bounds + monotonicity sweeps), so most generated puzzles solve at SE 1.0-2.4. Tier-2+ techniques rarely fire on thermometer puzzles because the path bounds alone usually crack them. Fix: gate easy/medium/hard by max_removals (36 / 46 / 54) and accept the full tier-1 SE range. Bank counts trimmed to 40/35/25.

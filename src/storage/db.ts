@@ -41,6 +41,11 @@ export interface SavedGame {
     readonly to: { readonly r: number; readonly c: number }
     readonly kind: string
   }>
+  /** Thermometer: bulb-to-tip paths. */
+  readonly thermometers?: ReadonlyArray<{
+    readonly id: string
+    readonly path: ReadonlyArray<{ readonly r: number; readonly c: number }>
+  }>
 }
 
 export interface SavedSettings {

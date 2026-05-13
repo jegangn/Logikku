@@ -4,6 +4,7 @@ import { OverlayLayer } from './OverlayLayer'
 import type { Coord, Digit, Grid } from '@/engine'
 import { cellAt, peersFromConstraints } from '@/engine'
 import type { EdgeMark } from './overlays/EdgeMarkOverlay'
+import type { ThermometerPath } from './overlays/ThermometerOverlay'
 
 export interface BoardProps {
   readonly grid: Grid
@@ -17,6 +18,8 @@ export interface BoardProps {
   readonly parityMask?: string
   /** Kropki / XV / Greater-Than: edge marks. */
   readonly edges?: ReadonlyArray<EdgeMark>
+  /** Thermometer: paths from bulb to tip. */
+  readonly thermometers?: ReadonlyArray<ThermometerPath>
   readonly onSelect: (coord: Coord) => void
 }
 
@@ -31,6 +34,7 @@ export function Board({
   jigsawPieceMap,
   parityMask,
   edges,
+  thermometers,
   onSelect,
 }: BoardProps) {
   const size = grid.shape.size
@@ -105,6 +109,7 @@ export function Board({
         {...(jigsawPieceMap !== undefined ? { jigsawPieceMap } : {})}
         {...(parityMask !== undefined ? { parityMask } : {})}
         {...(edges !== undefined ? { edges } : {})}
+        {...(thermometers !== undefined ? { thermometers } : {})}
       />
     </svg>
   )

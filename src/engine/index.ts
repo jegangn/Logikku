@@ -57,6 +57,8 @@ export type {
   GreaterThanParams,
 } from './constraints/greater-than'
 export type { Edge } from './constraints/_base/edgeConstraint'
+export { createThermometerConstraint } from './constraints/thermometer'
+export type { Thermometer, ThermometerParams } from './constraints/thermometer'
 export { backtrackingSolve } from './solver/backtrack'
 export { techniqueSolve, ALL_TECHNIQUES } from './solver/techniqueSolver'
 export { gradePuzzle, difficultyFromSE } from './grader/se'

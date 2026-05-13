@@ -7,7 +7,7 @@ from __future__ import annotations
 import random
 from typing import Literal
 
-from .grid import ExtraRegions, Offsets, Shape
+from .grid import ExtraRegions, Offsets, Shape, ThermoPaths
 from .solver import count_solutions
 
 Symmetry = Literal["rotational", "horizontal", "vertical", "none"]
@@ -37,6 +37,7 @@ def dig(
     extra_same_offsets: Offsets | None = None,
     non_consecutive: bool = False,
     use_classic_box: bool = True,
+    thermometers: ThermoPaths | None = None,
 ) -> list[list[int]]:
     """Dig holes while preserving unique solvability. Mutates a copy of grid."""
     g = [row[:] for row in grid]
@@ -68,6 +69,7 @@ def dig(
                 extra_same_offsets=extra_same_offsets,
                 non_consecutive=non_consecutive,
                 use_classic_box=use_classic_box,
+                thermometers=thermometers,
             )
             == 1
         )

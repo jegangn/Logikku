@@ -28,6 +28,7 @@ import {
   createJigsawConstraint,
   createKropkiConstraint,
   createNonConsecutiveConstraint,
+  createThermometerConstraint,
   createXDiagonalConstraint,
   createXVConstraint,
   flatToCoords,
@@ -39,6 +40,7 @@ import {
   type GridShape,
   type GreaterThanEdge,
   type KropkiEdge,
+  type Thermometer,
   type XVEdge,
 } from '../src/engine/index'
 
@@ -60,6 +62,7 @@ interface GradeRequest {
   readonly regions?: ReadonlyArray<ReadonlyArray<number>>
   readonly parityMask?: string
   readonly edges?: ReadonlyArray<EdgeRecord>
+  readonly thermometers?: ReadonlyArray<Thermometer>
 }
 
 function parseLine(line: string): GradeRequest {
@@ -138,6 +141,13 @@ function constraintsForRequest(
         createGreaterThanConstraint({ shape, edges }),
       ]
     }
+    case 'thermometer': {
+      const thermometers = req.thermometers ?? []
+      return [
+        createClassicConstraint({ shape }),
+        createThermometerConstraint({ shape, thermometers }),
+      ]
+    }
     default:
       throw new Error(`unknown variant: ${req.variant}`)
   }
@@ -159,7 +169,8 @@ rl.on('line', (raw) => {
       req.variant === 'even-odd' ||
       req.variant === 'kropki' ||
       req.variant === 'xv' ||
-      req.variant === 'greater-than'
+      req.variant === 'greater-than' ||
+      req.variant === 'thermometer'
     ) {
       recomputeCandidates(grid)
     }
