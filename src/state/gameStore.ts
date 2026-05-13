@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import {
+  CLASSIC_6,
   CLASSIC_9,
   cellAt,
   cloneGrid,
@@ -7,10 +8,13 @@ import {
   createAntiKnightConstraint,
   createClassicConstraint,
   createEvenOddConstraint,
+  createGreaterThanConstraint,
   createHyperConstraint,
   createJigsawConstraint,
+  createKropkiConstraint,
   createNonConsecutiveConstraint,
   createXDiagonalConstraint,
+  createXVConstraint,
   flatToCoords,
   parsePuzzle,
   peersFromConstraints,
@@ -20,6 +24,10 @@ import {
   type Difficulty,
   type Digit,
   type Grid,
+  type GreaterThanEdge,
+  type GridShape,
+  type KropkiEdge,
+  type XVEdge,
 } from '@/engine'
 import type { SavedCell, SavedGame, SavedHistoryEntry } from '@/storage/db'
 import { useSettingsStore } from './settingsStore'
@@ -39,6 +47,20 @@ export interface HistoryEntry {
   readonly targetBefore: CellSnapshot
   readonly targetAfter: CellSnapshot
   readonly peerRemovals: ReadonlyArray<{ coord: Coord; digit: Digit }>
+}
+
+export type EdgeMarkKind =
+  | 'white-dot'
+  | 'black-dot'
+  | 'x'
+  | 'v'
+  | 'gt'
+  | 'lt'
+
+export interface EdgeMarkRecord {
+  readonly from: { readonly r: number; readonly c: number }
+  readonly to: { readonly r: number; readonly c: number }
+  readonly kind: EdgeMarkKind
 }
 
 export interface GameState {
@@ -62,6 +84,8 @@ export interface GameState {
   jigsawPieceMap: ReadonlyArray<number> | null
   /** Even-Odd: parity mask string, length size*size. Populated when variant=even-odd. */
   parityMask: string | null
+  /** Kropki / XV / Greater-Than: edge marks. */
+  edges: ReadonlyArray<EdgeMarkRecord> | null
 
   loadPuzzle: (args: {
     id: string
@@ -70,6 +94,7 @@ export interface GameState {
     givens: string
     regions?: ReadonlyArray<ReadonlyArray<number>>
     parityMask?: string
+    edges?: ReadonlyArray<EdgeMarkRecord>
   }) => void
   hydrate: (saved: SavedGame) => void
   select: (coord: Coord | null) => void
@@ -109,43 +134,68 @@ function isComplete(grid: Grid): boolean {
   return true
 }
 
+export function shapeForVariant(variant: string): GridShape {
+  if (variant === 'mini-6') return CLASSIC_6
+  return CLASSIC_9
+}
+
 function constraintsForVariant(
   variant: string,
   options: {
     regions?: ReadonlyArray<ReadonlyArray<number>>
     parityMask?: string
+    edges?: ReadonlyArray<EdgeMarkRecord>
   } = {},
 ): ReadonlyArray<Constraint> {
+  const shape = shapeForVariant(variant)
   // Jigsaw REPLACES the classic box partition with its own pieces.
   if (variant === 'jigsaw') {
     const pieces = (options.regions ?? []).map((r) =>
-      flatToCoords(r, CLASSIC_9.size),
+      flatToCoords(r, shape.size),
     )
     if (pieces.length === 0) {
       // Fall back to classic boxes if no per-puzzle pieces supplied.
-      return [createClassicConstraint({ shape: CLASSIC_9 })]
+      return [createClassicConstraint({ shape })]
     }
-    return [createJigsawConstraint({ shape: CLASSIC_9, pieces })]
+    return [createJigsawConstraint({ shape, pieces })]
   }
-  const classic = createClassicConstraint({ shape: CLASSIC_9 })
+  const classic = createClassicConstraint({ shape })
   if (variant === 'x-diagonal') {
-    return [classic, createXDiagonalConstraint({ shape: CLASSIC_9 })]
+    return [classic, createXDiagonalConstraint({ shape })]
   }
   if (variant === 'hyper') {
-    return [classic, createHyperConstraint({ shape: CLASSIC_9 })]
+    return [classic, createHyperConstraint({ shape })]
   }
   if (variant === 'anti-knight') {
-    return [classic, createAntiKnightConstraint({ shape: CLASSIC_9 })]
+    return [classic, createAntiKnightConstraint({ shape })]
   }
   if (variant === 'anti-king') {
-    return [classic, createAntiKingConstraint({ shape: CLASSIC_9 })]
+    return [classic, createAntiKingConstraint({ shape })]
   }
   if (variant === 'non-consecutive') {
-    return [classic, createNonConsecutiveConstraint({ shape: CLASSIC_9 })]
+    return [classic, createNonConsecutiveConstraint({ shape })]
   }
   if (variant === 'even-odd') {
-    const parityMask = options.parityMask ?? '.'.repeat(CLASSIC_9.size * CLASSIC_9.size)
-    return [classic, createEvenOddConstraint({ shape: CLASSIC_9, parityMask })]
+    const parityMask = options.parityMask ?? '.'.repeat(shape.size * shape.size)
+    return [classic, createEvenOddConstraint({ shape, parityMask })]
+  }
+  if (variant === 'kropki') {
+    const edges = (options.edges ?? []).filter(
+      (e) => e.kind === 'white-dot' || e.kind === 'black-dot',
+    ) as ReadonlyArray<KropkiEdge>
+    return [classic, createKropkiConstraint({ shape, edges, strict: true })]
+  }
+  if (variant === 'xv') {
+    const edges = (options.edges ?? []).filter(
+      (e) => e.kind === 'x' || e.kind === 'v',
+    ) as ReadonlyArray<XVEdge>
+    return [classic, createXVConstraint({ shape, edges, strict: true })]
+  }
+  if (variant === 'greater-than') {
+    const edges = (options.edges ?? []).filter(
+      (e) => e.kind === 'gt' || e.kind === 'lt',
+    ) as ReadonlyArray<GreaterThanEdge>
+    return [classic, createGreaterThanConstraint({ shape, edges })]
   }
   return [classic]
 }
@@ -168,10 +218,12 @@ function freshGridFromGivens(
   options: {
     regions?: ReadonlyArray<ReadonlyArray<number>>
     parityMask?: string
+    edges?: ReadonlyArray<EdgeMarkRecord>
   } = {},
 ): Grid {
+  const shape = shapeForVariant(variant)
   const constraints = constraintsForVariant(variant, options)
-  const grid: Grid = { ...parsePuzzle(givens, CLASSIC_9), constraints }
+  const grid: Grid = { ...parsePuzzle(givens, shape), constraints }
   // Jigsaw needs a candidate reset because parsePuzzle eliminated classic box
   // peers that aren't the real peer set for this puzzle.
   if (variant === 'jigsaw') {
@@ -193,6 +245,7 @@ function gridFromSnapshot(
   options: {
     regions?: ReadonlyArray<ReadonlyArray<number>>
     parityMask?: string
+    edges?: ReadonlyArray<EdgeMarkRecord>
   } = {},
 ): Grid {
   const grid = freshGridFromGivens(givens, variant, options)
@@ -254,12 +307,19 @@ export const useGameStore = create<GameState>((set, get) => ({
   lastShakeKey: 0,
   jigsawPieceMap: null,
   parityMask: null,
+  edges: null,
 
-  loadPuzzle: ({ id, variant, difficulty, givens, regions, parityMask }) => {
+  loadPuzzle: ({ id, variant, difficulty, givens, regions, parityMask, edges }) => {
     const now = new Date().toISOString()
-    const opts: { regions?: ReadonlyArray<ReadonlyArray<number>>; parityMask?: string } = {}
+    const opts: {
+      regions?: ReadonlyArray<ReadonlyArray<number>>
+      parityMask?: string
+      edges?: ReadonlyArray<EdgeMarkRecord>
+    } = {}
     if (regions !== undefined) opts.regions = regions
     if (parityMask !== undefined) opts.parityMask = parityMask
+    if (edges !== undefined) opts.edges = edges
+    const shape = shapeForVariant(variant)
     set({
       grid: freshGridFromGivens(givens, variant, opts),
       puzzleId: id,
@@ -277,19 +337,27 @@ export const useGameStore = create<GameState>((set, get) => ({
       completedAt: null,
       lockedCells: new Set(),
       lastShakeKey: 0,
-      jigsawPieceMap: pieceMapFromRegions(regions, CLASSIC_9.size),
+      jigsawPieceMap: pieceMapFromRegions(regions, shape.size),
       parityMask: parityMask ?? null,
+      edges: edges ?? null,
     })
   },
 
   hydrate: (saved) => {
     const regions = saved.regions
     const parityMask = saved.parityMask
-    const opts: { regions?: ReadonlyArray<ReadonlyArray<number>>; parityMask?: string } = {}
+    const edges = saved.edges as ReadonlyArray<EdgeMarkRecord> | undefined
+    const opts: {
+      regions?: ReadonlyArray<ReadonlyArray<number>>
+      parityMask?: string
+      edges?: ReadonlyArray<EdgeMarkRecord>
+    } = {}
     if (regions !== undefined) opts.regions = regions
     if (parityMask !== undefined) opts.parityMask = parityMask
+    if (edges !== undefined) opts.edges = edges
     const grid = gridFromSnapshot(saved.givens, saved.variant, saved.cells, opts)
     const history: HistoryEntry[] = saved.history.map(savedHistoryToEntry)
+    const shape = shapeForVariant(saved.variant)
     set({
       grid,
       puzzleId: saved.id,
@@ -307,8 +375,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       completedAt: saved.completedAt,
       lockedCells: new Set(),
       lastShakeKey: 0,
-      jigsawPieceMap: pieceMapFromRegions(regions, CLASSIC_9.size),
+      jigsawPieceMap: pieceMapFromRegions(regions, shape.size),
       parityMask: parityMask ?? null,
+      edges: edges ?? null,
     })
   },
 
@@ -569,6 +638,7 @@ export function serializeGameForSave(state: GameState): SavedGame | null {
     completedAt: state.completedAt,
     ...(regions ? { regions } : {}),
     ...(state.parityMask ? { parityMask: state.parityMask } : {}),
+    ...(state.edges ? { edges: state.edges } : {}),
   }
 }
 

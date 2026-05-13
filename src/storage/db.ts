@@ -35,6 +35,12 @@ export interface SavedGame {
   readonly regions?: ReadonlyArray<ReadonlyArray<number>>
   /** Even-Odd: parity mask string. */
   readonly parityMask?: string
+  /** Kropki / XV / Greater-Than: edge marks. */
+  readonly edges?: ReadonlyArray<{
+    readonly from: { readonly r: number; readonly c: number }
+    readonly to: { readonly r: number; readonly c: number }
+    readonly kind: string
+  }>
 }
 
 export interface SavedSettings {

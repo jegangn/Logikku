@@ -4,20 +4,26 @@ import type { InputMode } from '@/state/gameStore'
 export interface InputPadProps {
   readonly mode: InputMode
   readonly disabled?: boolean
+  /** Maximum digit to render (defaults to 9). 6 for Mini 6x6. */
+  readonly size?: number
   readonly onDigit: (digit: Digit) => void
   readonly onErase: () => void
   readonly onModeChange: (mode: InputMode) => void
 }
 
-const DIGITS: Digit[] = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-
 export function InputPad({
   mode,
   disabled,
+  size = 9,
   onDigit,
   onErase,
   onModeChange,
 }: InputPadProps) {
+  const digits: Digit[] = []
+  for (let d = 1; d <= size; d++) digits.push(d as Digit)
+  // 9-digit pad uses 5-col grid (3 cols would make rows of 3 too tall).
+  // 6-digit pad uses 4-col grid so the erase button fits on the same row.
+  const cols = size === 6 ? 'grid-cols-4' : 'grid-cols-5'
   return (
     <div
       data-testid="input-pad"
@@ -39,11 +45,11 @@ export function InputPad({
         </ModeButton>
       </div>
       <div
-        className="grid grid-cols-5 gap-2"
+        className={`grid ${cols} gap-2`}
         role="group"
         aria-label="Digit pad"
       >
-        {DIGITS.map((d) => (
+        {digits.map((d) => (
           <DigitButton
             key={d}
             digit={d}

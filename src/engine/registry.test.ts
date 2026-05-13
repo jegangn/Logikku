@@ -67,6 +67,17 @@ describe('ConstraintRegistry', () => {
     expect(typeof c.findConflicts).toBe('function')
   })
 
+  it.each(['kropki', 'xv', 'greater-than'] as const)(
+    'creates a %s constraint that is fully functional',
+    (kind) => {
+      const c = ConstraintRegistry.create(kind, { shape: CLASSIC_9 })
+      expect(c.kind).toBe(kind)
+      const grid = createGrid(CLASSIC_9, [c])
+      expect(c.validate(grid)).toBe(true)
+      expect(typeof c.findConflicts).toBe('function')
+    },
+  )
+
   const IMPLEMENTED_KINDS = new Set([
     'classic',
     'x-diagonal',
@@ -76,6 +87,9 @@ describe('ConstraintRegistry', () => {
     'non-consecutive',
     'jigsaw',
     'even-odd',
+    'kropki',
+    'xv',
+    'greater-than',
   ])
   const STUB_KINDS = ALL_CONSTRAINT_KINDS.filter((k) => !IMPLEMENTED_KINDS.has(k))
 

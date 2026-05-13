@@ -7,6 +7,7 @@ import { useGameStore } from '@/state/gameStore'
 import { flushSave, tryHydrate, wireGamePersistence } from '@/state/persistence'
 import { pickPuzzle } from '@/puzzles'
 import type { Difficulty, Digit } from '@/engine'
+import type { EdgeMarkRecord } from '@/state/gameStore'
 
 const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   'very-easy': 'Very Easy',
@@ -27,6 +28,10 @@ const VARIANT_LABELS: Record<string, string> = {
   'non-consecutive': 'Non-Consecutive',
   jigsaw: 'Jigsaw',
   'even-odd': 'Even-Odd',
+  'mini-6': 'Mini 6×6',
+  kropki: 'Kropki',
+  xv: 'XV',
+  'greater-than': 'Greater Than',
 }
 
 export function Play() {
@@ -47,6 +52,7 @@ export function Play() {
   const shakeKey = useGameStore((s) => s.lastShakeKey)
   const jigsawPieceMap = useGameStore((s) => s.jigsawPieceMap)
   const parityMask = useGameStore((s) => s.parityMask)
+  const edges = useGameStore((s) => s.edges)
 
   const loadPuzzle = useGameStore((s) => s.loadPuzzle)
   const select = useGameStore((s) => s.select)
@@ -89,6 +95,9 @@ export function Play() {
           givens: next.givens,
           ...(next.regions ? { regions: next.regions } : {}),
           ...(next.parityMask ? { parityMask: next.parityMask } : {}),
+          ...(next.edges
+            ? { edges: next.edges as ReadonlyArray<EdgeMarkRecord> }
+            : {}),
         })
       }
       if (!target) {
@@ -117,6 +126,7 @@ export function Play() {
       givens: next.givens,
       ...(next.regions ? { regions: next.regions } : {}),
       ...(next.parityMask ? { parityMask: next.parityMask } : {}),
+      ...(next.edges ? { edges: next.edges as never } : {}),
     })
     setParams({ variant, difficulty, puzzleId: next.id }, { replace: true })
   }, [variant, difficulty, loadPuzzle, setParams])
@@ -134,6 +144,7 @@ export function Play() {
     [selected, grid, select],
   )
 
+  const gridSize = grid?.shape.size ?? 9
   useEffect(() => {
     function onKey(ev: KeyboardEvent) {
       if (ev.target instanceof HTMLInputElement) return
@@ -150,9 +161,12 @@ export function Play() {
         return
       }
       if (ev.key >= '1' && ev.key <= '9') {
-        input(Number(ev.key) as Digit)
-        ev.preventDefault()
-        return
+        const digit = Number(ev.key)
+        if (digit <= gridSize) {
+          input(digit as Digit)
+          ev.preventDefault()
+          return
+        }
       }
       if (ev.key === 'Backspace' || ev.key === 'Delete' || ev.key === '0') {
         erase()
@@ -169,7 +183,7 @@ export function Play() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [input, erase, moveSelection, setMode, mode, undo, redo])
+  }, [input, erase, moveSelection, setMode, mode, undo, redo, gridSize])
 
   if (!grid) {
     return (
@@ -200,10 +214,12 @@ export function Play() {
         shakeKey={shakeKey}
         {...(jigsawPieceMap ? { jigsawPieceMap } : {})}
         {...(parityMask ? { parityMask } : {})}
+        {...(edges ? { edges } : {})}
         onSelect={select}
       />
       <InputPad
         mode={mode}
+        size={grid.shape.size}
         disabled={completedAt !== null}
         onDigit={input}
         onErase={erase}

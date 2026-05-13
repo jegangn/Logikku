@@ -11,6 +11,7 @@ class Shape:
 
 
 CLASSIC_9 = Shape(size=9, box_rows=3, box_cols=3)
+CLASSIC_6 = Shape(size=6, box_rows=2, box_cols=3)
 
 
 ExtraRegions = list[frozenset[tuple[int, int]]]

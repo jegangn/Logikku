@@ -67,17 +67,29 @@ class GraderBridge:
         puzzle: str,
         variant: str = "classic",
         *,
+        size: int | None = None,
         regions: list[list[int]] | None = None,
         parity_mask: str | None = None,
+        edges: list[dict] | None = None,
     ) -> dict:
         if not self._proc or not self._proc.stdin or not self._proc.stdout:
             raise RuntimeError("GraderBridge not entered")
-        if regions is not None or parity_mask is not None:
+        needs_json = (
+            regions is not None
+            or parity_mask is not None
+            or edges is not None
+            or size is not None
+        )
+        if needs_json:
             payload: dict = {"variant": variant, "puzzle": puzzle}
+            if size is not None:
+                payload["size"] = size
             if regions is not None:
                 payload["regions"] = regions
             if parity_mask is not None:
                 payload["parityMask"] = parity_mask
+            if edges is not None:
+                payload["edges"] = edges
             self._proc.stdin.write(json.dumps(payload, separators=(",", ":")) + "\n")
         else:
             self._proc.stdin.write(f"{variant}\t{puzzle}\n")

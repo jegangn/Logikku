@@ -46,6 +46,17 @@ export {
   parityGridOf,
 } from './constraints/even-odd'
 export type { EvenOddParams, Parity } from './constraints/even-odd'
+export { createKropkiConstraint } from './constraints/kropki'
+export type { KropkiEdge, KropkiKind, KropkiParams } from './constraints/kropki'
+export { createXVConstraint } from './constraints/xv'
+export type { XVEdge, XVKind, XVParams } from './constraints/xv'
+export { createGreaterThanConstraint } from './constraints/greater-than'
+export type {
+  GreaterThanEdge,
+  GreaterThanKind,
+  GreaterThanParams,
+} from './constraints/greater-than'
+export type { Edge } from './constraints/_base/edgeConstraint'
 export { backtrackingSolve } from './solver/backtrack'
 export { techniqueSolve, ALL_TECHNIQUES } from './solver/techniqueSolver'
 export { gradePuzzle, difficultyFromSE } from './grader/se'

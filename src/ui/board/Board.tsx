@@ -3,6 +3,7 @@ import { Cell } from './Cell'
 import { OverlayLayer } from './OverlayLayer'
 import type { Coord, Digit, Grid } from '@/engine'
 import { cellAt, peersFromConstraints } from '@/engine'
+import type { EdgeMark } from './overlays/EdgeMarkOverlay'
 
 export interface BoardProps {
   readonly grid: Grid
@@ -14,6 +15,8 @@ export interface BoardProps {
   readonly jigsawPieceMap?: ReadonlyArray<number>
   /** Even-Odd: parity mask string, length size*size. */
   readonly parityMask?: string
+  /** Kropki / XV / Greater-Than: edge marks. */
+  readonly edges?: ReadonlyArray<EdgeMark>
   readonly onSelect: (coord: Coord) => void
 }
 
@@ -27,6 +30,7 @@ export function Board({
   shakeKey = 0,
   jigsawPieceMap,
   parityMask,
+  edges,
   onSelect,
 }: BoardProps) {
   const size = grid.shape.size
@@ -100,6 +104,7 @@ export function Board({
         {...(variant !== undefined ? { variant } : {})}
         {...(jigsawPieceMap !== undefined ? { jigsawPieceMap } : {})}
         {...(parityMask !== undefined ? { parityMask } : {})}
+        {...(edges !== undefined ? { edges } : {})}
       />
     </svg>
   )

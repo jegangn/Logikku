@@ -13,13 +13,17 @@ from .classic import DIFFICULTY_BANDS as CLASSIC_BANDS
 from .classic import GeneratedPuzzle, generate_classic
 from .even_odd import EVEN_ODD_DIFFICULTY_BANDS, generate_even_odd
 from .grader_bridge import GraderBridge
+from .greater_than import GT_DIFFICULTY_BANDS, generate_greater_than
 from .hyper import HYPER_DIFFICULTY_BANDS, generate_hyper
 from .jigsaw import JIGSAW_DIFFICULTY_BANDS, generate_jigsaw
+from .kropki import KROPKI_DIFFICULTY_BANDS, generate_kropki
+from .mini import MINI_DIFFICULTY_BANDS, generate_mini
 from .non_consecutive import (
     NON_CONSECUTIVE_DIFFICULTY_BANDS,
     generate_non_consecutive,
 )
 from .x_diagonal import X_DIFFICULTY_BANDS, generate_x_diagonal
+from .xv import XV_DIFFICULTY_BANDS, generate_xv
 
 GeneratorFn = Callable[..., Iterator[GeneratedPuzzle]]
 
@@ -33,6 +37,10 @@ REGISTRY: dict[str, GeneratorFn] = {
     "non-consecutive": generate_non_consecutive,
     "jigsaw": generate_jigsaw,
     "even-odd": generate_even_odd,
+    "mini-6": generate_mini,
+    "kropki": generate_kropki,
+    "xv": generate_xv,
+    "greater-than": generate_greater_than,
 }
 
 
@@ -45,6 +53,10 @@ BANDS_BY_VARIANT: dict[str, dict[str, tuple[float, float, int]]] = {
     "non-consecutive": NON_CONSECUTIVE_DIFFICULTY_BANDS,
     "jigsaw": JIGSAW_DIFFICULTY_BANDS,
     "even-odd": EVEN_ODD_DIFFICULTY_BANDS,
+    "mini-6": MINI_DIFFICULTY_BANDS,
+    "kropki": KROPKI_DIFFICULTY_BANDS,
+    "xv": XV_DIFFICULTY_BANDS,
+    "greater-than": GT_DIFFICULTY_BANDS,
 }
 
 

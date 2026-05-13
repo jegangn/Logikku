@@ -76,6 +76,34 @@ function assertRecord(r: unknown, key: BankKey): asserts r is PuzzleRecord {
       `bank ${key.variant}/${key.difficulty}: 'parityMask' must be a string`,
     )
   }
+  if (obj['edges'] !== undefined) {
+    if (!Array.isArray(obj['edges'])) {
+      throw new Error(`bank ${key.variant}/${key.difficulty}: 'edges' must be an array`)
+    }
+    for (const edge of obj['edges'] as unknown[]) {
+      if (typeof edge !== 'object' || edge === null) {
+        throw new Error(`bank ${key.variant}/${key.difficulty}: each edge must be an object`)
+      }
+      const e = edge as Record<string, unknown>
+      if (typeof e['kind'] !== 'string') {
+        throw new Error(`bank ${key.variant}/${key.difficulty}: edge kind must be a string`)
+      }
+      for (const endpoint of ['from', 'to'] as const) {
+        const ep = e[endpoint]
+        if (typeof ep !== 'object' || ep === null) {
+          throw new Error(
+            `bank ${key.variant}/${key.difficulty}: edge ${endpoint} must be {r,c}`,
+          )
+        }
+        const pt = ep as Record<string, unknown>
+        if (typeof pt['r'] !== 'number' || typeof pt['c'] !== 'number') {
+          throw new Error(
+            `bank ${key.variant}/${key.difficulty}: edge ${endpoint} must have numeric r,c`,
+          )
+        }
+      }
+    }
+  }
 }
 
 export function getBank(variant: string, difficulty: Difficulty): PuzzleBank {

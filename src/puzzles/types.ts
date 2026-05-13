@@ -19,6 +19,12 @@ export interface PuzzleRecord {
   readonly regions?: ReadonlyArray<ReadonlyArray<number>>
   /** Even-Odd: 81-char mask of "E" / "O" / ".". */
   readonly parityMask?: string
+  /** Kropki / XV / Greater-Than: edge marks. */
+  readonly edges?: ReadonlyArray<{
+    readonly from: { readonly r: number; readonly c: number }
+    readonly to: { readonly r: number; readonly c: number }
+    readonly kind: string
+  }>
 }
 
 export type PuzzleBank = ReadonlyArray<PuzzleRecord>

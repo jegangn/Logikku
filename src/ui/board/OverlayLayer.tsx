@@ -3,6 +3,10 @@ import { XDiagonalOverlay } from './overlays/XDiagonalOverlay'
 import { HyperOverlay } from './overlays/HyperOverlay'
 import { JigsawOverlay } from './overlays/JigsawOverlay'
 import { EvenOddOverlay } from './overlays/EvenOddOverlay'
+import {
+  EdgeMarkOverlay,
+  type EdgeMark,
+} from './overlays/EdgeMarkOverlay'
 
 export interface OverlayLayerProps {
   readonly gridSize: number
@@ -12,6 +16,8 @@ export interface OverlayLayerProps {
   readonly jigsawPieceMap?: ReadonlyArray<number>
   /** Even-Odd: 'E' / 'O' / '.' mask string. */
   readonly parityMask?: string
+  /** Kropki / XV / Greater-Than: edge marks. */
+  readonly edges?: ReadonlyArray<EdgeMark>
 }
 
 export function OverlayLayer({
@@ -20,8 +26,11 @@ export function OverlayLayer({
   variant,
   jigsawPieceMap,
   parityMask,
+  edges,
   children,
 }: PropsWithChildren<OverlayLayerProps>) {
+  const isEdgeVariant =
+    variant === 'kropki' || variant === 'xv' || variant === 'greater-than'
   return (
     <g data-testid="overlay-layer">
       {variant === 'x-diagonal' && (
@@ -42,6 +51,13 @@ export function OverlayLayer({
           gridSize={gridSize}
           cellSize={cellSize}
           parityMask={parityMask}
+        />
+      )}
+      {isEdgeVariant && edges && edges.length > 0 && (
+        <EdgeMarkOverlay
+          gridSize={gridSize}
+          cellSize={cellSize}
+          edges={edges}
         />
       )}
       {children}

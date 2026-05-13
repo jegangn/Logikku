@@ -2,9 +2,10 @@
  * Long-running grader bridge.
  *
  * Reads lines from stdin in one of three formats:
- *   1. Bare puzzle string (legacy) — treated as classic.
+ *   1. Bare puzzle string (legacy) — treated as classic 9x9.
  *   2. `<variant>\t<puzzle>` — variant + puzzle, no per-puzzle data.
- *   3. JSON object: `{"variant": "...", "puzzle": "...", "regions"?: [...], "parityMask"?: "..."}`
+ *   3. JSON object: `{"variant": "...", "puzzle": "...", "size"?: 6|9|16,
+ *                    "regions"?: [...], "parityMask"?: "...", "edges"?: [...]}`
  *
  * Grades each via the TS engine, writes one JSON object per line to stdout.
  * Designed to be spawned once by `gen/src/generator/grader_bridge.py` to
@@ -16,21 +17,29 @@
 import process from 'node:process'
 import readline from 'node:readline'
 import {
+  CLASSIC_6,
   CLASSIC_9,
   createAntiKingConstraint,
   createAntiKnightConstraint,
   createClassicConstraint,
   createEvenOddConstraint,
+  createGreaterThanConstraint,
   createHyperConstraint,
   createJigsawConstraint,
+  createKropkiConstraint,
   createNonConsecutiveConstraint,
   createXDiagonalConstraint,
+  createXVConstraint,
   flatToCoords,
   parsePuzzle,
   recomputeCandidates,
   gradePuzzle,
   backtrackingSolve,
   type Constraint,
+  type GridShape,
+  type GreaterThanEdge,
+  type KropkiEdge,
+  type XVEdge,
 } from '../src/engine/index'
 
 const rl = readline.createInterface({
@@ -38,18 +47,19 @@ const rl = readline.createInterface({
   crlfDelay: Infinity,
 })
 
-const classicConstraint = createClassicConstraint({ shape: CLASSIC_9 })
-const xDiagonalConstraint = createXDiagonalConstraint({ shape: CLASSIC_9 })
-const hyperConstraint = createHyperConstraint({ shape: CLASSIC_9 })
-const antiKnightConstraint = createAntiKnightConstraint({ shape: CLASSIC_9 })
-const antiKingConstraint = createAntiKingConstraint({ shape: CLASSIC_9 })
-const nonConsecutiveConstraint = createNonConsecutiveConstraint({ shape: CLASSIC_9 })
+interface EdgeRecord {
+  readonly from: { readonly r: number; readonly c: number }
+  readonly to: { readonly r: number; readonly c: number }
+  readonly kind: string
+}
 
 interface GradeRequest {
   readonly variant: string
   readonly puzzle: string
+  readonly size?: number
   readonly regions?: ReadonlyArray<ReadonlyArray<number>>
   readonly parityMask?: string
+  readonly edges?: ReadonlyArray<EdgeRecord>
 }
 
 function parseLine(line: string): GradeRequest {
@@ -63,30 +73,69 @@ function parseLine(line: string): GradeRequest {
   return { variant: 'classic', puzzle: line }
 }
 
-function constraintsForRequest(req: GradeRequest): ReadonlyArray<Constraint> {
+function shapeForRequest(req: GradeRequest): GridShape {
+  if (req.size === 6 || req.variant === 'mini-6') return CLASSIC_6
+  return CLASSIC_9
+}
+
+function constraintsForRequest(
+  req: GradeRequest,
+  shape: GridShape,
+): ReadonlyArray<Constraint> {
   switch (req.variant) {
     case 'classic':
-      return [classicConstraint]
+    case 'mini-6':
+      return [createClassicConstraint({ shape })]
     case 'x-diagonal':
-      return [classicConstraint, xDiagonalConstraint]
+      return [createClassicConstraint({ shape }), createXDiagonalConstraint({ shape })]
     case 'hyper':
-      return [classicConstraint, hyperConstraint]
+      return [createClassicConstraint({ shape }), createHyperConstraint({ shape })]
     case 'anti-knight':
-      return [classicConstraint, antiKnightConstraint]
+      return [createClassicConstraint({ shape }), createAntiKnightConstraint({ shape })]
     case 'anti-king':
-      return [classicConstraint, antiKingConstraint]
+      return [createClassicConstraint({ shape }), createAntiKingConstraint({ shape })]
     case 'non-consecutive':
-      return [classicConstraint, nonConsecutiveConstraint]
+      return [
+        createClassicConstraint({ shape }),
+        createNonConsecutiveConstraint({ shape }),
+      ]
     case 'jigsaw': {
       if (!req.regions) throw new Error('jigsaw requires regions')
-      const pieces = req.regions.map((r) => flatToCoords(r, CLASSIC_9.size))
-      return [createJigsawConstraint({ shape: CLASSIC_9, pieces })]
+      const pieces = req.regions.map((r) => flatToCoords(r, shape.size))
+      return [createJigsawConstraint({ shape, pieces })]
     }
     case 'even-odd': {
       if (!req.parityMask) throw new Error('even-odd requires parityMask')
       return [
-        classicConstraint,
-        createEvenOddConstraint({ shape: CLASSIC_9, parityMask: req.parityMask }),
+        createClassicConstraint({ shape }),
+        createEvenOddConstraint({ shape, parityMask: req.parityMask }),
+      ]
+    }
+    case 'kropki': {
+      const edges = (req.edges ?? []).filter(
+        (e) => e.kind === 'white-dot' || e.kind === 'black-dot',
+      ) as ReadonlyArray<KropkiEdge>
+      return [
+        createClassicConstraint({ shape }),
+        createKropkiConstraint({ shape, edges, strict: true }),
+      ]
+    }
+    case 'xv': {
+      const edges = (req.edges ?? []).filter(
+        (e) => e.kind === 'x' || e.kind === 'v',
+      ) as ReadonlyArray<XVEdge>
+      return [
+        createClassicConstraint({ shape }),
+        createXVConstraint({ shape, edges, strict: true }),
+      ]
+    }
+    case 'greater-than': {
+      const edges = (req.edges ?? []).filter(
+        (e) => e.kind === 'gt' || e.kind === 'lt',
+      ) as ReadonlyArray<GreaterThanEdge>
+      return [
+        createClassicConstraint({ shape }),
+        createGreaterThanConstraint({ shape, edges }),
       ]
     }
     default:
@@ -99,15 +148,23 @@ rl.on('line', (raw) => {
   if (!trimmed) return
   try {
     const req = parseLine(trimmed)
-    const constraints = constraintsForRequest(req)
-    const grid = { ...parsePuzzle(req.puzzle, CLASSIC_9), constraints }
-    // Jigsaw replaces classic boxes; parsePuzzle's classic peer-elim is wrong
-    // for it. Recompute candidates from the actual constraint regions.
-    if (req.variant === 'jigsaw' || req.variant === 'even-odd') {
+    const shape = shapeForRequest(req)
+    const constraints = constraintsForRequest(req, shape)
+    const grid = { ...parsePuzzle(req.puzzle, shape), constraints }
+    // Variants whose constraint region topology differs from the classic peer
+    // partition need a candidate reset before grading (jigsaw replaces boxes;
+    // even-odd / edge variants add eliminations beyond classic peers).
+    if (
+      req.variant === 'jigsaw' ||
+      req.variant === 'even-odd' ||
+      req.variant === 'kropki' ||
+      req.variant === 'xv' ||
+      req.variant === 'greater-than'
+    ) {
       recomputeCandidates(grid)
     }
     const grade = gradePuzzle(grid)
-    let techniqueOnly = grade.solvable && grade.hardestTier <= 4
+    const techniqueOnly = grade.solvable && grade.hardestTier <= 4
     let backtrackUnique = false
     if (!techniqueOnly) {
       const bt = backtrackingSolve(grid, { maxSolutions: 2 })
