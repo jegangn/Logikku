@@ -5,6 +5,7 @@ import type { Coord, Digit, Grid } from '@/engine'
 import { cellAt, peersFromConstraints } from '@/engine'
 import type { EdgeMark } from './overlays/EdgeMarkOverlay'
 import type { ThermometerPath } from './overlays/ThermometerOverlay'
+import type { ArrowShape } from './overlays/ArrowOverlay'
 
 export interface BoardProps {
   readonly grid: Grid
@@ -20,6 +21,8 @@ export interface BoardProps {
   readonly edges?: ReadonlyArray<EdgeMark>
   /** Thermometer: paths from bulb to tip. */
   readonly thermometers?: ReadonlyArray<ThermometerPath>
+  /** Arrow: head + tail. */
+  readonly arrows?: ReadonlyArray<ArrowShape>
   readonly onSelect: (coord: Coord) => void
 }
 
@@ -35,6 +38,7 @@ export function Board({
   parityMask,
   edges,
   thermometers,
+  arrows,
   onSelect,
 }: BoardProps) {
   const size = grid.shape.size
@@ -110,6 +114,7 @@ export function Board({
         {...(parityMask !== undefined ? { parityMask } : {})}
         {...(edges !== undefined ? { edges } : {})}
         {...(thermometers !== undefined ? { thermometers } : {})}
+        {...(arrows !== undefined ? { arrows } : {})}
       />
     </svg>
   )

@@ -76,6 +76,34 @@ function assertRecord(r: unknown, key: BankKey): asserts r is PuzzleRecord {
       `bank ${key.variant}/${key.difficulty}: 'parityMask' must be a string`,
     )
   }
+  if (obj['arrows'] !== undefined) {
+    if (!Array.isArray(obj['arrows'])) {
+      throw new Error(`bank ${key.variant}/${key.difficulty}: 'arrows' must be an array`)
+    }
+    for (const arrow of obj['arrows'] as unknown[]) {
+      if (typeof arrow !== 'object' || arrow === null) {
+        throw new Error(`bank ${key.variant}/${key.difficulty}: each arrow must be an object`)
+      }
+      const a = arrow as Record<string, unknown>
+      if (typeof a['id'] !== 'string') {
+        throw new Error(`bank ${key.variant}/${key.difficulty}: arrow id must be a string`)
+      }
+      for (const part of ['head', 'tail'] as const) {
+        if (!Array.isArray(a[part])) {
+          throw new Error(`bank ${key.variant}/${key.difficulty}: arrow ${part} must be an array`)
+        }
+        for (const pt of a[part] as unknown[]) {
+          if (typeof pt !== 'object' || pt === null) {
+            throw new Error(`bank ${key.variant}/${key.difficulty}: arrow ${part} entry must be {r,c}`)
+          }
+          const p = pt as Record<string, unknown>
+          if (typeof p['r'] !== 'number' || typeof p['c'] !== 'number') {
+            throw new Error(`bank ${key.variant}/${key.difficulty}: arrow ${part} entry must have numeric r,c`)
+          }
+        }
+      }
+    }
+  }
   if (obj['thermometers'] !== undefined) {
     if (!Array.isArray(obj['thermometers'])) {
       throw new Error(`bank ${key.variant}/${key.difficulty}: 'thermometers' must be an array`)

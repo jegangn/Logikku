@@ -86,6 +86,14 @@ describe('ConstraintRegistry', () => {
     expect(typeof c.findConflicts).toBe('function')
   })
 
+  it('creates an Arrow constraint that is fully functional', () => {
+    const c = ConstraintRegistry.create('arrow', { shape: CLASSIC_9 })
+    expect(c.kind).toBe('arrow')
+    const grid = createGrid(CLASSIC_9, [c])
+    expect(c.validate(grid)).toBe(true)
+    expect(typeof c.findConflicts).toBe('function')
+  })
+
   const IMPLEMENTED_KINDS = new Set([
     'classic',
     'x-diagonal',
@@ -99,6 +107,7 @@ describe('ConstraintRegistry', () => {
     'xv',
     'greater-than',
     'thermometer',
+    'arrow',
   ])
   const STUB_KINDS = ALL_CONSTRAINT_KINDS.filter((k) => !IMPLEMENTED_KINDS.has(k))
 

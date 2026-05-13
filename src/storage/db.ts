@@ -46,6 +46,12 @@ export interface SavedGame {
     readonly id: string
     readonly path: ReadonlyArray<{ readonly r: number; readonly c: number }>
   }>
+  /** Arrow: head + tail. */
+  readonly arrows?: ReadonlyArray<{
+    readonly id: string
+    readonly head: ReadonlyArray<{ readonly r: number; readonly c: number }>
+    readonly tail: ReadonlyArray<{ readonly r: number; readonly c: number }>
+  }>
 }
 
 export interface SavedSettings {

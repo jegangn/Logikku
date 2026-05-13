@@ -11,6 +11,7 @@ import {
   ThermometerOverlay,
   type ThermometerPath,
 } from './overlays/ThermometerOverlay'
+import { ArrowOverlay, type ArrowShape } from './overlays/ArrowOverlay'
 
 export interface OverlayLayerProps {
   readonly gridSize: number
@@ -24,6 +25,8 @@ export interface OverlayLayerProps {
   readonly edges?: ReadonlyArray<EdgeMark>
   /** Thermometer: paths from bulb to tip. */
   readonly thermometers?: ReadonlyArray<ThermometerPath>
+  /** Arrow: head + tail paths. */
+  readonly arrows?: ReadonlyArray<ArrowShape>
 }
 
 export function OverlayLayer({
@@ -34,6 +37,7 @@ export function OverlayLayer({
   parityMask,
   edges,
   thermometers,
+  arrows,
   children,
 }: PropsWithChildren<OverlayLayerProps>) {
   const isEdgeVariant =
@@ -45,6 +49,13 @@ export function OverlayLayer({
           gridSize={gridSize}
           cellSize={cellSize}
           thermometers={thermometers}
+        />
+      )}
+      {variant === 'arrow' && arrows && arrows.length > 0 && (
+        <ArrowOverlay
+          gridSize={gridSize}
+          cellSize={cellSize}
+          arrows={arrows}
         />
       )}
       {variant === 'x-diagonal' && (

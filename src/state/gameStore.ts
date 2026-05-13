@@ -6,6 +6,7 @@ import {
   cloneGrid,
   createAntiKingConstraint,
   createAntiKnightConstraint,
+  createArrowConstraint,
   createClassicConstraint,
   createEvenOddConstraint,
   createGreaterThanConstraint,
@@ -24,6 +25,7 @@ import {
   type Coord,
   type Difficulty,
   type Digit,
+  type Arrow,
   type Grid,
   type GreaterThanEdge,
   type GridShape,
@@ -90,6 +92,8 @@ export interface GameState {
   edges: ReadonlyArray<EdgeMarkRecord> | null
   /** Thermometer: bulb-to-tip paths. */
   thermometers: ReadonlyArray<Thermometer> | null
+  /** Arrow: head + tail. */
+  arrows: ReadonlyArray<Arrow> | null
 
   loadPuzzle: (args: {
     id: string
@@ -100,6 +104,7 @@ export interface GameState {
     parityMask?: string
     edges?: ReadonlyArray<EdgeMarkRecord>
     thermometers?: ReadonlyArray<Thermometer>
+    arrows?: ReadonlyArray<Arrow>
   }) => void
   hydrate: (saved: SavedGame) => void
   select: (coord: Coord | null) => void
@@ -151,6 +156,7 @@ function constraintsForVariant(
     parityMask?: string
     edges?: ReadonlyArray<EdgeMarkRecord>
     thermometers?: ReadonlyArray<Thermometer>
+    arrows?: ReadonlyArray<Arrow>
   } = {},
 ): ReadonlyArray<Constraint> {
   const shape = shapeForVariant(variant)
@@ -209,6 +215,9 @@ function constraintsForVariant(
       createThermometerConstraint({ shape, thermometers: options.thermometers ?? [] }),
     ]
   }
+  if (variant === 'arrow') {
+    return [classic, createArrowConstraint({ shape, arrows: options.arrows ?? [] })]
+  }
   return [classic]
 }
 
@@ -232,15 +241,21 @@ function freshGridFromGivens(
     parityMask?: string
     edges?: ReadonlyArray<EdgeMarkRecord>
     thermometers?: ReadonlyArray<Thermometer>
+    arrows?: ReadonlyArray<Arrow>
   } = {},
 ): Grid {
   const shape = shapeForVariant(variant)
   const constraints = constraintsForVariant(variant, options)
   const grid: Grid = { ...parsePuzzle(givens, shape), constraints }
   // Jigsaw needs a candidate reset because parsePuzzle eliminated classic box
-  // peers that aren't the real peer set for this puzzle. Thermometer needs
-  // it too so the length-based bounds and forward/backward sweeps run.
-  if (variant === 'jigsaw' || variant === 'thermometer') {
+  // peers that aren't the real peer set for this puzzle. Thermometer and
+  // Arrow need it too so their bounds propagation runs against full
+  // candidate sets.
+  if (
+    variant === 'jigsaw' ||
+    variant === 'thermometer' ||
+    variant === 'arrow'
+  ) {
     recomputeCandidates(grid)
   }
   for (let r = 0; r < grid.shape.size; r++) {
@@ -261,6 +276,7 @@ function gridFromSnapshot(
     parityMask?: string
     edges?: ReadonlyArray<EdgeMarkRecord>
     thermometers?: ReadonlyArray<Thermometer>
+    arrows?: ReadonlyArray<Arrow>
   } = {},
 ): Grid {
   const grid = freshGridFromGivens(givens, variant, options)
@@ -324,6 +340,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   parityMask: null,
   edges: null,
   thermometers: null,
+  arrows: null,
 
   loadPuzzle: ({
     id,
@@ -334,6 +351,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     parityMask,
     edges,
     thermometers,
+    arrows,
   }) => {
     const now = new Date().toISOString()
     const opts: {
@@ -341,11 +359,13 @@ export const useGameStore = create<GameState>((set, get) => ({
       parityMask?: string
       edges?: ReadonlyArray<EdgeMarkRecord>
       thermometers?: ReadonlyArray<Thermometer>
+      arrows?: ReadonlyArray<Arrow>
     } = {}
     if (regions !== undefined) opts.regions = regions
     if (parityMask !== undefined) opts.parityMask = parityMask
     if (edges !== undefined) opts.edges = edges
     if (thermometers !== undefined) opts.thermometers = thermometers
+    if (arrows !== undefined) opts.arrows = arrows
     const shape = shapeForVariant(variant)
     set({
       grid: freshGridFromGivens(givens, variant, opts),
@@ -368,6 +388,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       parityMask: parityMask ?? null,
       edges: edges ?? null,
       thermometers: thermometers ?? null,
+      arrows: arrows ?? null,
     })
   },
 
@@ -378,16 +399,19 @@ export const useGameStore = create<GameState>((set, get) => ({
     const thermometers = saved.thermometers as
       | ReadonlyArray<Thermometer>
       | undefined
+    const arrows = saved.arrows as ReadonlyArray<Arrow> | undefined
     const opts: {
       regions?: ReadonlyArray<ReadonlyArray<number>>
       parityMask?: string
       edges?: ReadonlyArray<EdgeMarkRecord>
       thermometers?: ReadonlyArray<Thermometer>
+      arrows?: ReadonlyArray<Arrow>
     } = {}
     if (regions !== undefined) opts.regions = regions
     if (parityMask !== undefined) opts.parityMask = parityMask
     if (edges !== undefined) opts.edges = edges
     if (thermometers !== undefined) opts.thermometers = thermometers
+    if (arrows !== undefined) opts.arrows = arrows
     const grid = gridFromSnapshot(saved.givens, saved.variant, saved.cells, opts)
     const history: HistoryEntry[] = saved.history.map(savedHistoryToEntry)
     const shape = shapeForVariant(saved.variant)
@@ -412,6 +436,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       parityMask: parityMask ?? null,
       edges: edges ?? null,
       thermometers: thermometers ?? null,
+      arrows: arrows ?? null,
     })
   },
 
@@ -674,6 +699,7 @@ export function serializeGameForSave(state: GameState): SavedGame | null {
     ...(state.parityMask ? { parityMask: state.parityMask } : {}),
     ...(state.edges ? { edges: state.edges } : {}),
     ...(state.thermometers ? { thermometers: state.thermometers } : {}),
+    ...(state.arrows ? { arrows: state.arrows } : {}),
   }
 }
 

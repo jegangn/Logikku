@@ -9,6 +9,7 @@ from typing import Iterator
 
 from .anti_king import ANTI_KING_DIFFICULTY_BANDS, generate_anti_king
 from .anti_knight import ANTI_KNIGHT_DIFFICULTY_BANDS, generate_anti_knight
+from .arrow import ARROW_DIFFICULTY_BANDS, generate_arrow
 from .classic import DIFFICULTY_BANDS as CLASSIC_BANDS
 from .classic import GeneratedPuzzle, generate_classic
 from .even_odd import EVEN_ODD_DIFFICULTY_BANDS, generate_even_odd
@@ -43,6 +44,7 @@ REGISTRY: dict[str, GeneratorFn] = {
     "xv": generate_xv,
     "greater-than": generate_greater_than,
     "thermometer": generate_thermometer,
+    "arrow": generate_arrow,
 }
 
 
@@ -60,6 +62,7 @@ BANDS_BY_VARIANT: dict[str, dict[str, tuple[float, float, int]]] = {
     "xv": XV_DIFFICULTY_BANDS,
     "greater-than": GT_DIFFICULTY_BANDS,
     "thermometer": THERMO_DIFFICULTY_BANDS,
+    "arrow": ARROW_DIFFICULTY_BANDS,
 }
 
 

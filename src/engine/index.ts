@@ -59,6 +59,8 @@ export type {
 export type { Edge } from './constraints/_base/edgeConstraint'
 export { createThermometerConstraint } from './constraints/thermometer'
 export type { Thermometer, ThermometerParams } from './constraints/thermometer'
+export { createArrowConstraint } from './constraints/arrow'
+export type { Arrow, ArrowParams } from './constraints/arrow'
 export { backtrackingSolve } from './solver/backtrack'
 export { techniqueSolve, ALL_TECHNIQUES } from './solver/techniqueSolver'
 export { gradePuzzle, difficultyFromSE } from './grader/se'
