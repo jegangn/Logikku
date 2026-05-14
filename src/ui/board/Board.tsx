@@ -7,6 +7,7 @@ import type { EdgeMark } from './overlays/EdgeMarkOverlay'
 import type { ThermometerPath } from './overlays/ThermometerOverlay'
 import type { ArrowShape } from './overlays/ArrowOverlay'
 import type { CageShape } from './overlays/KillerOverlay'
+import type { OutsideClueDisplay } from './overlays/OutsideClueOverlay'
 
 export interface BoardProps {
   readonly grid: Grid
@@ -26,6 +27,8 @@ export interface BoardProps {
   readonly arrows?: ReadonlyArray<ArrowShape>
   /** Killer: cages. */
   readonly cages?: ReadonlyArray<CageShape>
+  /** Little-killer / Sandwich / Skyscraper: outside-the-grid clues. */
+  readonly outsideClues?: ReadonlyArray<OutsideClueDisplay>
   readonly onSelect: (coord: Coord) => void
 }
 
@@ -43,10 +46,12 @@ export function Board({
   thermometers,
   arrows,
   cages,
+  outsideClues,
   onSelect,
 }: BoardProps) {
   const size = grid.shape.size
   const boardPx = size * CELL_SIZE
+  const margin = outsideClues && outsideClues.length > 0 ? CELL_SIZE * 0.6 : 0
 
   const peerSet = useMemo(() => {
     if (!selected) return new Set<string>()
@@ -93,7 +98,7 @@ export function Board({
       role="grid"
       aria-label="Sudoku board"
       data-testid="board"
-      viewBox={`0 0 ${boardPx} ${boardPx}`}
+      viewBox={`${-margin} ${-margin} ${boardPx + margin * 2} ${boardPx + margin * 2}`}
       className="w-full max-w-[min(92vw,640px)] aspect-square select-none"
     >
       <rect
@@ -120,6 +125,7 @@ export function Board({
         {...(thermometers !== undefined ? { thermometers } : {})}
         {...(arrows !== undefined ? { arrows } : {})}
         {...(cages !== undefined ? { cages } : {})}
+        {...(outsideClues !== undefined ? { outsideClues } : {})}
       />
     </svg>
   )

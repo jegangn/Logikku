@@ -76,6 +76,27 @@ function assertRecord(r: unknown, key: BankKey): asserts r is PuzzleRecord {
       `bank ${key.variant}/${key.difficulty}: 'parityMask' must be a string`,
     )
   }
+  for (const field of ['littleKillerClues', 'sandwichClues', 'skyscraperClues'] as const) {
+    if (obj[field] === undefined) continue
+    if (!Array.isArray(obj[field])) {
+      throw new Error(`bank ${key.variant}/${key.difficulty}: '${field}' must be an array`)
+    }
+    for (const item of obj[field] as unknown[]) {
+      if (typeof item !== 'object' || item === null) {
+        throw new Error(`bank ${key.variant}/${key.difficulty}: each ${field} entry must be an object`)
+      }
+      const e = item as Record<string, unknown>
+      if (typeof e['id'] !== 'string') {
+        throw new Error(`bank ${key.variant}/${key.difficulty}: ${field} id must be a string`)
+      }
+      if (typeof e['side'] !== 'string') {
+        throw new Error(`bank ${key.variant}/${key.difficulty}: ${field} side must be a string`)
+      }
+      if (typeof e['index'] !== 'number') {
+        throw new Error(`bank ${key.variant}/${key.difficulty}: ${field} index must be a number`)
+      }
+    }
+  }
   if (obj['cages'] !== undefined) {
     if (!Array.isArray(obj['cages'])) {
       throw new Error(`bank ${key.variant}/${key.difficulty}: 'cages' must be an array`)

@@ -19,11 +19,17 @@ from .hyper import HYPER_DIFFICULTY_BANDS, generate_hyper
 from .jigsaw import JIGSAW_DIFFICULTY_BANDS, generate_jigsaw
 from .killer import KILLER_DIFFICULTY_BANDS, generate_killer
 from .kropki import KROPKI_DIFFICULTY_BANDS, generate_kropki
+from .little_killer import (
+    LITTLE_KILLER_DIFFICULTY_BANDS,
+    generate_little_killer,
+)
 from .mini import MINI_DIFFICULTY_BANDS, generate_mini
 from .non_consecutive import (
     NON_CONSECUTIVE_DIFFICULTY_BANDS,
     generate_non_consecutive,
 )
+from .sandwich import SANDWICH_DIFFICULTY_BANDS, generate_sandwich
+from .skyscraper import SKYSCRAPER_DIFFICULTY_BANDS, generate_skyscraper
 from .thermometer import THERMO_DIFFICULTY_BANDS, generate_thermometer
 from .x_diagonal import X_DIFFICULTY_BANDS, generate_x_diagonal
 from .xv import XV_DIFFICULTY_BANDS, generate_xv
@@ -47,6 +53,9 @@ REGISTRY: dict[str, GeneratorFn] = {
     "thermometer": generate_thermometer,
     "arrow": generate_arrow,
     "killer": generate_killer,
+    "little-killer": generate_little_killer,
+    "sandwich": generate_sandwich,
+    "skyscraper": generate_skyscraper,
 }
 
 
@@ -66,6 +75,9 @@ BANDS_BY_VARIANT: dict[str, dict[str, tuple[float, float, int]]] = {
     "thermometer": THERMO_DIFFICULTY_BANDS,
     "arrow": ARROW_DIFFICULTY_BANDS,
     "killer": KILLER_DIFFICULTY_BANDS,
+    "little-killer": LITTLE_KILLER_DIFFICULTY_BANDS,
+    "sandwich": SANDWICH_DIFFICULTY_BANDS,
+    "skyscraper": SKYSCRAPER_DIFFICULTY_BANDS,
 }
 
 

@@ -63,6 +63,35 @@ export { createArrowConstraint } from './constraints/arrow'
 export type { Arrow, ArrowParams } from './constraints/arrow'
 export { createKillerConstraint, cagesOf } from './constraints/killer'
 export type { Cage, KillerParams } from './constraints/killer'
+export {
+  createLittleKillerConstraint,
+  littleKillerCells,
+  littleKillerDiagonalsOf,
+} from './constraints/little-killer'
+export type {
+  Diagonal,
+  LittleKillerClue,
+  LittleKillerParams,
+  LittleKillerConstraint,
+  OutsideSide,
+} from './constraints/little-killer'
+export { createSandwichConstraint } from './constraints/sandwich'
+export type {
+  SandwichClue,
+  SandwichConstraint,
+  SandwichParams,
+  SandwichSide,
+} from './constraints/sandwich'
+export {
+  createSkyscraperConstraint,
+  skyscraperLineCells,
+} from './constraints/skyscraper'
+export type {
+  SkyscraperClue,
+  SkyscraperConstraint,
+  SkyscraperParams,
+  SkyscraperSide,
+} from './constraints/skyscraper'
 export { backtrackingSolve } from './solver/backtrack'
 export { techniqueSolve, ALL_TECHNIQUES } from './solver/techniqueSolver'
 export { gradePuzzle, difficultyFromSE } from './grader/se'

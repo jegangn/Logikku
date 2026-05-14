@@ -42,6 +42,28 @@ export interface PuzzleRecord {
     readonly cells: ReadonlyArray<{ readonly r: number; readonly c: number }>
     readonly sum: number
   }>
+  /** Little-killer: outside diagonal clues. */
+  readonly littleKillerClues?: ReadonlyArray<{
+    readonly id: string
+    readonly side: 'top' | 'bottom' | 'left' | 'right'
+    readonly index: number
+    readonly direction: 'NE' | 'NW' | 'SE' | 'SW'
+    readonly sum: number
+  }>
+  /** Sandwich: outside row / column sums. */
+  readonly sandwichClues?: ReadonlyArray<{
+    readonly id: string
+    readonly side: 'top' | 'bottom' | 'left' | 'right'
+    readonly index: number
+    readonly sum: number
+  }>
+  /** Skyscraper: outside row / column visibility counts. */
+  readonly skyscraperClues?: ReadonlyArray<{
+    readonly id: string
+    readonly side: 'top' | 'bottom' | 'left' | 'right'
+    readonly index: number
+    readonly count: number
+  }>
 }
 
 export type PuzzleBank = ReadonlyArray<PuzzleRecord>

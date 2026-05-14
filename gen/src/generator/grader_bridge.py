@@ -74,6 +74,9 @@ class GraderBridge:
         thermometers: list[dict] | None = None,
         arrows: list[dict] | None = None,
         cages: list[dict] | None = None,
+        little_killer_clues: list[dict] | None = None,
+        sandwich_clues: list[dict] | None = None,
+        skyscraper_clues: list[dict] | None = None,
     ) -> dict:
         if not self._proc or not self._proc.stdin or not self._proc.stdout:
             raise RuntimeError("GraderBridge not entered")
@@ -84,6 +87,9 @@ class GraderBridge:
             or thermometers is not None
             or arrows is not None
             or cages is not None
+            or little_killer_clues is not None
+            or sandwich_clues is not None
+            or skyscraper_clues is not None
             or size is not None
         )
         if needs_json:
@@ -102,6 +108,12 @@ class GraderBridge:
                 payload["arrows"] = arrows
             if cages is not None:
                 payload["cages"] = cages
+            if little_killer_clues is not None:
+                payload["littleKillerClues"] = little_killer_clues
+            if sandwich_clues is not None:
+                payload["sandwichClues"] = sandwich_clues
+            if skyscraper_clues is not None:
+                payload["skyscraperClues"] = skyscraper_clues
             self._proc.stdin.write(json.dumps(payload, separators=(",", ":")) + "\n")
         else:
             self._proc.stdin.write(f"{variant}\t{puzzle}\n")

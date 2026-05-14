@@ -29,7 +29,10 @@ import {
   createKropkiConstraint,
   createArrowConstraint,
   createKillerConstraint,
+  createLittleKillerConstraint,
   createNonConsecutiveConstraint,
+  createSandwichConstraint,
+  createSkyscraperConstraint,
   createThermometerConstraint,
   createXDiagonalConstraint,
   createXVConstraint,
@@ -44,6 +47,9 @@ import {
   type Cage,
   type GreaterThanEdge,
   type KropkiEdge,
+  type LittleKillerClue,
+  type SandwichClue,
+  type SkyscraperClue,
   type Thermometer,
   type XVEdge,
 } from '../src/engine/index'
@@ -69,6 +75,9 @@ interface GradeRequest {
   readonly thermometers?: ReadonlyArray<Thermometer>
   readonly arrows?: ReadonlyArray<Arrow>
   readonly cages?: ReadonlyArray<Cage>
+  readonly littleKillerClues?: ReadonlyArray<LittleKillerClue>
+  readonly sandwichClues?: ReadonlyArray<SandwichClue>
+  readonly skyscraperClues?: ReadonlyArray<SkyscraperClue>
 }
 
 function parseLine(line: string): GradeRequest {
@@ -168,6 +177,27 @@ function constraintsForRequest(
         createKillerConstraint({ shape, cages }),
       ]
     }
+    case 'little-killer': {
+      const clues = req.littleKillerClues ?? []
+      return [
+        createClassicConstraint({ shape }),
+        createLittleKillerConstraint({ shape, clues }),
+      ]
+    }
+    case 'sandwich': {
+      const clues = req.sandwichClues ?? []
+      return [
+        createClassicConstraint({ shape }),
+        createSandwichConstraint({ shape, clues }),
+      ]
+    }
+    case 'skyscraper': {
+      const clues = req.skyscraperClues ?? []
+      return [
+        createClassicConstraint({ shape }),
+        createSkyscraperConstraint({ shape, clues }),
+      ]
+    }
     default:
       throw new Error(`unknown variant: ${req.variant}`)
   }
@@ -192,7 +222,10 @@ rl.on('line', (raw) => {
       req.variant === 'greater-than' ||
       req.variant === 'thermometer' ||
       req.variant === 'arrow' ||
-      req.variant === 'killer'
+      req.variant === 'killer' ||
+      req.variant === 'little-killer' ||
+      req.variant === 'sandwich' ||
+      req.variant === 'skyscraper'
     ) {
       recomputeCandidates(grid)
     }

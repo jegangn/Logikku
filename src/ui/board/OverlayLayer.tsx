@@ -13,6 +13,10 @@ import {
 } from './overlays/ThermometerOverlay'
 import { ArrowOverlay, type ArrowShape } from './overlays/ArrowOverlay'
 import { KillerOverlay, type CageShape } from './overlays/KillerOverlay'
+import {
+  OutsideClueOverlay,
+  type OutsideClueDisplay,
+} from './overlays/OutsideClueOverlay'
 
 export interface OverlayLayerProps {
   readonly gridSize: number
@@ -30,6 +34,8 @@ export interface OverlayLayerProps {
   readonly arrows?: ReadonlyArray<ArrowShape>
   /** Killer: cages with cells + sum. */
   readonly cages?: ReadonlyArray<CageShape>
+  /** Little-killer / Sandwich / Skyscraper: outside clues to render in the margin. */
+  readonly outsideClues?: ReadonlyArray<OutsideClueDisplay>
 }
 
 export function OverlayLayer({
@@ -42,6 +48,7 @@ export function OverlayLayer({
   thermometers,
   arrows,
   cages,
+  outsideClues,
   children,
 }: PropsWithChildren<OverlayLayerProps>) {
   const isEdgeVariant =
@@ -67,6 +74,13 @@ export function OverlayLayer({
           gridSize={gridSize}
           cellSize={cellSize}
           cages={cages}
+        />
+      )}
+      {outsideClues && outsideClues.length > 0 && (
+        <OutsideClueOverlay
+          gridSize={gridSize}
+          cellSize={cellSize}
+          clues={outsideClues}
         />
       )}
       {variant === 'x-diagonal' && (

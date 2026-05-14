@@ -13,6 +13,9 @@ import { createGreaterThanConstraint } from './constraints/greater-than'
 import { createThermometerConstraint } from './constraints/thermometer'
 import { createArrowConstraint } from './constraints/arrow'
 import { createKillerConstraint } from './constraints/killer'
+import { createLittleKillerConstraint } from './constraints/little-killer'
+import { createSandwichConstraint } from './constraints/sandwich'
+import { createSkyscraperConstraint } from './constraints/skyscraper'
 import { createStubConstraint } from './constraints/_stub'
 
 export const ALL_CONSTRAINT_KINDS: ReadonlyArray<ConstraintKind> = [
@@ -60,6 +63,9 @@ register('greater-than', (p) => createGreaterThanConstraint(p as object))
 register('thermometer', (p) => createThermometerConstraint(p as object))
 register('arrow', (p) => createArrowConstraint(p as object))
 register('killer', (p) => createKillerConstraint(p as object))
+register('little-killer', (p) => createLittleKillerConstraint(p as object))
+register('sandwich', (p) => createSandwichConstraint(p as object))
+register('skyscraper', (p) => createSkyscraperConstraint(p as object))
 for (const kind of ALL_CONSTRAINT_KINDS) {
   if (registry.has(kind)) continue
   register(kind, () => createStubConstraint(kind))

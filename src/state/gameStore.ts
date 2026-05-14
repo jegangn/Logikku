@@ -14,7 +14,10 @@ import {
   createJigsawConstraint,
   createKillerConstraint,
   createKropkiConstraint,
+  createLittleKillerConstraint,
   createNonConsecutiveConstraint,
+  createSandwichConstraint,
+  createSkyscraperConstraint,
   createThermometerConstraint,
   createXDiagonalConstraint,
   createXVConstraint,
@@ -32,6 +35,9 @@ import {
   type GreaterThanEdge,
   type GridShape,
   type KropkiEdge,
+  type LittleKillerClue,
+  type SandwichClue,
+  type SkyscraperClue,
   type Thermometer,
   type XVEdge,
 } from '@/engine'
@@ -98,6 +104,12 @@ export interface GameState {
   arrows: ReadonlyArray<Arrow> | null
   /** Killer: cages. */
   cages: ReadonlyArray<Cage> | null
+  /** Little-killer: diagonal clues. */
+  littleKillerClues: ReadonlyArray<LittleKillerClue> | null
+  /** Sandwich: row/column clues. */
+  sandwichClues: ReadonlyArray<SandwichClue> | null
+  /** Skyscraper: row/column visibility clues. */
+  skyscraperClues: ReadonlyArray<SkyscraperClue> | null
 
   loadPuzzle: (args: {
     id: string
@@ -110,6 +122,9 @@ export interface GameState {
     thermometers?: ReadonlyArray<Thermometer>
     arrows?: ReadonlyArray<Arrow>
     cages?: ReadonlyArray<Cage>
+    littleKillerClues?: ReadonlyArray<LittleKillerClue>
+    sandwichClues?: ReadonlyArray<SandwichClue>
+    skyscraperClues?: ReadonlyArray<SkyscraperClue>
   }) => void
   hydrate: (saved: SavedGame) => void
   select: (coord: Coord | null) => void
@@ -163,6 +178,9 @@ function constraintsForVariant(
     thermometers?: ReadonlyArray<Thermometer>
     arrows?: ReadonlyArray<Arrow>
     cages?: ReadonlyArray<Cage>
+    littleKillerClues?: ReadonlyArray<LittleKillerClue>
+    sandwichClues?: ReadonlyArray<SandwichClue>
+    skyscraperClues?: ReadonlyArray<SkyscraperClue>
   } = {},
 ): ReadonlyArray<Constraint> {
   const shape = shapeForVariant(variant)
@@ -227,6 +245,27 @@ function constraintsForVariant(
   if (variant === 'killer') {
     return [classic, createKillerConstraint({ shape, cages: options.cages ?? [] })]
   }
+  if (variant === 'little-killer') {
+    return [
+      classic,
+      createLittleKillerConstraint({
+        shape,
+        clues: options.littleKillerClues ?? [],
+      }),
+    ]
+  }
+  if (variant === 'sandwich') {
+    return [
+      classic,
+      createSandwichConstraint({ shape, clues: options.sandwichClues ?? [] }),
+    ]
+  }
+  if (variant === 'skyscraper') {
+    return [
+      classic,
+      createSkyscraperConstraint({ shape, clues: options.skyscraperClues ?? [] }),
+    ]
+  }
   return [classic]
 }
 
@@ -252,6 +291,9 @@ function freshGridFromGivens(
     thermometers?: ReadonlyArray<Thermometer>
     arrows?: ReadonlyArray<Arrow>
     cages?: ReadonlyArray<Cage>
+    littleKillerClues?: ReadonlyArray<LittleKillerClue>
+    sandwichClues?: ReadonlyArray<SandwichClue>
+    skyscraperClues?: ReadonlyArray<SkyscraperClue>
   } = {},
 ): Grid {
   const shape = shapeForVariant(variant)
@@ -265,7 +307,10 @@ function freshGridFromGivens(
     variant === 'jigsaw' ||
     variant === 'thermometer' ||
     variant === 'arrow' ||
-    variant === 'killer'
+    variant === 'killer' ||
+    variant === 'little-killer' ||
+    variant === 'sandwich' ||
+    variant === 'skyscraper'
   ) {
     recomputeCandidates(grid)
   }
@@ -289,6 +334,9 @@ function gridFromSnapshot(
     thermometers?: ReadonlyArray<Thermometer>
     arrows?: ReadonlyArray<Arrow>
     cages?: ReadonlyArray<Cage>
+    littleKillerClues?: ReadonlyArray<LittleKillerClue>
+    sandwichClues?: ReadonlyArray<SandwichClue>
+    skyscraperClues?: ReadonlyArray<SkyscraperClue>
   } = {},
 ): Grid {
   const grid = freshGridFromGivens(givens, variant, options)
@@ -354,6 +402,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   thermometers: null,
   arrows: null,
   cages: null,
+  littleKillerClues: null,
+  sandwichClues: null,
+  skyscraperClues: null,
 
   loadPuzzle: ({
     id,
@@ -366,6 +417,9 @@ export const useGameStore = create<GameState>((set, get) => ({
     thermometers,
     arrows,
     cages,
+    littleKillerClues,
+    sandwichClues,
+    skyscraperClues,
   }) => {
     const now = new Date().toISOString()
     const opts: {
@@ -375,6 +429,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       thermometers?: ReadonlyArray<Thermometer>
       arrows?: ReadonlyArray<Arrow>
       cages?: ReadonlyArray<Cage>
+      littleKillerClues?: ReadonlyArray<LittleKillerClue>
+      sandwichClues?: ReadonlyArray<SandwichClue>
+      skyscraperClues?: ReadonlyArray<SkyscraperClue>
     } = {}
     if (regions !== undefined) opts.regions = regions
     if (parityMask !== undefined) opts.parityMask = parityMask
@@ -382,6 +439,9 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (thermometers !== undefined) opts.thermometers = thermometers
     if (arrows !== undefined) opts.arrows = arrows
     if (cages !== undefined) opts.cages = cages
+    if (littleKillerClues !== undefined) opts.littleKillerClues = littleKillerClues
+    if (sandwichClues !== undefined) opts.sandwichClues = sandwichClues
+    if (skyscraperClues !== undefined) opts.skyscraperClues = skyscraperClues
     const shape = shapeForVariant(variant)
     set({
       grid: freshGridFromGivens(givens, variant, opts),
@@ -406,6 +466,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       thermometers: thermometers ?? null,
       arrows: arrows ?? null,
       cages: cages ?? null,
+      littleKillerClues: littleKillerClues ?? null,
+      sandwichClues: sandwichClues ?? null,
+      skyscraperClues: skyscraperClues ?? null,
     })
   },
 
@@ -418,6 +481,15 @@ export const useGameStore = create<GameState>((set, get) => ({
       | undefined
     const arrows = saved.arrows as ReadonlyArray<Arrow> | undefined
     const cages = saved.cages as ReadonlyArray<Cage> | undefined
+    const littleKillerClues = saved.littleKillerClues as
+      | ReadonlyArray<LittleKillerClue>
+      | undefined
+    const sandwichClues = saved.sandwichClues as
+      | ReadonlyArray<SandwichClue>
+      | undefined
+    const skyscraperClues = saved.skyscraperClues as
+      | ReadonlyArray<SkyscraperClue>
+      | undefined
     const opts: {
       regions?: ReadonlyArray<ReadonlyArray<number>>
       parityMask?: string
@@ -425,6 +497,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       thermometers?: ReadonlyArray<Thermometer>
       arrows?: ReadonlyArray<Arrow>
       cages?: ReadonlyArray<Cage>
+      littleKillerClues?: ReadonlyArray<LittleKillerClue>
+      sandwichClues?: ReadonlyArray<SandwichClue>
+      skyscraperClues?: ReadonlyArray<SkyscraperClue>
     } = {}
     if (regions !== undefined) opts.regions = regions
     if (parityMask !== undefined) opts.parityMask = parityMask
@@ -432,6 +507,9 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (thermometers !== undefined) opts.thermometers = thermometers
     if (arrows !== undefined) opts.arrows = arrows
     if (cages !== undefined) opts.cages = cages
+    if (littleKillerClues !== undefined) opts.littleKillerClues = littleKillerClues
+    if (sandwichClues !== undefined) opts.sandwichClues = sandwichClues
+    if (skyscraperClues !== undefined) opts.skyscraperClues = skyscraperClues
     const grid = gridFromSnapshot(saved.givens, saved.variant, saved.cells, opts)
     const history: HistoryEntry[] = saved.history.map(savedHistoryToEntry)
     const shape = shapeForVariant(saved.variant)
@@ -458,6 +536,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       thermometers: thermometers ?? null,
       arrows: arrows ?? null,
       cages: cages ?? null,
+      littleKillerClues: littleKillerClues ?? null,
+      sandwichClues: sandwichClues ?? null,
+      skyscraperClues: skyscraperClues ?? null,
     })
   },
 
@@ -722,6 +803,11 @@ export function serializeGameForSave(state: GameState): SavedGame | null {
     ...(state.thermometers ? { thermometers: state.thermometers } : {}),
     ...(state.arrows ? { arrows: state.arrows } : {}),
     ...(state.cages ? { cages: state.cages } : {}),
+    ...(state.littleKillerClues
+      ? { littleKillerClues: state.littleKillerClues }
+      : {}),
+    ...(state.sandwichClues ? { sandwichClues: state.sandwichClues } : {}),
+    ...(state.skyscraperClues ? { skyscraperClues: state.skyscraperClues } : {}),
   }
 }
 

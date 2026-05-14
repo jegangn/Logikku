@@ -8,6 +8,7 @@ import { flushSave, tryHydrate, wireGamePersistence } from '@/state/persistence'
 import { pickPuzzle } from '@/puzzles'
 import type { Difficulty, Digit } from '@/engine'
 import type { EdgeMarkRecord } from '@/state/gameStore'
+import type { OutsideClueDisplay } from '@/ui/board/overlays/OutsideClueOverlay'
 
 const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   'very-easy': 'Very Easy',
@@ -35,6 +36,9 @@ const VARIANT_LABELS: Record<string, string> = {
   thermometer: 'Thermometer',
   arrow: 'Arrow',
   killer: 'Killer',
+  'little-killer': 'Little Killer',
+  sandwich: 'Sandwich',
+  skyscraper: 'Skyscraper',
 }
 
 export function Play() {
@@ -59,6 +63,9 @@ export function Play() {
   const thermometers = useGameStore((s) => s.thermometers)
   const arrows = useGameStore((s) => s.arrows)
   const cages = useGameStore((s) => s.cages)
+  const littleKillerClues = useGameStore((s) => s.littleKillerClues)
+  const sandwichClues = useGameStore((s) => s.sandwichClues)
+  const skyscraperClues = useGameStore((s) => s.skyscraperClues)
 
   const loadPuzzle = useGameStore((s) => s.loadPuzzle)
   const select = useGameStore((s) => s.select)
@@ -107,6 +114,15 @@ export function Play() {
           ...(next.thermometers ? { thermometers: next.thermometers } : {}),
           ...(next.arrows ? { arrows: next.arrows } : {}),
           ...(next.cages ? { cages: next.cages } : {}),
+          ...(next.littleKillerClues
+            ? { littleKillerClues: next.littleKillerClues }
+            : {}),
+          ...(next.sandwichClues
+            ? { sandwichClues: next.sandwichClues }
+            : {}),
+          ...(next.skyscraperClues
+            ? { skyscraperClues: next.skyscraperClues }
+            : {}),
         })
       }
       if (!target) {
@@ -154,6 +170,34 @@ export function Play() {
   )
 
   const gridSize = grid?.shape.size ?? 9
+  const outsideClues: ReadonlyArray<OutsideClueDisplay> | undefined = (() => {
+    if (variant === 'little-killer' && littleKillerClues) {
+      return littleKillerClues.map((c) => ({
+        id: c.id,
+        side: c.side,
+        index: c.index,
+        direction: c.direction,
+        label: String(c.sum),
+      }))
+    }
+    if (variant === 'sandwich' && sandwichClues) {
+      return sandwichClues.map((c) => ({
+        id: c.id,
+        side: c.side,
+        index: c.index,
+        label: String(c.sum),
+      }))
+    }
+    if (variant === 'skyscraper' && skyscraperClues) {
+      return skyscraperClues.map((c) => ({
+        id: c.id,
+        side: c.side,
+        index: c.index,
+        label: String(c.count),
+      }))
+    }
+    return undefined
+  })()
   useEffect(() => {
     function onKey(ev: KeyboardEvent) {
       if (ev.target instanceof HTMLInputElement) return
@@ -227,6 +271,7 @@ export function Play() {
         {...(thermometers ? { thermometers } : {})}
         {...(arrows ? { arrows } : {})}
         {...(cages ? { cages } : {})}
+        {...(outsideClues ? { outsideClues } : {})}
         onSelect={select}
       />
       <InputPad
