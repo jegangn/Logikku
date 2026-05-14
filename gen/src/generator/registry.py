@@ -17,6 +17,7 @@ from .grader_bridge import GraderBridge
 from .greater_than import GT_DIFFICULTY_BANDS, generate_greater_than
 from .hyper import HYPER_DIFFICULTY_BANDS, generate_hyper
 from .jigsaw import JIGSAW_DIFFICULTY_BANDS, generate_jigsaw
+from .killer import KILLER_DIFFICULTY_BANDS, generate_killer
 from .kropki import KROPKI_DIFFICULTY_BANDS, generate_kropki
 from .mini import MINI_DIFFICULTY_BANDS, generate_mini
 from .non_consecutive import (
@@ -45,6 +46,7 @@ REGISTRY: dict[str, GeneratorFn] = {
     "greater-than": generate_greater_than,
     "thermometer": generate_thermometer,
     "arrow": generate_arrow,
+    "killer": generate_killer,
 }
 
 
@@ -63,6 +65,7 @@ BANDS_BY_VARIANT: dict[str, dict[str, tuple[float, float, int]]] = {
     "greater-than": GT_DIFFICULTY_BANDS,
     "thermometer": THERMO_DIFFICULTY_BANDS,
     "arrow": ARROW_DIFFICULTY_BANDS,
+    "killer": KILLER_DIFFICULTY_BANDS,
 }
 
 

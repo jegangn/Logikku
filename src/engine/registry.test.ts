@@ -108,6 +108,7 @@ describe('ConstraintRegistry', () => {
     'greater-than',
     'thermometer',
     'arrow',
+    'killer',
   ])
   const STUB_KINDS = ALL_CONSTRAINT_KINDS.filter((k) => !IMPLEMENTED_KINDS.has(k))
 

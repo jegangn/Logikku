@@ -76,6 +76,35 @@ function assertRecord(r: unknown, key: BankKey): asserts r is PuzzleRecord {
       `bank ${key.variant}/${key.difficulty}: 'parityMask' must be a string`,
     )
   }
+  if (obj['cages'] !== undefined) {
+    if (!Array.isArray(obj['cages'])) {
+      throw new Error(`bank ${key.variant}/${key.difficulty}: 'cages' must be an array`)
+    }
+    for (const cage of obj['cages'] as unknown[]) {
+      if (typeof cage !== 'object' || cage === null) {
+        throw new Error(`bank ${key.variant}/${key.difficulty}: each cage must be an object`)
+      }
+      const ca = cage as Record<string, unknown>
+      if (typeof ca['id'] !== 'string') {
+        throw new Error(`bank ${key.variant}/${key.difficulty}: cage id must be a string`)
+      }
+      if (typeof ca['sum'] !== 'number') {
+        throw new Error(`bank ${key.variant}/${key.difficulty}: cage sum must be a number`)
+      }
+      if (!Array.isArray(ca['cells'])) {
+        throw new Error(`bank ${key.variant}/${key.difficulty}: cage cells must be an array`)
+      }
+      for (const pt of ca['cells'] as unknown[]) {
+        if (typeof pt !== 'object' || pt === null) {
+          throw new Error(`bank ${key.variant}/${key.difficulty}: cage cell must be {r,c}`)
+        }
+        const p = pt as Record<string, unknown>
+        if (typeof p['r'] !== 'number' || typeof p['c'] !== 'number') {
+          throw new Error(`bank ${key.variant}/${key.difficulty}: cage cell must have numeric r,c`)
+        }
+      }
+    }
+  }
   if (obj['arrows'] !== undefined) {
     if (!Array.isArray(obj['arrows'])) {
       throw new Error(`bank ${key.variant}/${key.difficulty}: 'arrows' must be an array`)

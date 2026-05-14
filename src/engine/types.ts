@@ -26,6 +26,8 @@ export interface NamedRegion {
   readonly kind: RegionKind
   readonly cells: Region
   readonly id?: string
+  /** Optional metadata. Cage regions use `sum` to carry the target. */
+  readonly sum?: number
 }
 
 export interface Cell {

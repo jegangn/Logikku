@@ -34,6 +34,7 @@ const VARIANT_LABELS: Record<string, string> = {
   'greater-than': 'Greater Than',
   thermometer: 'Thermometer',
   arrow: 'Arrow',
+  killer: 'Killer',
 }
 
 export function Play() {
@@ -57,6 +58,7 @@ export function Play() {
   const edges = useGameStore((s) => s.edges)
   const thermometers = useGameStore((s) => s.thermometers)
   const arrows = useGameStore((s) => s.arrows)
+  const cages = useGameStore((s) => s.cages)
 
   const loadPuzzle = useGameStore((s) => s.loadPuzzle)
   const select = useGameStore((s) => s.select)
@@ -104,6 +106,7 @@ export function Play() {
             : {}),
           ...(next.thermometers ? { thermometers: next.thermometers } : {}),
           ...(next.arrows ? { arrows: next.arrows } : {}),
+          ...(next.cages ? { cages: next.cages } : {}),
         })
       }
       if (!target) {
@@ -223,6 +226,7 @@ export function Play() {
         {...(edges ? { edges } : {})}
         {...(thermometers ? { thermometers } : {})}
         {...(arrows ? { arrows } : {})}
+        {...(cages ? { cages } : {})}
         onSelect={select}
       />
       <InputPad

@@ -28,6 +28,7 @@ import {
   createJigsawConstraint,
   createKropkiConstraint,
   createArrowConstraint,
+  createKillerConstraint,
   createNonConsecutiveConstraint,
   createThermometerConstraint,
   createXDiagonalConstraint,
@@ -40,6 +41,7 @@ import {
   type Constraint,
   type GridShape,
   type Arrow,
+  type Cage,
   type GreaterThanEdge,
   type KropkiEdge,
   type Thermometer,
@@ -66,6 +68,7 @@ interface GradeRequest {
   readonly edges?: ReadonlyArray<EdgeRecord>
   readonly thermometers?: ReadonlyArray<Thermometer>
   readonly arrows?: ReadonlyArray<Arrow>
+  readonly cages?: ReadonlyArray<Cage>
 }
 
 function parseLine(line: string): GradeRequest {
@@ -158,6 +161,13 @@ function constraintsForRequest(
         createArrowConstraint({ shape, arrows }),
       ]
     }
+    case 'killer': {
+      const cages = req.cages ?? []
+      return [
+        createClassicConstraint({ shape }),
+        createKillerConstraint({ shape, cages }),
+      ]
+    }
     default:
       throw new Error(`unknown variant: ${req.variant}`)
   }
@@ -181,7 +191,8 @@ rl.on('line', (raw) => {
       req.variant === 'xv' ||
       req.variant === 'greater-than' ||
       req.variant === 'thermometer' ||
-      req.variant === 'arrow'
+      req.variant === 'arrow' ||
+      req.variant === 'killer'
     ) {
       recomputeCandidates(grid)
     }

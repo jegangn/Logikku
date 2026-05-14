@@ -11,12 +11,14 @@ import { hiddenPair, hiddenTriple, hiddenQuad } from './techniques/hiddenSubset'
 import { xWing, swordfish } from './techniques/fish'
 import { xyWing } from './techniques/xyWing'
 import { simpleColoring } from './techniques/simpleColoring'
+import { cage45Innie } from './techniques/killer/cage45'
 
 export const ALL_TECHNIQUES: ReadonlyArray<Technique> = [
   forbiddenPairElimination,
   nakedSingle,
   diagonalHiddenSingle,
   hiddenSingle,
+  cage45Innie,
   lockedCandidatesPointing,
   lockedCandidatesClaiming,
   nakedPair,

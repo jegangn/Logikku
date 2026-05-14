@@ -12,6 +12,7 @@ import {
   type ThermometerPath,
 } from './overlays/ThermometerOverlay'
 import { ArrowOverlay, type ArrowShape } from './overlays/ArrowOverlay'
+import { KillerOverlay, type CageShape } from './overlays/KillerOverlay'
 
 export interface OverlayLayerProps {
   readonly gridSize: number
@@ -27,6 +28,8 @@ export interface OverlayLayerProps {
   readonly thermometers?: ReadonlyArray<ThermometerPath>
   /** Arrow: head + tail paths. */
   readonly arrows?: ReadonlyArray<ArrowShape>
+  /** Killer: cages with cells + sum. */
+  readonly cages?: ReadonlyArray<CageShape>
 }
 
 export function OverlayLayer({
@@ -38,6 +41,7 @@ export function OverlayLayer({
   edges,
   thermometers,
   arrows,
+  cages,
   children,
 }: PropsWithChildren<OverlayLayerProps>) {
   const isEdgeVariant =
@@ -56,6 +60,13 @@ export function OverlayLayer({
           gridSize={gridSize}
           cellSize={cellSize}
           arrows={arrows}
+        />
+      )}
+      {variant === 'killer' && cages && cages.length > 0 && (
+        <KillerOverlay
+          gridSize={gridSize}
+          cellSize={cellSize}
+          cages={cages}
         />
       )}
       {variant === 'x-diagonal' && (

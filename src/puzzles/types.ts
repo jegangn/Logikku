@@ -36,6 +36,12 @@ export interface PuzzleRecord {
     readonly head: ReadonlyArray<{ readonly r: number; readonly c: number }>
     readonly tail: ReadonlyArray<{ readonly r: number; readonly c: number }>
   }>
+  /** Killer: cages. */
+  readonly cages?: ReadonlyArray<{
+    readonly id: string
+    readonly cells: ReadonlyArray<{ readonly r: number; readonly c: number }>
+    readonly sum: number
+  }>
 }
 
 export type PuzzleBank = ReadonlyArray<PuzzleRecord>

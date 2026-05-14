@@ -12,6 +12,7 @@ import { createXVConstraint } from './constraints/xv'
 import { createGreaterThanConstraint } from './constraints/greater-than'
 import { createThermometerConstraint } from './constraints/thermometer'
 import { createArrowConstraint } from './constraints/arrow'
+import { createKillerConstraint } from './constraints/killer'
 import { createStubConstraint } from './constraints/_stub'
 
 export const ALL_CONSTRAINT_KINDS: ReadonlyArray<ConstraintKind> = [
@@ -58,6 +59,7 @@ register('xv', (p) => createXVConstraint(p as object))
 register('greater-than', (p) => createGreaterThanConstraint(p as object))
 register('thermometer', (p) => createThermometerConstraint(p as object))
 register('arrow', (p) => createArrowConstraint(p as object))
+register('killer', (p) => createKillerConstraint(p as object))
 for (const kind of ALL_CONSTRAINT_KINDS) {
   if (registry.has(kind)) continue
   register(kind, () => createStubConstraint(kind))

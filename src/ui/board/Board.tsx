@@ -6,6 +6,7 @@ import { cellAt, peersFromConstraints } from '@/engine'
 import type { EdgeMark } from './overlays/EdgeMarkOverlay'
 import type { ThermometerPath } from './overlays/ThermometerOverlay'
 import type { ArrowShape } from './overlays/ArrowOverlay'
+import type { CageShape } from './overlays/KillerOverlay'
 
 export interface BoardProps {
   readonly grid: Grid
@@ -23,6 +24,8 @@ export interface BoardProps {
   readonly thermometers?: ReadonlyArray<ThermometerPath>
   /** Arrow: head + tail. */
   readonly arrows?: ReadonlyArray<ArrowShape>
+  /** Killer: cages. */
+  readonly cages?: ReadonlyArray<CageShape>
   readonly onSelect: (coord: Coord) => void
 }
 
@@ -39,6 +42,7 @@ export function Board({
   edges,
   thermometers,
   arrows,
+  cages,
   onSelect,
 }: BoardProps) {
   const size = grid.shape.size
@@ -115,6 +119,7 @@ export function Board({
         {...(edges !== undefined ? { edges } : {})}
         {...(thermometers !== undefined ? { thermometers } : {})}
         {...(arrows !== undefined ? { arrows } : {})}
+        {...(cages !== undefined ? { cages } : {})}
       />
     </svg>
   )
