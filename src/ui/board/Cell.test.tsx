@@ -16,6 +16,7 @@ describe('Cell', () => {
       <Cell
         coord={{ r: 0, c: 0 }}
         cellSize={64}
+        gridSize={9}
         value={5}
         candidates={new Set()}
         given={false}
@@ -36,6 +37,7 @@ describe('Cell', () => {
       <Cell
         coord={{ r: 0, c: 0 }}
         cellSize={64}
+        gridSize={9}
         value={null}
         candidates={new Set([1, 3, 7])}
         given={false}
@@ -59,6 +61,7 @@ describe('Cell', () => {
       <Cell
         coord={{ r: 0, c: 0 }}
         cellSize={64}
+        gridSize={9}
         value={9}
         candidates={new Set()}
         given={true}
@@ -80,6 +83,7 @@ describe('Cell', () => {
       <Cell
         coord={{ r: 2, c: 4 }}
         cellSize={64}
+        gridSize={9}
         value={null}
         candidates={new Set()}
         given={false}
@@ -93,5 +97,51 @@ describe('Cell', () => {
       />,
     )
     expect(screen.getByLabelText(/row 3 column 5/i)).toBeInTheDocument()
+  })
+
+  it('renders hex glyph for value 12 as "C"', () => {
+    renderInSvg(
+      <Cell
+        coord={{ r: 0, c: 0 }}
+        cellSize={64}
+        gridSize={16}
+        value={12}
+        candidates={new Set()}
+        given={false}
+        selected={false}
+        peerHighlight={false}
+        sameValueHighlight={false}
+        conflict={false}
+        locked={false}
+        shakeKey={0}
+        onSelect={() => {}}
+      />,
+    )
+    expect(screen.getByText('C')).toBeInTheDocument()
+  })
+
+  it('renders 4x4 pencil marks with hex labels when gridSize=16', () => {
+    renderInSvg(
+      <Cell
+        coord={{ r: 0, c: 0 }}
+        cellSize={64}
+        gridSize={16}
+        value={null}
+        candidates={new Set([1, 10, 11, 16])}
+        given={false}
+        selected={false}
+        peerHighlight={false}
+        sameValueHighlight={false}
+        conflict={false}
+        locked={false}
+        shakeKey={0}
+        onSelect={() => {}}
+      />,
+    )
+    expect(screen.getByText('1')).toBeInTheDocument()
+    expect(screen.getByText('A')).toBeInTheDocument()
+    expect(screen.getByText('B')).toBeInTheDocument()
+    expect(screen.getByText('G')).toBeInTheDocument()
+    expect(screen.queryByText('2')).toBeNull()
   })
 })

@@ -1,9 +1,11 @@
 import { memo } from 'react'
 import type { Coord, Digit } from '@/engine'
+import { glyphForDigit } from '@/ui/glyph'
 
 export interface CellProps {
   readonly coord: Coord
   readonly cellSize: number
+  readonly gridSize: number
   readonly value: Digit | null
   readonly candidates: ReadonlySet<Digit>
   readonly given: boolean
@@ -20,6 +22,7 @@ function CellImpl(props: CellProps) {
   const {
     coord,
     cellSize,
+    gridSize,
     value,
     candidates,
     given,
@@ -73,10 +76,16 @@ function CellImpl(props: CellProps) {
                 : 'var(--color-entered)'
           }
         >
-          {value}
+          {glyphForDigit(value)}
         </text>
       ) : (
-        <PencilMarks x={x} y={y} cellSize={cellSize} candidates={candidates} />
+        <PencilMarks
+          x={x}
+          y={y}
+          cellSize={cellSize}
+          gridSize={gridSize}
+          candidates={candidates}
+        />
       )}
       {conflict && value !== null && (
         <rect
@@ -98,21 +107,24 @@ function PencilMarks({
   x,
   y,
   cellSize,
+  gridSize,
   candidates,
 }: {
   x: number
   y: number
   cellSize: number
+  gridSize: number
   candidates: ReadonlySet<Digit>
 }) {
   if (candidates.size === 0) return null
-  const cellSlot = cellSize / 3
-  const fontSize = cellSize * 0.18
+  const cols = gridSize > 9 ? 4 : 3
+  const cellSlot = cellSize / cols
+  const fontSize = cellSize * (gridSize > 9 ? 0.14 : 0.18)
   const nodes: React.ReactElement[] = []
-  for (let d = 1; d <= 9; d++) {
+  for (let d = 1; d <= gridSize; d++) {
     if (!candidates.has(d as Digit)) continue
-    const slotR = Math.floor((d - 1) / 3)
-    const slotC = (d - 1) % 3
+    const slotR = Math.floor((d - 1) / cols)
+    const slotC = (d - 1) % cols
     nodes.push(
       <text
         key={d}
@@ -123,7 +135,7 @@ function PencilMarks({
         fontSize={fontSize}
         fill="var(--color-text-muted)"
       >
-        {d}
+        {glyphForDigit(d as Digit)}
       </text>,
     )
   }
