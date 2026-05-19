@@ -106,8 +106,8 @@ function parseLine(line: string): GradeRequest {
 }
 
 function shapeForRequest(req: GradeRequest): GridShape {
-  if (req.size === 6 || req.variant === 'mini-6') return CLASSIC_6
-  if (req.size === 16 || req.variant === 'mega-16') return CLASSIC_16
+  if (req.variant === 'mini-6' || req.size === 6) return CLASSIC_6
+  if (req.variant === 'mega-16' || req.size === 16) return CLASSIC_16
   return CLASSIC_9
 }
 
@@ -116,6 +116,7 @@ function constraintsForRequest(
   shape: GridShape,
 ): ReadonlyArray<Constraint> {
   switch (req.variant) {
+    // Shape-only variants — same constraints, different size (resolved by shapeForRequest).
     case 'classic':
     case 'mini-6':
     case 'mega-16':
