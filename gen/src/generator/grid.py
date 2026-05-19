@@ -12,6 +12,7 @@ class Shape:
 
 CLASSIC_9 = Shape(size=9, box_rows=3, box_cols=3)
 CLASSIC_6 = Shape(size=6, box_rows=2, box_cols=3)
+CLASSIC_16 = Shape(size=16, box_rows=4, box_cols=4)
 
 
 ExtraRegions = list[frozenset[tuple[int, int]]]
@@ -83,7 +84,17 @@ def empty_grid(shape: Shape) -> list[list[int]]:
 
 
 def grid_to_string(grid: list[list[int]]) -> str:
-    return "".join(str(v) for row in grid for v in row)
+    out: list[str] = []
+    for row in grid:
+        for v in row:
+            if v == 0:
+                out.append("0")
+            elif v <= 9:
+                out.append(str(v))
+            else:
+                # 10..16 -> 'A'..'G' (mirrors TS serializePuzzle)
+                out.append(chr(55 + v))
+    return "".join(out)
 
 
 def string_to_grid(s: str, shape: Shape) -> list[list[int]]:
@@ -95,9 +106,18 @@ def string_to_grid(s: str, shape: Shape) -> list[list[int]]:
     for i, ch in enumerate(s):
         if ch in "0.":
             continue
-        if shape.size <= 9 and not ch.isdigit():
-            raise ValueError(f"non-digit '{ch}' at index {i}")
-        grid[i // shape.size][i % shape.size] = int(ch)
+        code = ord(ch)
+        if 49 <= code <= 57:  # '1'..'9'
+            digit = code - 48
+        elif shape.size > 9 and 65 <= code <= 90:  # 'A'..'Z'
+            digit = code - 55
+        elif shape.size > 9 and 97 <= code <= 122:  # 'a'..'z'
+            digit = code - 87
+        else:
+            raise ValueError(f"invalid digit '{ch}' at index {i}")
+        if digit < 1 or digit > shape.size:
+            raise ValueError(f"'{ch}' (digit {digit}) out of range 1..{shape.size} at index {i}")
+        grid[i // shape.size][i % shape.size] = digit
     return grid
 
 
