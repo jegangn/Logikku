@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import {
   CLASSIC_6,
   CLASSIC_9,
+  CLASSIC_16,
   cellAt,
   cloneGrid,
   createAntiKingConstraint,
@@ -183,6 +184,7 @@ function isComplete(grid: Grid): boolean {
 
 export function shapeForVariant(variant: string): GridShape {
   if (variant === 'mini-6') return CLASSIC_6
+  if (variant === 'mega-16') return CLASSIC_16
   return CLASSIC_9
 }
 

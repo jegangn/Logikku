@@ -6,7 +6,8 @@ import { Toolbar } from '@/ui/panels/Toolbar'
 import { useGameStore } from '@/state/gameStore'
 import { flushSave, tryHydrate, wireGamePersistence } from '@/state/persistence'
 import { pickPuzzle } from '@/puzzles'
-import type { Difficulty, Digit } from '@/engine'
+import type { Difficulty } from '@/engine'
+import { digitFromGlyph } from '@/ui/glyph'
 import type { EdgeMarkRecord } from '@/state/gameStore'
 import type { OutsideClueDisplay } from '@/ui/board/overlays/OutsideClueOverlay'
 import type { VariantPath } from '@/ui/board/overlays/PathOverlay'
@@ -31,6 +32,7 @@ const VARIANT_LABELS: Record<string, string> = {
   jigsaw: 'Jigsaw',
   'even-odd': 'Even-Odd',
   'mini-6': 'Mini 6×6',
+  'mega-16': 'Mega 16×16',
   kropki: 'Kropki',
   xv: 'XV',
   'greater-than': 'Greater Than',
@@ -223,13 +225,11 @@ export function Play() {
         ev.preventDefault()
         return
       }
-      if (ev.key >= '1' && ev.key <= '9') {
-        const digit = Number(ev.key)
-        if (digit <= gridSize) {
-          input(digit as Digit)
-          ev.preventDefault()
-          return
-        }
+      const maybeDigit = digitFromGlyph(ev.key)
+      if (maybeDigit !== null && maybeDigit <= gridSize) {
+        input(maybeDigit)
+        ev.preventDefault()
+        return
       }
       if (ev.key === 'Backspace' || ev.key === 'Delete' || ev.key === '0') {
         erase()
