@@ -19,8 +19,13 @@ from .solver import random_solved
 
 # Mega 16x16 SE bands. The 256-cell grid is over-constrained relative to 9x9
 # in the sense that singletons cascade fast — most boards solve at tier 1-2
-# with SE 1.0-3.9. We tune max_removals per band; SE bands stay aligned with
-# classic. Removal targets scale ~3.2x from 9x9 (256/81).
+# with SE 1.0-3.9. SE bands stay aligned with classic; max_removals are
+# tuned per band. Raw scaling from 9x9 (256/81 ≈ 3.16x) gives lower bounds;
+# actual targets are rounded up ~10-15 cells to compensate for the faster
+# cascade and will be re-tuned empirically once generation runs land.
+# tough/diabolical bands omitted: at N=16 the current technique stack is
+# unlikely to encounter tier-4+ patterns frequently enough to make those
+# bands ship-able.
 MEGA_DIFFICULTY_BANDS: dict[str, tuple[float, float, int]] = {
     "very-easy": (1.0, 1.4, 130),
     "easy":      (1.5, 2.4, 160),
