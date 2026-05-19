@@ -19,6 +19,7 @@ import readline from 'node:readline'
 import {
   CLASSIC_6,
   CLASSIC_9,
+  CLASSIC_16,
   createAntiKingConstraint,
   createAntiKnightConstraint,
   createClassicConstraint,
@@ -106,6 +107,7 @@ function parseLine(line: string): GradeRequest {
 
 function shapeForRequest(req: GradeRequest): GridShape {
   if (req.size === 6 || req.variant === 'mini-6') return CLASSIC_6
+  if (req.size === 16 || req.variant === 'mega-16') return CLASSIC_16
   return CLASSIC_9
 }
 
