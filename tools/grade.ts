@@ -118,6 +118,7 @@ function constraintsForRequest(
   switch (req.variant) {
     case 'classic':
     case 'mini-6':
+    case 'mega-16':
       return [createClassicConstraint({ shape })]
     case 'x-diagonal':
       return [createClassicConstraint({ shape }), createXDiagonalConstraint({ shape })]
