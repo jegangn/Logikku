@@ -34,11 +34,21 @@ describe('digitFromGlyph', () => {
 
   it('parses "A".."G" to 10..16', () => {
     expect(digitFromGlyph('A')).toBe(10)
+    expect(digitFromGlyph('B')).toBe(11)
+    expect(digitFromGlyph('C')).toBe(12)
+    expect(digitFromGlyph('D')).toBe(13)
+    expect(digitFromGlyph('E')).toBe(14)
+    expect(digitFromGlyph('F')).toBe(15)
     expect(digitFromGlyph('G')).toBe(16)
   })
 
   it('parses lowercase "a".."g" to 10..16', () => {
     expect(digitFromGlyph('a')).toBe(10)
+    expect(digitFromGlyph('b')).toBe(11)
+    expect(digitFromGlyph('c')).toBe(12)
+    expect(digitFromGlyph('d')).toBe(13)
+    expect(digitFromGlyph('e')).toBe(14)
+    expect(digitFromGlyph('f')).toBe(15)
     expect(digitFromGlyph('g')).toBe(16)
   })
 
