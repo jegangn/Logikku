@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { gradePuzzle, difficultyFromSE } from './se'
-import { parsePuzzle, createGrid, setValue, CLASSIC_9 } from '../grid'
+import { parsePuzzle, createGrid, setValue, CLASSIC_9, CLASSIC_16, cellAt, cloneGrid, recomputeCandidates } from '../grid'
 import { createClassicConstraint } from '../constraints/classic'
+import { backtrackingSolve } from '../solver/backtrack'
+import type { Digit } from '../types'
 import { EASY_FIXTURES, HARD_FIXTURES } from '../__fixtures__/classic'
 
 function loadClassic(p: string) {
@@ -68,5 +70,30 @@ describe('difficultyFromSE', () => {
     expect(difficultyFromSE(6.0)).toBe('tough')
     expect(difficultyFromSE(6.5)).toBe('expert')
     expect(difficultyFromSE(8.0)).toBe('diabolical')
+  })
+})
+
+describe('gradePuzzle at N=16', () => {
+  it('grades a singles-only 16x16 puzzle in the 1.0-3.0 SE range', { timeout: 30000 }, () => {
+    const shape = CLASSIC_16
+    const empty = createGrid(shape, [createClassicConstraint({ shape })])
+    const filled = backtrackingSolve(empty, { maxSolutions: 1 })
+    expect(filled.hasSolution).toBe(true)
+    const solution = cloneGrid(filled.solutions[0]!)
+    const blanks: Array<[number, number]> = [
+      [0, 0], [1, 5], [2, 10], [3, 15],
+      [7, 3], [9, 8], [12, 2], [14, 13],
+    ]
+    for (const [r, c] of blanks) {
+      const cell = cellAt(solution, { r, c })
+      cell.value = null
+      cell.candidates = new Set<Digit>()
+      for (let d = 1; d <= 16; d++) cell.candidates.add(d as Digit)
+    }
+    recomputeCandidates(solution)
+    const result = gradePuzzle(solution)
+    expect(result.solvable).toBe(true)
+    expect(result.se).toBeGreaterThanOrEqual(1.0)
+    expect(result.se).toBeLessThanOrEqual(3.0)
   })
 })

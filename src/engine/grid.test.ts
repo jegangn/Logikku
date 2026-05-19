@@ -198,3 +198,40 @@ describe('applyEliminations', () => {
     expect(cellAt(grid, { r: 4, c: 0 }).candidates.has(7)).toBe(false)
   })
 })
+
+describe('parsePuzzle at N=16', () => {
+  it('round-trips a hex 256-char string', () => {
+    let s = ''
+    for (let i = 0; i < 256; i++) {
+      const d = (i % 16) + 1
+      s += d <= 9 ? String(d) : String.fromCharCode(55 + d)
+    }
+    const grid = parsePuzzle(s, CLASSIC_16)
+    expect(serializePuzzle(grid)).toBe(s)
+  })
+
+  it('parses A-G as 10-16', () => {
+    const s = 'A' + '0'.repeat(255)
+    const grid = parsePuzzle(s, CLASSIC_16)
+    expect(cellAt(grid, { r: 0, c: 0 }).value).toBe(10)
+    const s2 = 'G' + '0'.repeat(255)
+    const grid2 = parsePuzzle(s2, CLASSIC_16)
+    expect(cellAt(grid2, { r: 0, c: 0 }).value).toBe(16)
+  })
+
+  it('rejects out-of-range hex chars at N=16', () => {
+    const s = 'H' + '0'.repeat(255)
+    expect(() => parsePuzzle(s, CLASSIC_16)).toThrow()
+  })
+})
+
+describe('peersOf at N=16', () => {
+  it('returns 39 unique peers for corner cell (0,0) (15 row + 15 col + 15 box - 6 overlap)', () => {
+    const peers = peersOf({ r: 0, c: 0 }, CLASSIC_16)
+    expect(peers.length).toBe(39)
+    // Verify no duplicates and the cell itself is excluded.
+    const set = new Set(peers.map((p) => `${p.r},${p.c}`))
+    expect(set.size).toBe(39)
+    expect(set.has('0,0')).toBe(false)
+  })
+})
