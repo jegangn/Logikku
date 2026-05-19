@@ -133,3 +133,18 @@ Same shape as Killer / Mini-6 / Thermometer / Arrow: little-killer diagonals, sa
 
 ### Constraint metadata via typed widening — 2026-05-14
 For Killer we used `NamedRegion.sum` to round-trip cage targets through the `Grid -> constraint -> region` channel. For Phase-14 outside-clue variants, each constraint instead exposes a typed `diagonals` / `lines` property on the returned constraint object (widened return type, e.g. `LittleKillerConstraint extends Constraint`). Techniques access it via `constraint.kind === 'little-killer'` type narrowing. Cleaner than stashing in `id` strings or NamedRegion metadata, and works fine because the Constraint interface in `types.ts` is open (TS happily widens it on return).
+
+### Palindrome paths from a random solved grid have ~1% acceptance — 2026-05-14
+A random length-3 orthogonal walk in a classic solved grid has roughly 1/9 ≈ 11% chance of being palindromic (endpoints share a digit). For length 4 (two mirror pairs) that drops to ~1.2%, length 5 the same. With 3 paths per puzzle the joint probability is harsh — first attempt at 4 paths × length 3-5 ran at 0.1% acceptance (2300+ attempts for 3 puzzles). Trim: PATHS_PER_PUZZLE=3, PATH_MAX_LEN=4. Acceptance climbs to ~0.8%. Length-3 paths dominate the output because length-4 needs both mirror pairs to match. Renban and German Whispers don't have this problem (constraint is local, not symmetric).
+
+### Path-variant banks pin SE at 2.4 — 2026-05-14
+Same shape as Killer / Mini-6 / Thermometer / Arrow / outside-clue variants: palindrome, renban, and german-whispers all give the TS grader enough information that puzzles solve via tier-1 techniques alone. Density-gate via `max_removals` (40 / 50 / 58 / 66 / 81) across the 5 bands and document that "diabolical" is about givens-sparsity, not technique difficulty.
+
+### Palindrome hard+ acceptance collapses to 0.02-0.1% — 2026-05-17
+Easy / medium palindrome accept at ~0.8% (3 paths × length 3-4 with mirror-pair matching). Hard / expert / diabolical drop to 0.02-0.1% because the classic-only digger over-removes givens that the TS grader's palindrome-aware solver then rejects for non-uniqueness — far more aggressively than renban/whispers (whose constraints are local, not symmetric). Phase 15 ships palindrome at trimmed counts (easy/medium 110, hard 50, expert 30, diabolical 20) — wall-clock to fill hard+ at 110 each would be days. Renban and Whispers fill 110/band across all 5 bands fine. Future fix: make the Python digger palindrome-aware before removing endpoints whose mirror is already empty.
+
+### Long Windows grader runs accumulate pipe / GC pressure — 2026-05-17
+A single `bun tools/grade.ts` subprocess handling 50k+ grade calls eventually stalls on stdio writes on Windows. Cause is opaque (Windows pipe buffering + bun GC + V8 long-lived strings interacting badly). Fix: `GraderBridge` now preemptively kills and respawns the subprocess every `RESTART_EVERY = 3000` calls, with a 250ms sleep before respawn to let Windows release pipe handles. Restart cost is ~200ms — negligible at the 3000-call cadence. Without this, the diabolical bank fill would die ~3 hours in.
+
+### ESLint multi-tsconfigRootDir error from in-repo worktrees — 2026-05-17
+`bun run lint` emits `No tsconfigRootDir was set, and multiple candidate TSConfigRootDirs are present` and points at `.claude/worktrees/<name>` paths. Cause: Claude Code worktrees live under `.claude/worktrees/` inside the project root and each has its own `tsconfig.json`, so the TS-ESLint parser sees multiple root candidates per file. Fix: add `.claude/**`, `dev-dist/**`, `coverage/**` to `globalIgnores` in `eslint.config.js`. Also caught `dev-dist/` and `coverage/` were being linted by accident — those are build/test output, not source.

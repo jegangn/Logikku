@@ -9,6 +9,7 @@ import { pickPuzzle } from '@/puzzles'
 import type { Difficulty, Digit } from '@/engine'
 import type { EdgeMarkRecord } from '@/state/gameStore'
 import type { OutsideClueDisplay } from '@/ui/board/overlays/OutsideClueOverlay'
+import type { VariantPath } from '@/ui/board/overlays/PathOverlay'
 
 const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   'very-easy': 'Very Easy',
@@ -39,6 +40,9 @@ const VARIANT_LABELS: Record<string, string> = {
   'little-killer': 'Little Killer',
   sandwich: 'Sandwich',
   skyscraper: 'Skyscraper',
+  palindrome: 'Palindrome',
+  renban: 'Renban',
+  'german-whispers': 'German Whispers',
 }
 
 export function Play() {
@@ -66,6 +70,7 @@ export function Play() {
   const littleKillerClues = useGameStore((s) => s.littleKillerClues)
   const sandwichClues = useGameStore((s) => s.sandwichClues)
   const skyscraperClues = useGameStore((s) => s.skyscraperClues)
+  const paths = useGameStore((s) => s.paths)
 
   const loadPuzzle = useGameStore((s) => s.loadPuzzle)
   const select = useGameStore((s) => s.select)
@@ -123,6 +128,7 @@ export function Play() {
           ...(next.skyscraperClues
             ? { skyscraperClues: next.skyscraperClues }
             : {}),
+          ...(next.paths ? { paths: next.paths } : {}),
         })
       }
       if (!target) {
@@ -198,6 +204,10 @@ export function Play() {
     }
     return undefined
   })()
+  const variantPaths: ReadonlyArray<VariantPath> | undefined =
+    paths && paths.length > 0
+      ? paths.map((p) => ({ id: p.id, kind: p.kind, cells: p.cells }))
+      : undefined
   useEffect(() => {
     function onKey(ev: KeyboardEvent) {
       if (ev.target instanceof HTMLInputElement) return
@@ -272,6 +282,7 @@ export function Play() {
         {...(arrows ? { arrows } : {})}
         {...(cages ? { cages } : {})}
         {...(outsideClues ? { outsideClues } : {})}
+        {...(variantPaths ? { paths: variantPaths } : {})}
         onSelect={select}
       />
       <InputPad

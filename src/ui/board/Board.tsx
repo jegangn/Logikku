@@ -8,6 +8,7 @@ import type { ThermometerPath } from './overlays/ThermometerOverlay'
 import type { ArrowShape } from './overlays/ArrowOverlay'
 import type { CageShape } from './overlays/KillerOverlay'
 import type { OutsideClueDisplay } from './overlays/OutsideClueOverlay'
+import type { VariantPath } from './overlays/PathOverlay'
 
 export interface BoardProps {
   readonly grid: Grid
@@ -29,6 +30,8 @@ export interface BoardProps {
   readonly cages?: ReadonlyArray<CageShape>
   /** Little-killer / Sandwich / Skyscraper: outside-the-grid clues. */
   readonly outsideClues?: ReadonlyArray<OutsideClueDisplay>
+  /** Palindrome / Renban / German Whispers: paths through cells. */
+  readonly paths?: ReadonlyArray<VariantPath>
   readonly onSelect: (coord: Coord) => void
 }
 
@@ -47,6 +50,7 @@ export function Board({
   arrows,
   cages,
   outsideClues,
+  paths,
   onSelect,
 }: BoardProps) {
   const size = grid.shape.size
@@ -126,6 +130,7 @@ export function Board({
         {...(arrows !== undefined ? { arrows } : {})}
         {...(cages !== undefined ? { cages } : {})}
         {...(outsideClues !== undefined ? { outsideClues } : {})}
+        {...(paths !== undefined ? { paths } : {})}
       />
     </svg>
   )

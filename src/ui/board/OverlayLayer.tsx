@@ -17,6 +17,7 @@ import {
   OutsideClueOverlay,
   type OutsideClueDisplay,
 } from './overlays/OutsideClueOverlay'
+import { PathOverlay, type VariantPath } from './overlays/PathOverlay'
 
 export interface OverlayLayerProps {
   readonly gridSize: number
@@ -36,6 +37,8 @@ export interface OverlayLayerProps {
   readonly cages?: ReadonlyArray<CageShape>
   /** Little-killer / Sandwich / Skyscraper: outside clues to render in the margin. */
   readonly outsideClues?: ReadonlyArray<OutsideClueDisplay>
+  /** Palindrome / Renban / German Whispers: curves through cells. */
+  readonly paths?: ReadonlyArray<VariantPath>
 }
 
 export function OverlayLayer({
@@ -49,6 +52,7 @@ export function OverlayLayer({
   arrows,
   cages,
   outsideClues,
+  paths,
   children,
 }: PropsWithChildren<OverlayLayerProps>) {
   const isEdgeVariant =
@@ -82,6 +86,9 @@ export function OverlayLayer({
           cellSize={cellSize}
           clues={outsideClues}
         />
+      )}
+      {paths && paths.length > 0 && (
+        <PathOverlay gridSize={gridSize} cellSize={cellSize} paths={paths} />
       )}
       {variant === 'x-diagonal' && (
         <XDiagonalOverlay gridSize={gridSize} cellSize={cellSize} />

@@ -102,14 +102,11 @@ export function createArrowConstraint(params: ArrowParams = {}): Constraint {
           (co) => cellAt(grid, co).value !== null,
         )
         if (!headFull || !tailFull) continue
-        let headVal = 0
-        if (arrow.head.length === 1) {
-          headVal = cellAt(grid, arrow.head[0]!).value!
-        } else {
-          headVal =
-            10 * cellAt(grid, arrow.head[0]!).value! +
-            cellAt(grid, arrow.head[1]!).value!
-        }
+        const headVal =
+          arrow.head.length === 1
+            ? cellAt(grid, arrow.head[0]!).value!
+            : 10 * cellAt(grid, arrow.head[0]!).value! +
+              cellAt(grid, arrow.head[1]!).value!
         let tailSum = 0
         for (const co of arrow.tail) tailSum += cellAt(grid, co).value!
         if (headVal !== tailSum) return false
@@ -219,14 +216,11 @@ export function createArrowConstraint(params: ArrowParams = {}): Constraint {
           (co) => cellAt(grid, co).value !== null,
         )
         if (!headFull || !tailFull) continue
-        let headVal = 0
-        if (arrow.head.length === 1) {
-          headVal = cellAt(grid, arrow.head[0]!).value!
-        } else {
-          headVal =
-            10 * cellAt(grid, arrow.head[0]!).value! +
-            cellAt(grid, arrow.head[1]!).value!
-        }
+        const headVal =
+          arrow.head.length === 1
+            ? cellAt(grid, arrow.head[0]!).value!
+            : 10 * cellAt(grid, arrow.head[0]!).value! +
+              cellAt(grid, arrow.head[1]!).value!
         let tailSum = 0
         for (const co of arrow.tail) tailSum += cellAt(grid, co).value!
         if (headVal !== tailSum) {

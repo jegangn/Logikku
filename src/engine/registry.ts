@@ -16,6 +16,9 @@ import { createKillerConstraint } from './constraints/killer'
 import { createLittleKillerConstraint } from './constraints/little-killer'
 import { createSandwichConstraint } from './constraints/sandwich'
 import { createSkyscraperConstraint } from './constraints/skyscraper'
+import { createPalindromeConstraint } from './constraints/palindrome'
+import { createRenbanConstraint } from './constraints/renban'
+import { createGermanWhispersConstraint } from './constraints/german-whispers'
 import { createStubConstraint } from './constraints/_stub'
 
 export const ALL_CONSTRAINT_KINDS: ReadonlyArray<ConstraintKind> = [
@@ -66,6 +69,9 @@ register('killer', (p) => createKillerConstraint(p as object))
 register('little-killer', (p) => createLittleKillerConstraint(p as object))
 register('sandwich', (p) => createSandwichConstraint(p as object))
 register('skyscraper', (p) => createSkyscraperConstraint(p as object))
+register('palindrome', (p) => createPalindromeConstraint(p as object))
+register('renban', (p) => createRenbanConstraint(p as object))
+register('german-whispers', (p) => createGermanWhispersConstraint(p as object))
 for (const kind of ALL_CONSTRAINT_KINDS) {
   if (registry.has(kind)) continue
   register(kind, () => createStubConstraint(kind))

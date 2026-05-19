@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { t } from '@/i18n/en'
 
 const DISMISS_KEY = 'logikku:installBannerDismissed'
@@ -17,19 +17,19 @@ function isIOS(): boolean {
   return ua.includes('Mac') && 'ontouchend' in document
 }
 
-export function InstallBanner() {
-  const [visible, setVisible] = useState(false)
+function shouldShowBanner(): boolean {
+  if (isStandalone()) return false
+  if (!isIOS()) return false
+  try {
+    if (localStorage.getItem(DISMISS_KEY) === '1') return false
+  } catch {
+    return false
+  }
+  return true
+}
 
-  useEffect(() => {
-    if (isStandalone()) return
-    if (!isIOS()) return
-    try {
-      if (localStorage.getItem(DISMISS_KEY) === '1') return
-    } catch {
-      return
-    }
-    setVisible(true)
-  }, [])
+export function InstallBanner() {
+  const [visible, setVisible] = useState(shouldShowBanner)
 
   if (!visible) return null
 

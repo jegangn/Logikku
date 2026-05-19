@@ -92,6 +92,30 @@ export type {
   SkyscraperParams,
   SkyscraperSide,
 } from './constraints/skyscraper'
+export {
+  createPalindromeConstraint,
+  palindromePathsOf,
+} from './constraints/palindrome'
+export type {
+  PalindromeConstraint,
+  PalindromeParams,
+  PalindromePath,
+} from './constraints/palindrome'
+export { createRenbanConstraint, renbanPathsOf } from './constraints/renban'
+export type {
+  RenbanConstraint,
+  RenbanParams,
+  RenbanPath,
+} from './constraints/renban'
+export {
+  createGermanWhispersConstraint,
+  germanWhispersPathsOf,
+} from './constraints/german-whispers'
+export type {
+  GermanWhispersConstraint,
+  GermanWhispersParams,
+  GermanWhispersPath,
+} from './constraints/german-whispers'
 export { backtrackingSolve } from './solver/backtrack'
 export { techniqueSolve, ALL_TECHNIQUES } from './solver/techniqueSolver'
 export { gradePuzzle, difficultyFromSE } from './grader/se'

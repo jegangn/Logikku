@@ -64,6 +64,12 @@ export interface PuzzleRecord {
     readonly index: number
     readonly count: number
   }>
+  /** Palindrome / Renban / German Whispers: marked paths through cells. */
+  readonly paths?: ReadonlyArray<{
+    readonly id: string
+    readonly kind: 'palindrome' | 'renban' | 'german-whispers'
+    readonly cells: ReadonlyArray<{ readonly r: number; readonly c: number }>
+  }>
 }
 
 export type PuzzleBank = ReadonlyArray<PuzzleRecord>

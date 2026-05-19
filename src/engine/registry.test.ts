@@ -112,6 +112,9 @@ describe('ConstraintRegistry', () => {
     'little-killer',
     'sandwich',
     'skyscraper',
+    'palindrome',
+    'renban',
+    'german-whispers',
   ])
   const STUB_KINDS = ALL_CONSTRAINT_KINDS.filter((k) => !IMPLEMENTED_KINDS.has(k))
 

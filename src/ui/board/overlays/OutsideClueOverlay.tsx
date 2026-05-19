@@ -33,8 +33,8 @@ export function OutsideClueOverlay({
   const fontSize = Math.max(11, Math.round(cellSize * 0.32))
 
   for (const clue of clues) {
-    let cx = 0
-    let cy = 0
+    let cx: number
+    let cy: number
     if (clue.side === 'top') {
       cx = clue.index * cellSize + half
       cy = -half + 6
@@ -65,8 +65,8 @@ export function OutsideClueOverlay({
     if (clue.direction) {
       // Draw a small diagonal arrow next to the label pointing into the grid.
       const len = cellSize * 0.28
-      let dx = 0
-      let dy = 0
+      let dx: number
+      let dy: number
       if (clue.direction === 'SE') {
         dx = len
         dy = len

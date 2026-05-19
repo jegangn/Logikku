@@ -180,6 +180,35 @@ function assertRecord(r: unknown, key: BankKey): asserts r is PuzzleRecord {
       }
     }
   }
+  if (obj['paths'] !== undefined) {
+    if (!Array.isArray(obj['paths'])) {
+      throw new Error(`bank ${key.variant}/${key.difficulty}: 'paths' must be an array`)
+    }
+    for (const path of obj['paths'] as unknown[]) {
+      if (typeof path !== 'object' || path === null) {
+        throw new Error(`bank ${key.variant}/${key.difficulty}: each path must be an object`)
+      }
+      const p = path as Record<string, unknown>
+      if (typeof p['id'] !== 'string') {
+        throw new Error(`bank ${key.variant}/${key.difficulty}: path id must be a string`)
+      }
+      if (typeof p['kind'] !== 'string') {
+        throw new Error(`bank ${key.variant}/${key.difficulty}: path kind must be a string`)
+      }
+      if (!Array.isArray(p['cells'])) {
+        throw new Error(`bank ${key.variant}/${key.difficulty}: path cells must be an array`)
+      }
+      for (const pt of p['cells'] as unknown[]) {
+        if (typeof pt !== 'object' || pt === null) {
+          throw new Error(`bank ${key.variant}/${key.difficulty}: path cell must be {r,c}`)
+        }
+        const cell = pt as Record<string, unknown>
+        if (typeof cell['r'] !== 'number' || typeof cell['c'] !== 'number') {
+          throw new Error(`bank ${key.variant}/${key.difficulty}: path cell must have numeric r,c`)
+        }
+      }
+    }
+  }
   if (obj['edges'] !== undefined) {
     if (!Array.isArray(obj['edges'])) {
       throw new Error(`bank ${key.variant}/${key.difficulty}: 'edges' must be an array`)

@@ -23,6 +23,7 @@ import {
   createAntiKnightConstraint,
   createClassicConstraint,
   createEvenOddConstraint,
+  createGermanWhispersConstraint,
   createGreaterThanConstraint,
   createHyperConstraint,
   createJigsawConstraint,
@@ -31,6 +32,8 @@ import {
   createKillerConstraint,
   createLittleKillerConstraint,
   createNonConsecutiveConstraint,
+  createPalindromeConstraint,
+  createRenbanConstraint,
   createSandwichConstraint,
   createSkyscraperConstraint,
   createThermometerConstraint,
@@ -45,9 +48,12 @@ import {
   type GridShape,
   type Arrow,
   type Cage,
+  type GermanWhispersPath,
   type GreaterThanEdge,
   type KropkiEdge,
   type LittleKillerClue,
+  type PalindromePath,
+  type RenbanPath,
   type SandwichClue,
   type SkyscraperClue,
   type Thermometer,
@@ -65,6 +71,12 @@ interface EdgeRecord {
   readonly kind: string
 }
 
+interface PathRecord {
+  readonly id: string
+  readonly kind: 'palindrome' | 'renban' | 'german-whispers'
+  readonly cells: ReadonlyArray<{ readonly r: number; readonly c: number }>
+}
+
 interface GradeRequest {
   readonly variant: string
   readonly puzzle: string
@@ -78,6 +90,7 @@ interface GradeRequest {
   readonly littleKillerClues?: ReadonlyArray<LittleKillerClue>
   readonly sandwichClues?: ReadonlyArray<SandwichClue>
   readonly skyscraperClues?: ReadonlyArray<SkyscraperClue>
+  readonly paths?: ReadonlyArray<PathRecord>
 }
 
 function parseLine(line: string): GradeRequest {
@@ -198,6 +211,33 @@ function constraintsForRequest(
         createSkyscraperConstraint({ shape, clues }),
       ]
     }
+    case 'palindrome': {
+      const paths: PalindromePath[] = (req.paths ?? [])
+        .filter((p) => p.kind === 'palindrome')
+        .map((p) => ({ id: p.id, cells: p.cells }))
+      return [
+        createClassicConstraint({ shape }),
+        createPalindromeConstraint({ shape, paths }),
+      ]
+    }
+    case 'renban': {
+      const paths: RenbanPath[] = (req.paths ?? [])
+        .filter((p) => p.kind === 'renban')
+        .map((p) => ({ id: p.id, cells: p.cells }))
+      return [
+        createClassicConstraint({ shape }),
+        createRenbanConstraint({ shape, paths }),
+      ]
+    }
+    case 'german-whispers': {
+      const paths: GermanWhispersPath[] = (req.paths ?? [])
+        .filter((p) => p.kind === 'german-whispers')
+        .map((p) => ({ id: p.id, cells: p.cells }))
+      return [
+        createClassicConstraint({ shape }),
+        createGermanWhispersConstraint({ shape, paths }),
+      ]
+    }
     default:
       throw new Error(`unknown variant: ${req.variant}`)
   }
@@ -225,7 +265,10 @@ rl.on('line', (raw) => {
       req.variant === 'killer' ||
       req.variant === 'little-killer' ||
       req.variant === 'sandwich' ||
-      req.variant === 'skyscraper'
+      req.variant === 'skyscraper' ||
+      req.variant === 'palindrome' ||
+      req.variant === 'renban' ||
+      req.variant === 'german-whispers'
     ) {
       recomputeCandidates(grid)
     }

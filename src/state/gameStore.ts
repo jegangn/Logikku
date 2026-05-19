@@ -9,6 +9,7 @@ import {
   createArrowConstraint,
   createClassicConstraint,
   createEvenOddConstraint,
+  createGermanWhispersConstraint,
   createGreaterThanConstraint,
   createHyperConstraint,
   createJigsawConstraint,
@@ -16,6 +17,8 @@ import {
   createKropkiConstraint,
   createLittleKillerConstraint,
   createNonConsecutiveConstraint,
+  createPalindromeConstraint,
+  createRenbanConstraint,
   createSandwichConstraint,
   createSkyscraperConstraint,
   createThermometerConstraint,
@@ -31,11 +34,14 @@ import {
   type Digit,
   type Arrow,
   type Cage,
+  type GermanWhispersPath,
   type Grid,
   type GreaterThanEdge,
   type GridShape,
   type KropkiEdge,
   type LittleKillerClue,
+  type PalindromePath,
+  type RenbanPath,
   type SandwichClue,
   type SkyscraperClue,
   type Thermometer,
@@ -110,6 +116,12 @@ export interface GameState {
   sandwichClues: ReadonlyArray<SandwichClue> | null
   /** Skyscraper: row/column visibility clues. */
   skyscraperClues: ReadonlyArray<SkyscraperClue> | null
+  /** Palindrome / Renban / German Whispers: marked paths through cells. */
+  paths: ReadonlyArray<{
+    readonly id: string
+    readonly kind: 'palindrome' | 'renban' | 'german-whispers'
+    readonly cells: ReadonlyArray<Coord>
+  }> | null
 
   loadPuzzle: (args: {
     id: string
@@ -125,6 +137,11 @@ export interface GameState {
     littleKillerClues?: ReadonlyArray<LittleKillerClue>
     sandwichClues?: ReadonlyArray<SandwichClue>
     skyscraperClues?: ReadonlyArray<SkyscraperClue>
+    paths?: ReadonlyArray<{
+      readonly id: string
+      readonly kind: 'palindrome' | 'renban' | 'german-whispers'
+      readonly cells: ReadonlyArray<Coord>
+    }>
   }) => void
   hydrate: (saved: SavedGame) => void
   select: (coord: Coord | null) => void
@@ -181,6 +198,11 @@ function constraintsForVariant(
     littleKillerClues?: ReadonlyArray<LittleKillerClue>
     sandwichClues?: ReadonlyArray<SandwichClue>
     skyscraperClues?: ReadonlyArray<SkyscraperClue>
+    paths?: ReadonlyArray<{
+      readonly id: string
+      readonly kind: 'palindrome' | 'renban' | 'german-whispers'
+      readonly cells: ReadonlyArray<Coord>
+    }>
   } = {},
 ): ReadonlyArray<Constraint> {
   const shape = shapeForVariant(variant)
@@ -266,6 +288,24 @@ function constraintsForVariant(
       createSkyscraperConstraint({ shape, clues: options.skyscraperClues ?? [] }),
     ]
   }
+  if (variant === 'palindrome') {
+    const paths: PalindromePath[] = (options.paths ?? [])
+      .filter((p) => p.kind === 'palindrome')
+      .map((p) => ({ id: p.id, cells: p.cells }))
+    return [classic, createPalindromeConstraint({ shape, paths })]
+  }
+  if (variant === 'renban') {
+    const paths: RenbanPath[] = (options.paths ?? [])
+      .filter((p) => p.kind === 'renban')
+      .map((p) => ({ id: p.id, cells: p.cells }))
+    return [classic, createRenbanConstraint({ shape, paths })]
+  }
+  if (variant === 'german-whispers') {
+    const paths: GermanWhispersPath[] = (options.paths ?? [])
+      .filter((p) => p.kind === 'german-whispers')
+      .map((p) => ({ id: p.id, cells: p.cells }))
+    return [classic, createGermanWhispersConstraint({ shape, paths })]
+  }
   return [classic]
 }
 
@@ -294,6 +334,11 @@ function freshGridFromGivens(
     littleKillerClues?: ReadonlyArray<LittleKillerClue>
     sandwichClues?: ReadonlyArray<SandwichClue>
     skyscraperClues?: ReadonlyArray<SkyscraperClue>
+    paths?: ReadonlyArray<{
+      readonly id: string
+      readonly kind: 'palindrome' | 'renban' | 'german-whispers'
+      readonly cells: ReadonlyArray<Coord>
+    }>
   } = {},
 ): Grid {
   const shape = shapeForVariant(variant)
@@ -310,7 +355,10 @@ function freshGridFromGivens(
     variant === 'killer' ||
     variant === 'little-killer' ||
     variant === 'sandwich' ||
-    variant === 'skyscraper'
+    variant === 'skyscraper' ||
+    variant === 'palindrome' ||
+    variant === 'renban' ||
+    variant === 'german-whispers'
   ) {
     recomputeCandidates(grid)
   }
@@ -337,6 +385,11 @@ function gridFromSnapshot(
     littleKillerClues?: ReadonlyArray<LittleKillerClue>
     sandwichClues?: ReadonlyArray<SandwichClue>
     skyscraperClues?: ReadonlyArray<SkyscraperClue>
+    paths?: ReadonlyArray<{
+      readonly id: string
+      readonly kind: 'palindrome' | 'renban' | 'german-whispers'
+      readonly cells: ReadonlyArray<Coord>
+    }>
   } = {},
 ): Grid {
   const grid = freshGridFromGivens(givens, variant, options)
@@ -405,6 +458,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   littleKillerClues: null,
   sandwichClues: null,
   skyscraperClues: null,
+  paths: null,
 
   loadPuzzle: ({
     id,
@@ -420,6 +474,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     littleKillerClues,
     sandwichClues,
     skyscraperClues,
+    paths,
   }) => {
     const now = new Date().toISOString()
     const opts: {
@@ -432,6 +487,11 @@ export const useGameStore = create<GameState>((set, get) => ({
       littleKillerClues?: ReadonlyArray<LittleKillerClue>
       sandwichClues?: ReadonlyArray<SandwichClue>
       skyscraperClues?: ReadonlyArray<SkyscraperClue>
+      paths?: ReadonlyArray<{
+        readonly id: string
+        readonly kind: 'palindrome' | 'renban' | 'german-whispers'
+        readonly cells: ReadonlyArray<Coord>
+      }>
     } = {}
     if (regions !== undefined) opts.regions = regions
     if (parityMask !== undefined) opts.parityMask = parityMask
@@ -442,6 +502,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (littleKillerClues !== undefined) opts.littleKillerClues = littleKillerClues
     if (sandwichClues !== undefined) opts.sandwichClues = sandwichClues
     if (skyscraperClues !== undefined) opts.skyscraperClues = skyscraperClues
+    if (paths !== undefined) opts.paths = paths
     const shape = shapeForVariant(variant)
     set({
       grid: freshGridFromGivens(givens, variant, opts),
@@ -469,6 +530,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       littleKillerClues: littleKillerClues ?? null,
       sandwichClues: sandwichClues ?? null,
       skyscraperClues: skyscraperClues ?? null,
+      paths: paths ?? null,
     })
   },
 
@@ -490,6 +552,13 @@ export const useGameStore = create<GameState>((set, get) => ({
     const skyscraperClues = saved.skyscraperClues as
       | ReadonlyArray<SkyscraperClue>
       | undefined
+    const paths = saved.paths as
+      | ReadonlyArray<{
+          readonly id: string
+          readonly kind: 'palindrome' | 'renban' | 'german-whispers'
+          readonly cells: ReadonlyArray<Coord>
+        }>
+      | undefined
     const opts: {
       regions?: ReadonlyArray<ReadonlyArray<number>>
       parityMask?: string
@@ -500,6 +569,11 @@ export const useGameStore = create<GameState>((set, get) => ({
       littleKillerClues?: ReadonlyArray<LittleKillerClue>
       sandwichClues?: ReadonlyArray<SandwichClue>
       skyscraperClues?: ReadonlyArray<SkyscraperClue>
+      paths?: ReadonlyArray<{
+        readonly id: string
+        readonly kind: 'palindrome' | 'renban' | 'german-whispers'
+        readonly cells: ReadonlyArray<Coord>
+      }>
     } = {}
     if (regions !== undefined) opts.regions = regions
     if (parityMask !== undefined) opts.parityMask = parityMask
@@ -510,6 +584,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (littleKillerClues !== undefined) opts.littleKillerClues = littleKillerClues
     if (sandwichClues !== undefined) opts.sandwichClues = sandwichClues
     if (skyscraperClues !== undefined) opts.skyscraperClues = skyscraperClues
+    if (paths !== undefined) opts.paths = paths
     const grid = gridFromSnapshot(saved.givens, saved.variant, saved.cells, opts)
     const history: HistoryEntry[] = saved.history.map(savedHistoryToEntry)
     const shape = shapeForVariant(saved.variant)
@@ -539,6 +614,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       littleKillerClues: littleKillerClues ?? null,
       sandwichClues: sandwichClues ?? null,
       skyscraperClues: skyscraperClues ?? null,
+      paths: paths ?? null,
     })
   },
 
@@ -808,6 +884,7 @@ export function serializeGameForSave(state: GameState): SavedGame | null {
       : {}),
     ...(state.sandwichClues ? { sandwichClues: state.sandwichClues } : {}),
     ...(state.skyscraperClues ? { skyscraperClues: state.skyscraperClues } : {}),
+    ...(state.paths ? { paths: state.paths } : {}),
   }
 }
 

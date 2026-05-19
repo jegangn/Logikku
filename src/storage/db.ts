@@ -80,6 +80,12 @@ export interface SavedGame {
     readonly index: number
     readonly count: number
   }>
+  /** Palindrome / Renban / German Whispers: paths through cells. */
+  readonly paths?: ReadonlyArray<{
+    readonly id: string
+    readonly kind: 'palindrome' | 'renban' | 'german-whispers'
+    readonly cells: ReadonlyArray<{ readonly r: number; readonly c: number }>
+  }>
 }
 
 export interface SavedSettings {

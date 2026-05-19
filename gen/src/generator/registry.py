@@ -13,6 +13,10 @@ from .arrow import ARROW_DIFFICULTY_BANDS, generate_arrow
 from .classic import DIFFICULTY_BANDS as CLASSIC_BANDS
 from .classic import GeneratedPuzzle, generate_classic
 from .even_odd import EVEN_ODD_DIFFICULTY_BANDS, generate_even_odd
+from .german_whispers import (
+    GERMAN_WHISPERS_DIFFICULTY_BANDS,
+    generate_german_whispers,
+)
 from .grader_bridge import GraderBridge
 from .greater_than import GT_DIFFICULTY_BANDS, generate_greater_than
 from .hyper import HYPER_DIFFICULTY_BANDS, generate_hyper
@@ -28,6 +32,8 @@ from .non_consecutive import (
     NON_CONSECUTIVE_DIFFICULTY_BANDS,
     generate_non_consecutive,
 )
+from .palindrome import PALINDROME_DIFFICULTY_BANDS, generate_palindrome
+from .renban import RENBAN_DIFFICULTY_BANDS, generate_renban
 from .sandwich import SANDWICH_DIFFICULTY_BANDS, generate_sandwich
 from .skyscraper import SKYSCRAPER_DIFFICULTY_BANDS, generate_skyscraper
 from .thermometer import THERMO_DIFFICULTY_BANDS, generate_thermometer
@@ -56,6 +62,9 @@ REGISTRY: dict[str, GeneratorFn] = {
     "little-killer": generate_little_killer,
     "sandwich": generate_sandwich,
     "skyscraper": generate_skyscraper,
+    "palindrome": generate_palindrome,
+    "renban": generate_renban,
+    "german-whispers": generate_german_whispers,
 }
 
 
@@ -78,6 +87,9 @@ BANDS_BY_VARIANT: dict[str, dict[str, tuple[float, float, int]]] = {
     "little-killer": LITTLE_KILLER_DIFFICULTY_BANDS,
     "sandwich": SANDWICH_DIFFICULTY_BANDS,
     "skyscraper": SKYSCRAPER_DIFFICULTY_BANDS,
+    "palindrome": PALINDROME_DIFFICULTY_BANDS,
+    "renban": RENBAN_DIFFICULTY_BANDS,
+    "german-whispers": GERMAN_WHISPERS_DIFFICULTY_BANDS,
 }
 
 
