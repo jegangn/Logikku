@@ -27,6 +27,7 @@ from .little_killer import (
     LITTLE_KILLER_DIFFICULTY_BANDS,
     generate_little_killer,
 )
+from .mega import MEGA_DIFFICULTY_BANDS, generate_mega
 from .mini import MINI_DIFFICULTY_BANDS, generate_mini
 from .non_consecutive import (
     NON_CONSECUTIVE_DIFFICULTY_BANDS,
@@ -53,6 +54,7 @@ REGISTRY: dict[str, GeneratorFn] = {
     "jigsaw": generate_jigsaw,
     "even-odd": generate_even_odd,
     "mini-6": generate_mini,
+    "mega-16": generate_mega,
     "kropki": generate_kropki,
     "xv": generate_xv,
     "greater-than": generate_greater_than,
@@ -78,6 +80,7 @@ BANDS_BY_VARIANT: dict[str, dict[str, tuple[float, float, int]]] = {
     "jigsaw": JIGSAW_DIFFICULTY_BANDS,
     "even-odd": EVEN_ODD_DIFFICULTY_BANDS,
     "mini-6": MINI_DIFFICULTY_BANDS,
+    "mega-16": MEGA_DIFFICULTY_BANDS,
     "kropki": KROPKI_DIFFICULTY_BANDS,
     "xv": XV_DIFFICULTY_BANDS,
     "greater-than": GT_DIFFICULTY_BANDS,
