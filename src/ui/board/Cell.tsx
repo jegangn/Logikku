@@ -145,7 +145,7 @@ function PencilMarks({
 function ariaLabel(coord: Coord, value: Digit | null, given: boolean): string {
   const cellName = `Row ${coord.r + 1} Column ${coord.c + 1}`
   if (value === null) return `${cellName}, empty`
-  return `${cellName}, ${given ? 'given' : 'entered'} ${value}`
+  return `${cellName}, ${given ? 'given' : 'entered'} ${glyphForDigit(value)}`
 }
 
 export const Cell = memo(CellImpl)
