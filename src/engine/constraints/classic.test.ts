@@ -17,7 +17,7 @@ describe('classic at N=16', () => {
       (p) => p.digit === 12 && p.coord.r === 0 && p.coord.c === 0,
     )
     expect(placed).toBeDefined()
-    // Peer at (0, 5) — same row — should appear in removals for digit 12.
+    // Non-peer at (5, 5) — different row, col, and box — should retain candidate 12.
     expect(cellAt(grid, { r: 5, c: 5 }).candidates.has(12)).toBe(true)
   })
 })
