@@ -92,8 +92,8 @@ def grid_to_string(grid: list[list[int]]) -> str:
             elif v <= 9:
                 out.append(str(v))
             else:
-                # 10..16 -> 'A'..'G' (mirrors TS serializePuzzle)
-                out.append(chr(55 + v))
+                # 10..16 -> 'A'..'G' (digit n maps to ASCII 'A' + (n - 10))
+                out.append(chr(ord('A') - 10 + v))
     return "".join(out)
 
 
@@ -110,9 +110,9 @@ def string_to_grid(s: str, shape: Shape) -> list[list[int]]:
         if 49 <= code <= 57:  # '1'..'9'
             digit = code - 48
         elif shape.size > 9 and 65 <= code <= 90:  # 'A'..'Z'
-            digit = code - 55
+            digit = code - (ord('A') - 10)
         elif shape.size > 9 and 97 <= code <= 122:  # 'a'..'z'
-            digit = code - 87
+            digit = code - (ord('a') - 10)
         else:
             raise ValueError(f"invalid digit '{ch}' at index {i}")
         if digit < 1 or digit > shape.size:

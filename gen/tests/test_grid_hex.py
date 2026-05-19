@@ -48,3 +48,12 @@ def test_round_trip_at_size_16():
     s = grid_to_string(grid)
     back = string_to_grid(s, CLASSIC_16)
     assert back == grid
+
+
+def test_string_to_grid_rejects_hex_letter_at_size_9():
+    # Hex letters are only valid when shape.size > 9. On a 9x9 they must
+    # fall through to the "invalid digit" path.
+    from generator.grid import CLASSIC_9
+    s = "A" + "0" * 80
+    with pytest.raises(ValueError, match="A"):
+        string_to_grid(s, CLASSIC_9)
