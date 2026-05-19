@@ -82,6 +82,7 @@ export function Board({
           key={key}
           coord={{ r, c }}
           cellSize={CELL_SIZE}
+          gridSize={size}
           value={cell.value}
           candidates={cell.candidates}
           given={cell.given}
