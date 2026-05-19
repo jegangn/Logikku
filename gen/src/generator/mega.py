@@ -17,21 +17,19 @@ from .grid import CLASSIC_16, Shape, grid_to_string
 from .solver import random_solved
 
 
-# Mega 16x16 SE bands. The 256-cell grid is over-constrained relative to 9x9
-# in the sense that singletons cascade fast — most boards solve at tier 1-2
-# with SE 1.0-3.9. SE bands stay aligned with classic; max_removals are
-# tuned per band. Raw scaling from 9x9 (256/81 ≈ 3.16x) gives lower bounds;
-# actual targets are rounded up ~10-15 cells to compensate for the faster
-# cascade and will be re-tuned empirically once generation runs land.
-# tough/diabolical bands omitted: at N=16 the current technique stack is
-# unlikely to encounter tier-4+ patterns frequently enough to make those
-# bands ship-able.
+# Mega 16x16 SE bands — empirically tuned from a 70-puzzle sweep.
+# At N=16 every tier-1 puzzle grades to SE=2.4 because computeSE saturates
+# (hardSteps/12 ratio always >= 1 at this grid size — see grader/se.ts).
+# Consequence: the SE 1.0-1.4 "very-easy" band is unreachable; we ship
+# 4 bands instead of 5, and the "easy" band lower bound starts at 2.0
+# (any tier-1 puzzle). max_removals tuned per band based on observed
+# acceptance rates. Higher bands rely on tier-2+ techniques being needed,
+# which at N=16 only occurs at density >=140 holes.
 MEGA_DIFFICULTY_BANDS: dict[str, tuple[float, float, int]] = {
-    "very-easy": (1.0, 1.4, 130),
-    "easy":      (1.5, 2.4, 160),
-    "medium":    (2.5, 3.9, 185),
-    "hard":      (4.0, 5.9, 200),
-    "expert":    (6.0, 7.9, 210),
+    "easy":   (2.0, 2.4, 100),
+    "medium": (2.5, 3.9, 150),
+    "hard":   (4.0, 5.9, 170),
+    "expert": (6.0, 7.9, 190),
 }
 
 
