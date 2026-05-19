@@ -79,4 +79,25 @@ describe('InputPad', () => {
       'false',
     )
   })
+
+  it('renders 16 hex digit buttons labelled 1..G when size=16', async () => {
+    const onDigit = vi.fn()
+    render(
+      <InputPad
+        mode="value"
+        size={16}
+        onDigit={onDigit}
+        onErase={() => {}}
+        onModeChange={() => {}}
+      />,
+    )
+    for (let d = 1; d <= 16; d++) {
+      expect(screen.getByTestId(`digit-${d}`)).toBeInTheDocument()
+    }
+    // Label for digit 12 should be 'C'
+    expect(screen.getByTestId('digit-12')).toHaveTextContent('C')
+    expect(screen.getByTestId('digit-16')).toHaveTextContent('G')
+    await userEvent.setup().click(screen.getByTestId('digit-12'))
+    expect(onDigit).toHaveBeenCalledWith(12)
+  })
 })
