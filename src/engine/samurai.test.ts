@@ -167,3 +167,75 @@ describe('eraseShared', () => {
     expect(samuraiCellAt(board, 0, { r: 1, c: 1 }).candidates.has(7)).toBe(true)
   })
 })
+
+import {
+  samuraiIsComplete,
+  samuraiCloneBoard,
+  samuraiConflicts,
+} from './samurai'
+
+describe('samuraiIsComplete', () => {
+  it('returns false on an empty board', () => {
+    const board = createSamuraiBoard()
+    expect(samuraiIsComplete(board)).toBe(false)
+  })
+
+  it('returns false when only some sub-grids are full', () => {
+    const board = createSamuraiBoard()
+    // fill the center grid only
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        samuraiCellAt(board, 0, { r, c }).value = 1
+      }
+    }
+    expect(samuraiIsComplete(board)).toBe(false)
+  })
+
+  it('returns true when every cell across all sub-grids has a value', () => {
+    const board = createSamuraiBoard()
+    for (let g = 0; g < 5; g++) {
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+          samuraiCellAt(board, g, { r, c }).value = 1
+        }
+      }
+    }
+    expect(samuraiIsComplete(board)).toBe(true)
+  })
+})
+
+describe('samuraiCloneBoard', () => {
+  it('produces a deep copy: mutating the clone does not affect the original', () => {
+    const original = createSamuraiBoard()
+    setValueShared(original, 0, { r: 0, c: 0 }, 3)
+    const clone = samuraiCloneBoard(original)
+    samuraiCellAt(clone, 0, { r: 0, c: 0 }).value = 9
+    expect(samuraiCellAt(original, 0, { r: 0, c: 0 }).value).toBe(3)
+    expect(samuraiCellAt(clone, 0, { r: 0, c: 0 }).value).toBe(9)
+  })
+
+  it('clones the sharedCells map (or recomputes equivalently)', () => {
+    const original = createSamuraiBoard()
+    const clone = samuraiCloneBoard(original)
+    expect(clone.sharedCells.size).toBe(36)
+    expect(clone.sharedCells.has('0,1,1')).toBe(true)
+  })
+})
+
+describe('samuraiConflicts', () => {
+  it('returns an empty set on a fresh board', () => {
+    const board = createSamuraiBoard()
+    expect(samuraiConflicts(board).size).toBe(0)
+  })
+
+  it('flags both cells when two cells in the same sub-grid row have the same value', () => {
+    const board = createSamuraiBoard()
+    // Bypass setValueShared to avoid peer-elim clearing candidates, so we can
+    // deliberately create a conflict.
+    samuraiCellAt(board, 0, { r: 0, c: 0 }).value = 5
+    samuraiCellAt(board, 0, { r: 0, c: 1 }).value = 5
+    const conflicts = samuraiConflicts(board)
+    expect(conflicts.has('0,0,0')).toBe(true)
+    expect(conflicts.has('0,0,1')).toBe(true)
+  })
+})

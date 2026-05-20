@@ -1,5 +1,5 @@
 import type { Cell, Coord, Digit, SamuraiBoard } from './types'
-import { CLASSIC_9, cellAt, createGrid, recomputeCandidates, setValue } from './grid'
+import { CLASSIC_9, cellAt, cloneGrid, createGrid, recomputeCandidates, setValue } from './grid'
 import { createClassicConstraint } from './constraints/classic'
 
 export type CornerRole = 'NW' | 'NE' | 'SW' | 'SE'
@@ -134,4 +134,53 @@ export function eraseShared(
   for (const idx of affectedGrids) {
     recomputeCandidates(board.grids[idx]!)
   }
+}
+
+export function samuraiIsComplete(board: SamuraiBoard): boolean {
+  for (let g = 0; g < 5; g++) {
+    const grid = board.grids[g]!
+    for (let r = 0; r < grid.shape.size; r++) {
+      for (let c = 0; c < grid.shape.size; c++) {
+        if (cellAt(grid, { r, c }).value === null) return false
+      }
+    }
+  }
+  return true
+}
+
+export function samuraiCloneBoard(board: SamuraiBoard): SamuraiBoard {
+  const grids = board.grids.map((g) => cloneGrid(g)) as unknown as SamuraiBoard['grids']
+  // sharedCells is structural — safe to share by reference, since map is
+  // ReadonlyMap and entries are readonly.
+  return { grids, sharedCells: board.sharedCells }
+}
+
+/**
+ * Returns the set of cells (by global key "gridIdx,r,c") that are involved in a
+ * peer conflict within any of their containing sub-grids. The grader and UI
+ * use this to highlight problem cells.
+ */
+export function samuraiConflicts(board: SamuraiBoard): ReadonlySet<string> {
+  const out = new Set<string>()
+  for (let g = 0; g < 5; g++) {
+    const grid = board.grids[g]!
+    for (const constraint of grid.constraints) {
+      for (const region of constraint.regions) {
+        const positions = new Map<Digit, Coord[]>()
+        for (const coord of region.cells) {
+          const cell = cellAt(grid, coord)
+          if (cell.value === null) continue
+          const list = positions.get(cell.value) ?? []
+          list.push(coord)
+          positions.set(cell.value, list)
+        }
+        for (const list of positions.values()) {
+          if (list.length > 1) {
+            for (const co of list) out.add(globalCoordKey(g, co))
+          }
+        }
+      }
+    }
+  }
+  return out
 }
