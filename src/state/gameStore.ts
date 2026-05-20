@@ -43,6 +43,8 @@ import {
   type LittleKillerClue,
   type PalindromePath,
   type RenbanPath,
+  createSamuraiBoard,
+  samuraiConsistencyCheck,
   type SamuraiBoard,
   type SandwichClue,
   type SkyscraperClue,
@@ -157,6 +159,7 @@ export interface GameState {
       readonly kind: 'palindrome' | 'renban' | 'german-whispers'
       readonly cells: ReadonlyArray<Coord>
     }>
+    samuraiGivens?: ReadonlyArray<string>
   }) => void
   hydrate: (saved: SavedGame) => void
   select: (coord: Coord | null) => void
@@ -387,6 +390,27 @@ function freshGridFromGivens(
   return grid
 }
 
+function freshSamuraiBoardFromGivens(samuraiGivens: ReadonlyArray<string>): SamuraiBoard {
+  if (samuraiGivens.length !== 5) {
+    throw new Error(`expected 5 sub-grid givens for samurai, got ${samuraiGivens.length}`)
+  }
+  const board = createSamuraiBoard()
+  for (let g = 0; g < 5; g++) {
+    const parsed = parsePuzzle(samuraiGivens[g]!, board.grids[g]!.shape)
+    for (let r = 0; r < parsed.shape.size; r++) {
+      for (let c = 0; c < parsed.shape.size; c++) {
+        const src = parsed.cells[r]![c]!
+        const dst = board.grids[g]!.cells[r]![c]!
+        dst.value = src.value
+        dst.given = src.given
+        dst.candidates = new Set(src.candidates)
+      }
+    }
+  }
+  samuraiConsistencyCheck(board)
+  return board
+}
+
 function gridFromSnapshot(
   givens: string,
   variant: string,
@@ -476,22 +500,59 @@ export const useGameStore = create<GameState>((set, get) => ({
   skyscraperClues: null,
   paths: null,
 
-  loadPuzzle: ({
-    id,
-    variant,
-    difficulty,
-    givens,
-    regions,
-    parityMask,
-    edges,
-    thermometers,
-    arrows,
-    cages,
-    littleKillerClues,
-    sandwichClues,
-    skyscraperClues,
-    paths,
-  }) => {
+  loadPuzzle: (args) => {
+    const {
+      id,
+      variant,
+      difficulty,
+      givens,
+      regions,
+      parityMask,
+      edges,
+      thermometers,
+      arrows,
+      cages,
+      littleKillerClues,
+      sandwichClues,
+      skyscraperClues,
+      paths,
+      samuraiGivens,
+    } = args
+    if (variant === 'samurai') {
+      if (!samuraiGivens) {
+        throw new Error('samurai variant requires samuraiGivens')
+      }
+      const board = freshSamuraiBoardFromGivens(samuraiGivens)
+      set({
+        board: { kind: 'samurai', board },
+        puzzleId: id,
+        variant,
+        difficulty,
+        givens: '',
+        selected: null,
+        mode: 'value',
+        history: [],
+        historyIndex: -1,
+        startedAt: new Date().toISOString(),
+        elapsedMs: 0,
+        resumeAt: Date.now(),
+        paused: false,
+        completedAt: null,
+        lockedCells: new Set(),
+        lastShakeKey: 0,
+        jigsawPieceMap: null,
+        parityMask: null,
+        edges: null,
+        thermometers: null,
+        arrows: null,
+        cages: null,
+        littleKillerClues: null,
+        sandwichClues: null,
+        skyscraperClues: null,
+        paths: null,
+      })
+      return
+    }
     const now = new Date().toISOString()
     const opts: {
       regions?: ReadonlyArray<ReadonlyArray<number>>
