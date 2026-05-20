@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { PuzzleRecord } from './types'
+import { freshSamuraiBoardFromGivensForTest } from './samurai-test-helpers'
 
 describe('PuzzleRecord.samuraiGivens (type + validation surface)', () => {
   it('PuzzleRecord type accepts samuraiGivens at compile time', () => {
@@ -15,4 +16,23 @@ describe('PuzzleRecord.samuraiGivens (type + validation surface)', () => {
   // runs at module load. Task 5 lands the demo JSON; if it's malformed the
   // module import in Play.samurai.test.tsx fails loudly. This file just
   // documents the shape contract.
+})
+
+describe('samurai/easy.json demo bank', () => {
+  it('loads via pickPuzzle and has 5 × 81-char samuraiGivens', async () => {
+    const { pickPuzzle } = await import('./index')
+    const rec = pickPuzzle('samurai', 'easy', 0)
+    expect(rec.variant).toBe('samurai')
+    expect(rec.samuraiGivens?.length).toBe(5)
+    for (const s of rec.samuraiGivens!) {
+      expect(typeof s).toBe('string')
+      expect(s.length).toBe(81)
+    }
+  })
+
+  it('passes samuraiConsistencyCheck when loaded into a samurai board', async () => {
+    const { pickPuzzle } = await import('./index')
+    const rec = pickPuzzle('samurai', 'easy', 0)
+    expect(() => freshSamuraiBoardFromGivensForTest(rec.samuraiGivens!)).not.toThrow()
+  })
 })
