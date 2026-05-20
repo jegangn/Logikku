@@ -172,6 +172,7 @@ import {
   samuraiIsComplete,
   samuraiCloneBoard,
   samuraiConflicts,
+  samuraiConsistencyCheck,
 } from './samurai'
 
 describe('samuraiIsComplete', () => {
@@ -237,5 +238,35 @@ describe('samuraiConflicts', () => {
     const conflicts = samuraiConflicts(board)
     expect(conflicts.has('0,0,0')).toBe(true)
     expect(conflicts.has('0,0,1')).toBe(true)
+  })
+})
+
+describe('samuraiConsistencyCheck', () => {
+  it('passes for an empty board', () => {
+    const board = createSamuraiBoard()
+    expect(() => samuraiConsistencyCheck(board)).not.toThrow()
+  })
+
+  it('passes when shared cells agree', () => {
+    const board = createSamuraiBoard()
+    // setValueShared keeps them in sync by construction.
+    setValueShared(board, 0, { r: 1, c: 1 }, 4)
+    expect(() => samuraiConsistencyCheck(board)).not.toThrow()
+  })
+
+  it('throws when a shared pair disagrees', () => {
+    const board = createSamuraiBoard()
+    // Direct writes bypass the sync mechanism. Set the center cell to 4 but
+    // the NW corner's matching cell to 7.
+    samuraiCellAt(board, 0, { r: 1, c: 1 }).value = 4
+    samuraiCellAt(board, 1, { r: 7, c: 7 }).value = 7
+    expect(() => samuraiConsistencyCheck(board)).toThrow(/shared cell mismatch/i)
+  })
+
+  it('reports the role of the offending corner in the error message', () => {
+    const board = createSamuraiBoard()
+    samuraiCellAt(board, 0, { r: 7, c: 7 }).value = 5 // center bottom-right cell
+    samuraiCellAt(board, 4, { r: 1, c: 1 }).value = 2 // SE corner (top-left box overlaps center bottom-right)
+    expect(() => samuraiConsistencyCheck(board)).toThrow(/SE/)
   })
 })

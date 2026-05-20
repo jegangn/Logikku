@@ -155,6 +155,24 @@ export function samuraiCloneBoard(board: SamuraiBoard): SamuraiBoard {
   return { grids, sharedCells: board.sharedCells }
 }
 
+export function samuraiConsistencyCheck(board: SamuraiBoard): void {
+  for (const [key, entries] of board.sharedCells) {
+    if (entries.length < 2) continue
+    const values = entries.map((e) => cellAt(board.grids[e.grid]!, e.coord).value)
+    const first = values[0]
+    for (let i = 1; i < values.length; i++) {
+      if (values[i] !== first) {
+        const cornerLayout = SAMURAI_LAYOUT.corners.find((c) => c.idx === entries[i]!.grid)
+        const role = cornerLayout?.role ?? `grid${entries[i]!.grid}`
+        const centerCoord = entries[0]!.coord
+        throw new Error(
+          `shared cell mismatch at ${key}: center (${centerCoord.r},${centerCoord.c}) has ${first}, ${role} corner has ${values[i]}`,
+        )
+      }
+    }
+  }
+}
+
 /**
  * Returns the set of cells (by global key "gridIdx,r,c") that are involved in a
  * peer conflict within any of their containing sub-grids. The grader and UI
