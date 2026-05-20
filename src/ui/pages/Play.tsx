@@ -138,6 +138,7 @@ export function Play() {
             ? { skyscraperClues: next.skyscraperClues }
             : {}),
           ...(next.paths ? { paths: next.paths } : {}),
+          ...(next.samuraiGivens ? { samuraiGivens: next.samuraiGivens } : {}),
         })
       }
       if (!target) {
@@ -167,6 +168,7 @@ export function Play() {
       ...(next.regions ? { regions: next.regions } : {}),
       ...(next.parityMask ? { parityMask: next.parityMask } : {}),
       ...(next.edges ? { edges: next.edges as never } : {}),
+      ...(next.samuraiGivens ? { samuraiGivens: next.samuraiGivens } : {}),
     })
     setParams({ variant, difficulty, puzzleId: next.id }, { replace: true })
   }, [variant, difficulty, loadPuzzle, setParams])
@@ -266,7 +268,11 @@ export function Play() {
   return (
     <main
       data-noselect="true"
-      className="min-h-dvh flex flex-col items-center px-3 py-4 gap-4"
+      className={
+        variant === 'samurai'
+          ? 'min-h-dvh flex flex-col items-center px-3 py-4 gap-4 lg:flex-row lg:items-start lg:justify-center'
+          : 'min-h-dvh flex flex-col items-center px-3 py-4 gap-4'
+      }
     >
       <Toolbar
         puzzleLabel={`${VARIANT_LABELS[variant] ?? variant} · ${DIFFICULTY_LABELS[difficulty]}`}
