@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Board } from '@/ui/board/Board'
 import { InputPad } from '@/ui/panels/InputPad'
 import { Toolbar } from '@/ui/panels/Toolbar'
-import { useGameStore } from '@/state/gameStore'
+import { selectGrid, useGameStore } from '@/state/gameStore'
 import { flushSave, tryHydrate, wireGamePersistence } from '@/state/persistence'
 import { pickPuzzle } from '@/puzzles'
 import type { Difficulty } from '@/engine'
@@ -54,7 +54,7 @@ export function Play() {
   const difficulty = (params.get('difficulty') as Difficulty | null) ?? 'easy'
   const puzzleIdParam = params.get('puzzleId')
 
-  const grid = useGameStore((s) => s.grid)
+  const grid = useGameStore((s) => selectGrid(s))
   const selected = useGameStore((s) => s.selected)
   const mode = useGameStore((s) => s.mode)
   const puzzleId = useGameStore((s) => s.puzzleId)

@@ -43,6 +43,7 @@ import {
   type LittleKillerClue,
   type PalindromePath,
   type RenbanPath,
+  type SamuraiBoard,
   type SandwichClue,
   type SkyscraperClue,
   type Thermometer,
@@ -50,6 +51,19 @@ import {
 } from '@/engine'
 import type { SavedCell, SavedGame, SavedHistoryEntry } from '@/storage/db'
 import { useSettingsStore } from './settingsStore'
+
+export type GameBoard =
+  | { readonly kind: 'grid'; readonly grid: Grid }
+  | { readonly kind: 'samurai'; readonly board: SamuraiBoard }
+
+function gridOf(board: GameBoard | null): Grid | null {
+  if (board === null) return null
+  return board.kind === 'grid' ? board.grid : null
+}
+
+export function assertNever(x: never): never {
+  throw new Error(`unhandled GameBoard kind: ${JSON.stringify(x)}`)
+}
 
 export type InputMode = 'value' | 'pencil' | 'erase'
 
@@ -83,7 +97,7 @@ export interface EdgeMarkRecord {
 }
 
 export interface GameState {
-  grid: Grid | null
+  board: GameBoard | null
   puzzleId: string | null
   variant: string
   difficulty: Difficulty
@@ -435,7 +449,7 @@ function revertEntry(grid: Grid, entry: HistoryEntry): void {
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
-  grid: null,
+  board: null,
   puzzleId: null,
   variant: 'classic',
   difficulty: 'easy',
@@ -507,7 +521,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (paths !== undefined) opts.paths = paths
     const shape = shapeForVariant(variant)
     set({
-      grid: freshGridFromGivens(givens, variant, opts),
+      board: { kind: 'grid', grid: freshGridFromGivens(givens, variant, opts) },
       puzzleId: id,
       variant,
       difficulty,
@@ -591,7 +605,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     const history: HistoryEntry[] = saved.history.map(savedHistoryToEntry)
     const shape = shapeForVariant(saved.variant)
     set({
-      grid,
+      board: { kind: 'grid', grid },
       puzzleId: saved.id,
       variant: saved.variant,
       difficulty: saved.difficulty,
@@ -630,8 +644,10 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   input: (digit) => {
     const state = get()
-    const { grid, selected, mode } = state
-    if (!grid || !selected || state.completedAt) return
+    const { selected, mode } = state
+    if (!state.board || !selected || state.completedAt) return
+    if (state.board.kind !== 'grid') return
+    const grid = state.board.grid
     const cell = cellAt(grid, selected)
     if (cell.given) return
 
@@ -683,8 +699,10 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   erase: () => {
     const state = get()
-    const { grid, selected } = state
-    if (!grid || !selected || state.completedAt) return
+    const { selected } = state
+    if (!state.board || !selected || state.completedAt) return
+    if (state.board.kind !== 'grid') return
+    const grid = state.board.grid
     const cell = cellAt(grid, selected)
     if (cell.given) return
     if (cell.value === null && cell.candidates.size === 0) return
@@ -707,23 +725,27 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   undo: () => {
     const state = get()
-    if (!state.grid || state.historyIndex < 0) return
+    if (!state.board || state.historyIndex < 0) return
+    if (state.board.kind !== 'grid') return
+    const grid = state.board.grid
     const entry = state.history[state.historyIndex]!
     if (state.lockedCells.has(`${entry.coord.r},${entry.coord.c}`)) return
-    const next = cloneGrid(state.grid)
+    const next = cloneGrid(grid)
     revertEntry(next, entry)
-    set({ grid: next, historyIndex: state.historyIndex - 1, completedAt: null })
+    set({ board: { kind: 'grid', grid: next }, historyIndex: state.historyIndex - 1, completedAt: null })
   },
 
   redo: () => {
-    const { grid, history, historyIndex } = get()
-    if (!grid || historyIndex >= history.length - 1) return
+    const { board, history, historyIndex } = get()
+    if (!board || historyIndex >= history.length - 1) return
+    if (board.kind !== 'grid') return
+    const grid = board.grid
     const entry = history[historyIndex + 1]!
     const next = cloneGrid(grid)
     applyEntry(next, entry)
     const completed = isComplete(next) ? new Date().toISOString() : null
     set({
-      grid: next,
+      board: { kind: 'grid', grid: next },
       historyIndex: historyIndex + 1,
       completedAt: completed,
     })
@@ -798,7 +820,7 @@ function pushAndApply(
   const pushed = pushEntry(state.history, state.historyIndex, entry)
   const complete = isComplete(next)
   set({
-    grid: next,
+    board: { kind: 'grid', grid: next },
     history: pushed.history,
     historyIndex: pushed.historyIndex,
     completedAt: complete ? new Date().toISOString() : null,
@@ -842,12 +864,13 @@ export function entryToSaved(e: HistoryEntry): SavedHistoryEntry {
 }
 
 export function serializeGameForSave(state: GameState): SavedGame | null {
-  if (!state.grid || !state.puzzleId) return null
+  const grid = gridOf(state.board)
+  if (!grid || !state.puzzleId) return null
   const cells: SavedCell[] = []
-  const size = state.grid.shape.size
+  const size = grid.shape.size
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
-      const cell = cellAt(state.grid, { r, c })
+      const cell = cellAt(grid, { r, c })
       cells.push({
         v: cell.value,
         c: [...cell.candidates].sort((a, b) => a - b),
@@ -888,6 +911,14 @@ export function serializeGameForSave(state: GameState): SavedGame | null {
     ...(state.skyscraperClues ? { skyscraperClues: state.skyscraperClues } : {}),
     ...(state.paths ? { paths: state.paths } : {}),
   }
+}
+
+/**
+ * Backward-compat shim: returns the active Grid if state is grid-shaped, else null.
+ * Used by consumers that still index into a single grid.
+ */
+export function selectGrid(state: GameState): Grid | null {
+  return gridOf(state.board)
 }
 
 function pieceMapToRegions(

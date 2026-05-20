@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { entryToSaved, serializeGameForSave, useGameStore } from './gameStore'
+import { entryToSaved, selectGrid, serializeGameForSave, useGameStore } from './gameStore'
 import { cellAt } from '@/engine'
 
 const EASY =
@@ -16,7 +16,7 @@ function load(givens: string, id = 'p-1') {
 
 beforeEach(() => {
   useGameStore.setState({
-    grid: null,
+    board: null,
     puzzleId: null,
     selected: null,
     mode: 'value',
@@ -34,7 +34,7 @@ describe('gameStore', () => {
     load(EASY)
     const s = useGameStore.getState()
     expect(s.puzzleId).toBe('p-1')
-    expect(s.grid!.shape.size).toBe(9)
+    expect(selectGrid(s)!.shape.size).toBe(9)
   })
 
   it('places a value via input', () => {
@@ -42,7 +42,7 @@ describe('gameStore', () => {
     const s = useGameStore.getState()
     s.select({ r: 0, c: 0 })
     s.input(5)
-    expect(cellAt(useGameStore.getState().grid!, { r: 0, c: 0 }).value).toBe(5)
+    expect(cellAt(selectGrid(useGameStore.getState())!, { r: 0, c: 0 }).value).toBe(5)
   })
 
   it('placing a value on a given is a no-op', () => {
@@ -50,7 +50,7 @@ describe('gameStore', () => {
     const s = useGameStore.getState()
     s.select({ r: 0, c: 0 })
     s.input(9)
-    expect(cellAt(useGameStore.getState().grid!, { r: 0, c: 0 }).value).toBe(5)
+    expect(cellAt(selectGrid(useGameStore.getState())!, { r: 0, c: 0 }).value).toBe(5)
   })
 
   it('pencil mode toggles candidates', () => {
@@ -59,7 +59,7 @@ describe('gameStore', () => {
     s.select({ r: 0, c: 0 })
     s.setMode('pencil')
     s.input(3)
-    const cell = cellAt(useGameStore.getState().grid!, { r: 0, c: 0 })
+    const cell = cellAt(selectGrid(useGameStore.getState())!, { r: 0, c: 0 })
     expect(cell.value).toBeNull()
     expect(cell.candidates.has(3)).toBe(true)
   })
@@ -70,7 +70,7 @@ describe('gameStore', () => {
     s.select({ r: 0, c: 0 })
     s.input(5)
     s.erase()
-    expect(cellAt(useGameStore.getState().grid!, { r: 0, c: 0 }).value).toBeNull()
+    expect(cellAt(selectGrid(useGameStore.getState())!, { r: 0, c: 0 }).value).toBeNull()
   })
 
   it('records a history entry per action', () => {
@@ -91,12 +91,12 @@ describe('gameStore', () => {
     s.setMode('value')
     s.select({ r: 0, c: 0 })
     s.input(5)
-    expect(cellAt(useGameStore.getState().grid!, { r: 0, c: 1 }).candidates.has(5)).toBe(false)
+    expect(cellAt(selectGrid(useGameStore.getState())!, { r: 0, c: 1 }).candidates.has(5)).toBe(false)
 
     s.undo()
     const state = useGameStore.getState()
-    expect(cellAt(state.grid!, { r: 0, c: 0 }).value).toBeNull()
-    expect(cellAt(state.grid!, { r: 0, c: 1 }).candidates.has(5)).toBe(true)
+    expect(cellAt(selectGrid(state)!, { r: 0, c: 0 }).value).toBeNull()
+    expect(cellAt(selectGrid(state)!, { r: 0, c: 1 }).candidates.has(5)).toBe(true)
   })
 
   it('redo re-applies a previously-undone action', () => {
@@ -106,7 +106,7 @@ describe('gameStore', () => {
     s.input(5)
     s.undo()
     s.redo()
-    expect(cellAt(useGameStore.getState().grid!, { r: 0, c: 0 }).value).toBe(5)
+    expect(cellAt(selectGrid(useGameStore.getState())!, { r: 0, c: 0 }).value).toBe(5)
   })
 
   it('canUndo / canRedo reflect history position', () => {
@@ -133,7 +133,7 @@ describe('gameStore', () => {
     const state = useGameStore.getState()
     expect(state.history).toHaveLength(2)
     expect(state.canRedo()).toBe(false)
-    expect(cellAt(state.grid!, { r: 0, c: 0 }).value).toBe(7)
+    expect(cellAt(selectGrid(state)!, { r: 0, c: 0 }).value).toBe(7)
   })
 
   it('history caps at 500 entries', () => {
@@ -204,14 +204,14 @@ describe('gameStore', () => {
     useGameStore.getState().input(5)
     const saved = serializeGameForSave(useGameStore.getState())!
     useGameStore.setState({
-      grid: null,
+      board: null,
       puzzleId: null,
       history: [],
       historyIndex: -1,
     })
     useGameStore.getState().hydrate(saved)
     const restored = useGameStore.getState()
-    expect(cellAt(restored.grid!, { r: 0, c: 0 }).value).toBe(5)
+    expect(cellAt(selectGrid(restored)!, { r: 0, c: 0 }).value).toBe(5)
     expect(restored.historyIndex).toBe(0)
   })
 
@@ -222,7 +222,7 @@ describe('gameStore', () => {
       difficulty: 'easy',
       givens: '0'.repeat(81),
     })
-    const grid = useGameStore.getState().grid!
+    const grid = selectGrid(useGameStore.getState())!
     const kinds = grid.constraints.map((c) => c.kind).sort()
     expect(kinds).toEqual(['classic', 'x-diagonal'])
   })
@@ -234,7 +234,7 @@ describe('gameStore', () => {
       difficulty: 'easy',
       givens: '0'.repeat(81),
     })
-    const grid = useGameStore.getState().grid!
+    const grid = selectGrid(useGameStore.getState())!
     const kinds = grid.constraints.map((c) => c.kind).sort()
     expect(kinds).toEqual(['classic', 'hyper'])
     const hyper = grid.constraints.find((c) => c.kind === 'hyper')!

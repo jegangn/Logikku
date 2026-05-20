@@ -10,7 +10,7 @@ let lastSavedCompletedAt: string | null = null
 let unsubscribe: (() => void) | null = null
 
 function scheduleSave(state: GameState): void {
-  if (!state.puzzleId || !state.grid) return
+  if (!state.puzzleId || !state.board) return
   if (saveTimer) clearTimeout(saveTimer)
   saveTimer = setTimeout(() => {
     saveTimer = null
@@ -27,7 +27,7 @@ export function wireGamePersistence(): () => void {
   if (unsubscribe) unsubscribe()
   unsubscribe = useGameStore.subscribe((state, prev) => {
     if (
-      state.grid !== prev.grid ||
+      state.board !== prev.board ||
       state.history !== prev.history ||
       state.elapsedMs !== prev.elapsedMs ||
       state.completedAt !== prev.completedAt
