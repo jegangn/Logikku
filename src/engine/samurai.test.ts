@@ -3,6 +3,9 @@ import {
   SAMURAI_LAYOUT,
   globalCoordKey,
   computeSharedCells,
+  createSamuraiBoard,
+  samuraiCellAt,
+  samuraiSharedLocations,
 } from './samurai'
 
 describe('SAMURAI_LAYOUT', () => {
@@ -56,5 +59,65 @@ describe('computeSharedCells', () => {
     const seSorted = [...seEntries].sort((a, b) => a.grid - b.grid)
     expect(seSorted[0]).toEqual({ grid: 0, coord: { r: 6, c: 6 } })
     expect(seSorted[1]).toEqual({ grid: 4, coord: { r: 0, c: 0 } })
+  })
+})
+
+describe('createSamuraiBoard', () => {
+  it('builds 5 empty 9×9 grids each with a classic constraint', () => {
+    const board = createSamuraiBoard()
+    expect(board.grids.length).toBe(5)
+    for (const grid of board.grids) {
+      expect(grid.shape.size).toBe(9)
+      expect(grid.shape.boxRows).toBe(3)
+      expect(grid.shape.boxCols).toBe(3)
+      expect(grid.constraints.length).toBe(1)
+      expect(grid.constraints[0]!.kind).toBe('classic')
+    }
+  })
+
+  it('has 36 sharedCells entries', () => {
+    const board = createSamuraiBoard()
+    expect(board.sharedCells.size).toBe(36)
+  })
+})
+
+describe('samuraiCellAt', () => {
+  it('reads through to the requested sub-grid', () => {
+    const board = createSamuraiBoard()
+    const cell = samuraiCellAt(board, 1, { r: 0, c: 0 })
+    expect(cell.value).toBeNull()
+    expect(cell.candidates.size).toBe(9)
+  })
+})
+
+describe('samuraiSharedLocations', () => {
+  it('returns 2 entries for the center cell (1,1) (in NW corners overlap)', () => {
+    const board = createSamuraiBoard()
+    const locs = samuraiSharedLocations(board, 0, { r: 1, c: 1 })
+    expect(locs.length).toBe(2)
+    const grids = [...locs].map((l) => l.grid).sort((a, b) => a - b)
+    expect(grids).toEqual([0, 1])
+  })
+
+  it('returns 2 entries for the NW corner cell (7,7)', () => {
+    const board = createSamuraiBoard()
+    const locs = samuraiSharedLocations(board, 1, { r: 7, c: 7 })
+    expect(locs.length).toBe(2)
+    const grids = [...locs].map((l) => l.grid).sort((a, b) => a - b)
+    expect(grids).toEqual([0, 1])
+  })
+
+  it('returns 1 entry (self) for an unshared cell in the center', () => {
+    const board = createSamuraiBoard()
+    const locs = samuraiSharedLocations(board, 0, { r: 4, c: 4 })
+    expect(locs.length).toBe(1)
+    expect(locs[0]).toEqual({ grid: 0, coord: { r: 4, c: 4 } })
+  })
+
+  it('returns 1 entry (self) for an unshared cell in a corner', () => {
+    const board = createSamuraiBoard()
+    const locs = samuraiSharedLocations(board, 2, { r: 0, c: 0 })
+    expect(locs.length).toBe(1)
+    expect(locs[0]).toEqual({ grid: 2, coord: { r: 0, c: 0 } })
   })
 })

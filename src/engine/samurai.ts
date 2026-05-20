@@ -1,4 +1,6 @@
-import type { Coord } from './types'
+import type { Cell, Coord, SamuraiBoard } from './types'
+import { CLASSIC_9, cellAt, createGrid } from './grid'
+import { createClassicConstraint } from './constraints/classic'
 
 export type CornerRole = 'NW' | 'NE' | 'SW' | 'SE'
 
@@ -59,4 +61,49 @@ export function computeSharedCells(): ReadonlyMap<string, ReadonlyArray<SharedLo
     }
   }
   return map
+}
+
+export function createSamuraiBoard(): SamuraiBoard {
+  const grids = [0, 1, 2, 3, 4].map(() => {
+    const shape = CLASSIC_9
+    return createGrid(shape, [createClassicConstraint({ shape })])
+  }) as unknown as readonly [
+    SamuraiBoard['grids'][0],
+    SamuraiBoard['grids'][1],
+    SamuraiBoard['grids'][2],
+    SamuraiBoard['grids'][3],
+    SamuraiBoard['grids'][4],
+  ]
+  const sharedCells = computeSharedCells()
+  return { grids, sharedCells }
+}
+
+export function samuraiCellAt(
+  board: SamuraiBoard,
+  gridIdx: number,
+  coord: Coord,
+): Cell {
+  const grid = board.grids[gridIdx]
+  if (!grid) throw new RangeError(`gridIdx ${gridIdx} out of range`)
+  return cellAt(grid, coord)
+}
+
+/**
+ * Returns all (grid, coord) pairs representing the same global cell.
+ * For an unshared cell, returns [{grid: gridIdx, coord}]. For a shared cell,
+ * returns 2 entries (the center+corner pair).
+ */
+export function samuraiSharedLocations(
+  board: SamuraiBoard,
+  gridIdx: number,
+  coord: Coord,
+): ReadonlyArray<SharedLocation> {
+  for (const entries of board.sharedCells.values()) {
+    for (const e of entries) {
+      if (e.grid === gridIdx && e.coord.r === coord.r && e.coord.c === coord.c) {
+        return entries
+      }
+    }
+  }
+  return [{ grid: gridIdx, coord }]
 }
