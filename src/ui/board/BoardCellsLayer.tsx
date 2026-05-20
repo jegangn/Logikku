@@ -30,9 +30,10 @@ export function BoardCellsLayer({
 }: BoardCellsLayerProps) {
   const size = grid.shape.size
   const cells = useMemo(() => {
+    const s = grid.shape.size
     const out: React.ReactElement[] = []
-    for (let r = 0; r < size; r++) {
-      for (let c = 0; c < size; c++) {
+    for (let r = 0; r < s; r++) {
+      for (let c = 0; c < s; c++) {
         const cell = cellAt(grid, { r, c })
         const key = `${r},${c}`
         const isSelected =
@@ -47,7 +48,7 @@ export function BoardCellsLayer({
             key={key}
             coord={{ r, c }}
             cellSize={cellSize}
-            gridSize={size}
+            gridSize={s}
             value={cell.value}
             candidates={cell.candidates}
             given={cell.given}

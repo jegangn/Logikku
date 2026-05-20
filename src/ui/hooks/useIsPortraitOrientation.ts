@@ -15,7 +15,6 @@ export function useIsPortraitOrientation(): boolean {
     if (typeof window === 'undefined' || !window.matchMedia) return
     const mql = window.matchMedia(QUERY)
     const handler = (ev: MediaQueryListEvent) => setIsPortrait(ev.matches)
-    setIsPortrait(mql.matches)
     mql.addEventListener('change', handler)
     return () => mql.removeEventListener('change', handler)
   }, [])
