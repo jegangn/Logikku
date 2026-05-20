@@ -1128,12 +1128,14 @@ export interface SamuraiBoardViewProps {
 }
 
 const CELL_SIZE = 30
+// SVG convention: x = column offset (rightward), y = row offset (downward).
+// idx 0 = center, 1 = NW, 2 = NE, 3 = SW, 4 = SE.
 const SUB_GRID_POSITIONS: Record<number, { x: number; y: number }> = {
   0: { x: 6, y: 6 },
-  1: { x: 0, y: 0 },
-  2: { x: 0, y: 12 },
-  3: { x: 12, y: 0 },
-  4: { x: 12, y: 12 },
+  1: { x: 0, y: 0 },   // top-left
+  2: { x: 12, y: 0 },  // top-right
+  3: { x: 0, y: 12 },  // bottom-left
+  4: { x: 12, y: 12 }, // bottom-right
 }
 const SIDE_PX = 21 * CELL_SIZE
 
