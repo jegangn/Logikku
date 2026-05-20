@@ -10,6 +10,7 @@ import json
 import os
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -118,7 +119,6 @@ class GraderBridge:
                 flush=True,
             )
             self._restart()
-        import threading
         watchdog: threading.Timer | None = None
         for attempt in range(2):
             try:
