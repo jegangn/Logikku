@@ -135,3 +135,11 @@ export {
   computeSharedCells,
 } from './samurai'
 export type { CornerRole, CornerLayout, SharedLocation } from './samurai'
+export { samuraiTechniqueSolve, samuraiBacktrackingSolve } from './solver/samuraiSolver'
+export type {
+  SamuraiSolveResult,
+  SamuraiBacktrackOptions,
+  SamuraiBacktrackResult,
+} from './solver/samuraiSolver'
+export { gradeSamurai } from './grader/samuraiGrader'
+export type { SamuraiGradeResult } from './grader/samuraiGrader'
