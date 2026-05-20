@@ -45,6 +45,10 @@ import {
   type RenbanPath,
   createSamuraiBoard,
   samuraiConsistencyCheck,
+  samuraiCellAt,
+  samuraiSharedLocations,
+  setValueShared,
+  eraseShared,
   type SamuraiBoard,
   type SandwichClue,
   type SkyscraperClue,
@@ -67,6 +71,7 @@ export function assertNever(x: never): never {
   throw new Error(`unhandled GameBoard kind: ${JSON.stringify(x)}`)
 }
 
+
 export type InputMode = 'value' | 'pencil' | 'erase'
 
 const HISTORY_CAP = 500
@@ -83,6 +88,24 @@ export interface HistoryEntry {
   readonly targetAfter: CellSnapshot
   readonly peerRemovals: ReadonlyArray<{ coord: Coord; digit: Digit }>
 }
+
+export interface SamuraiHistoryEntry {
+  readonly kind: 'samurai-value' | 'samurai-erase'
+  readonly gridIdx: number
+  readonly coord: Coord
+  readonly prevByLocation: ReadonlyArray<{
+    readonly gridIdx: number
+    readonly coord: Coord
+    readonly snapshot: CellSnapshot
+  }>
+  readonly nextByLocation: ReadonlyArray<{
+    readonly gridIdx: number
+    readonly coord: Coord
+    readonly snapshot: CellSnapshot
+  }>
+}
+
+export type AnyHistoryEntry = HistoryEntry | SamuraiHistoryEntry
 
 export type EdgeMarkKind =
   | 'white-dot'
@@ -104,9 +127,9 @@ export interface GameState {
   variant: string
   difficulty: Difficulty
   givens: string
-  selected: Coord | null
+  selected: Coord | { readonly gridIdx: number; readonly coord: Coord } | null
   mode: InputMode
-  history: ReadonlyArray<HistoryEntry>
+  history: ReadonlyArray<AnyHistoryEntry>
   historyIndex: number
   startedAt: string
   elapsedMs: number
@@ -162,7 +185,7 @@ export interface GameState {
     samuraiGivens?: ReadonlyArray<string>
   }) => void
   hydrate: (saved: SavedGame) => void
-  select: (coord: Coord | null) => void
+  select: (target: Coord | { readonly gridIdx: number; readonly coord: Coord } | null) => void
   setMode: (mode: InputMode) => void
   input: (digit: Digit) => void
   erase: () => void
@@ -446,10 +469,10 @@ function gridFromSnapshot(
 }
 
 function pushEntry(
-  history: ReadonlyArray<HistoryEntry>,
+  history: ReadonlyArray<AnyHistoryEntry>,
   historyIndex: number,
   entry: HistoryEntry,
-): { history: HistoryEntry[]; historyIndex: number } {
+): { history: AnyHistoryEntry[]; historyIndex: number } {
   const trimmed = history.slice(0, historyIndex + 1)
   trimmed.push(entry)
   while (trimmed.length > HISTORY_CAP) trimmed.shift()
@@ -695,8 +718,8 @@ export const useGameStore = create<GameState>((set, get) => ({
     })
   },
 
-  select: (coord) => {
-    set({ selected: coord })
+  select: (target) => {
+    set({ selected: target })
   },
 
   setMode: (mode) => {
@@ -707,21 +730,111 @@ export const useGameStore = create<GameState>((set, get) => ({
     const state = get()
     const { selected, mode } = state
     if (!state.board || !selected || state.completedAt) return
-    if (state.board.kind !== 'grid') return
-    const grid = state.board.grid
-    const cell = cellAt(grid, selected)
-    if (cell.given) return
+    if (state.board.kind === 'grid') {
+      if ('gridIdx' in selected) return
+      const grid = state.board.grid
+      const cell = cellAt(grid, selected)
+      if (cell.given) return
 
-    if (mode === 'pencil') {
-      if (cell.value !== null) return
+      if (mode === 'pencil') {
+        if (cell.value !== null) return
+        const next = cloneGrid(grid)
+        const nextCell = cellAt(next, selected)
+        const before = snapshot(cell)
+        if (nextCell.candidates.has(digit)) nextCell.candidates.delete(digit)
+        else nextCell.candidates.add(digit)
+        const after = snapshot(nextCell)
+        pushAndApply(state, next, {
+          kind: 'pencil',
+          coord: selected,
+          targetBefore: before,
+          targetAfter: after,
+          peerRemovals: [],
+        }, set)
+        return
+      }
+
       const next = cloneGrid(grid)
       const nextCell = cellAt(next, selected)
       const before = snapshot(cell)
-      if (nextCell.candidates.has(digit)) nextCell.candidates.delete(digit)
-      else nextCell.candidates.add(digit)
+      nextCell.value = digit
+      nextCell.candidates = new Set()
+      const peerRemovals: Array<{ coord: Coord; digit: Digit }> = []
+      for (const p of peersFromConstraints(selected, next)) {
+        const peer = cellAt(next, p)
+        if (peer.candidates.has(digit)) {
+          peer.candidates.delete(digit)
+          peerRemovals.push({ coord: p, digit })
+        }
+      }
       const after = snapshot(nextCell)
       pushAndApply(state, next, {
-        kind: 'pencil',
+        kind: 'value',
+        coord: selected,
+        targetBefore: before,
+        targetAfter: after,
+        peerRemovals,
+      }, set)
+
+      const strict = useSettingsStore.getState().strictMode
+      if (strict && cellConflicts(next, selected)) {
+        lockCell(selected, get, set)
+      }
+      return
+    }
+    if (state.board.kind === 'samurai') {
+      const sel = state.selected
+      if (!sel || !('gridIdx' in sel)) return
+      const sBoard = state.board.board
+      const locs = samuraiSharedLocations(sBoard, sel.gridIdx, sel.coord)
+      const prevByLocation = locs.map((l) => ({
+        gridIdx: l.grid,
+        coord: l.coord,
+        snapshot: snapshot(samuraiCellAt(sBoard, l.grid, l.coord)),
+      }))
+      setValueShared(sBoard, sel.gridIdx, sel.coord, digit)
+      const nextByLocation = locs.map((l) => ({
+        gridIdx: l.grid,
+        coord: l.coord,
+        snapshot: snapshot(samuraiCellAt(sBoard, l.grid, l.coord)),
+      }))
+      const entry: SamuraiHistoryEntry = {
+        kind: 'samurai-value',
+        gridIdx: sel.gridIdx,
+        coord: sel.coord,
+        prevByLocation,
+        nextByLocation,
+      }
+      set({
+        board: { kind: 'samurai', board: sBoard },
+        history: [...state.history.slice(0, state.historyIndex + 1), entry].slice(-HISTORY_CAP),
+        historyIndex: Math.min(state.history.length, HISTORY_CAP - 1),
+      })
+      return
+    }
+    assertNever(state.board)
+  },
+
+  erase: () => {
+    const state = get()
+    const { selected } = state
+    if (!state.board || !selected || state.completedAt) return
+    if (state.board.kind === 'grid') {
+      if ('gridIdx' in selected) return
+      const grid = state.board.grid
+      const cell = cellAt(grid, selected)
+      if (cell.given) return
+      if (cell.value === null && cell.candidates.size === 0) return
+      if (state.lockedCells.has(`${selected.r},${selected.c}`)) return
+
+      const next = cloneGrid(grid)
+      const nextCell = cellAt(next, selected)
+      const before = snapshot(cell)
+      nextCell.value = null
+      nextCell.candidates = new Set()
+      const after = snapshot(nextCell)
+      pushAndApply(state, next, {
+        kind: 'erase',
         coord: selected,
         targetBefore: before,
         targetAfter: after,
@@ -729,87 +842,96 @@ export const useGameStore = create<GameState>((set, get) => ({
       }, set)
       return
     }
-
-    const next = cloneGrid(grid)
-    const nextCell = cellAt(next, selected)
-    const before = snapshot(cell)
-    nextCell.value = digit
-    nextCell.candidates = new Set()
-    const peerRemovals: Array<{ coord: Coord; digit: Digit }> = []
-    for (const p of peersFromConstraints(selected, next)) {
-      const peer = cellAt(next, p)
-      if (peer.candidates.has(digit)) {
-        peer.candidates.delete(digit)
-        peerRemovals.push({ coord: p, digit })
+    if (state.board.kind === 'samurai') {
+      const sel = state.selected
+      if (!sel || !('gridIdx' in sel)) return
+      const sBoard = state.board.board
+      const locs = samuraiSharedLocations(sBoard, sel.gridIdx, sel.coord)
+      const prevByLocation = locs.map((l) => ({
+        gridIdx: l.grid,
+        coord: l.coord,
+        snapshot: snapshot(samuraiCellAt(sBoard, l.grid, l.coord)),
+      }))
+      eraseShared(sBoard, sel.gridIdx, sel.coord)
+      const nextByLocation = locs.map((l) => ({
+        gridIdx: l.grid,
+        coord: l.coord,
+        snapshot: snapshot(samuraiCellAt(sBoard, l.grid, l.coord)),
+      }))
+      const entry: SamuraiHistoryEntry = {
+        kind: 'samurai-erase',
+        gridIdx: sel.gridIdx,
+        coord: sel.coord,
+        prevByLocation,
+        nextByLocation,
       }
+      set({
+        board: { kind: 'samurai', board: sBoard },
+        history: [...state.history.slice(0, state.historyIndex + 1), entry].slice(-HISTORY_CAP),
+        historyIndex: Math.min(state.history.length, HISTORY_CAP - 1),
+      })
+      return
     }
-    const after = snapshot(nextCell)
-    pushAndApply(state, next, {
-      kind: 'value',
-      coord: selected,
-      targetBefore: before,
-      targetAfter: after,
-      peerRemovals,
-    }, set)
-
-    const strict = useSettingsStore.getState().strictMode
-    if (strict && cellConflicts(next, selected)) {
-      lockCell(selected, get, set)
-    }
-  },
-
-  erase: () => {
-    const state = get()
-    const { selected } = state
-    if (!state.board || !selected || state.completedAt) return
-    if (state.board.kind !== 'grid') return
-    const grid = state.board.grid
-    const cell = cellAt(grid, selected)
-    if (cell.given) return
-    if (cell.value === null && cell.candidates.size === 0) return
-    if (state.lockedCells.has(`${selected.r},${selected.c}`)) return
-
-    const next = cloneGrid(grid)
-    const nextCell = cellAt(next, selected)
-    const before = snapshot(cell)
-    nextCell.value = null
-    nextCell.candidates = new Set()
-    const after = snapshot(nextCell)
-    pushAndApply(state, next, {
-      kind: 'erase',
-      coord: selected,
-      targetBefore: before,
-      targetAfter: after,
-      peerRemovals: [],
-    }, set)
+    assertNever(state.board)
   },
 
   undo: () => {
     const state = get()
     if (!state.board || state.historyIndex < 0) return
-    if (state.board.kind !== 'grid') return
-    const grid = state.board.grid
     const entry = state.history[state.historyIndex]!
-    if (state.lockedCells.has(`${entry.coord.r},${entry.coord.c}`)) return
-    const next = cloneGrid(grid)
-    revertEntry(next, entry)
-    set({ board: { kind: 'grid', grid: next }, historyIndex: state.historyIndex - 1, completedAt: null })
+    if (state.board.kind === 'grid' && !('prevByLocation' in entry)) {
+      const grid = state.board.grid
+      if (state.lockedCells.has(`${entry.coord.r},${entry.coord.c}`)) return
+      const next = cloneGrid(grid)
+      revertEntry(next, entry)
+      set({ board: { kind: 'grid', grid: next }, historyIndex: state.historyIndex - 1, completedAt: null })
+      return
+    }
+    if (state.board.kind === 'samurai' && 'prevByLocation' in entry) {
+      const sam = entry as SamuraiHistoryEntry
+      const sBoard = state.board.board
+      for (const loc of sam.prevByLocation) {
+        const cell = samuraiCellAt(sBoard, loc.gridIdx, loc.coord)
+        restore(cell, loc.snapshot)
+      }
+      set({
+        board: { kind: 'samurai', board: sBoard },
+        historyIndex: state.historyIndex - 1,
+      })
+      return
+    }
   },
 
   redo: () => {
-    const { board, history, historyIndex } = get()
+    const state = get()
+    const { board, history, historyIndex } = state
     if (!board || historyIndex >= history.length - 1) return
-    if (board.kind !== 'grid') return
-    const grid = board.grid
     const entry = history[historyIndex + 1]!
-    const next = cloneGrid(grid)
-    applyEntry(next, entry)
-    const completed = isComplete(next) ? new Date().toISOString() : null
-    set({
-      board: { kind: 'grid', grid: next },
-      historyIndex: historyIndex + 1,
-      completedAt: completed,
-    })
+    if (board.kind === 'grid' && !('nextByLocation' in entry)) {
+      const grid = board.grid
+      const next = cloneGrid(grid)
+      applyEntry(next, entry)
+      const completed = isComplete(next) ? new Date().toISOString() : null
+      set({
+        board: { kind: 'grid', grid: next },
+        historyIndex: historyIndex + 1,
+        completedAt: completed,
+      })
+      return
+    }
+    if (board.kind === 'samurai' && 'nextByLocation' in entry) {
+      const sam = entry as SamuraiHistoryEntry
+      const sBoard = board.board
+      for (const loc of sam.nextByLocation) {
+        const cell = samuraiCellAt(sBoard, loc.gridIdx, loc.coord)
+        restore(cell, loc.snapshot)
+      }
+      set({
+        board: { kind: 'samurai', board: sBoard },
+        historyIndex: historyIndex + 1,
+      })
+      return
+    }
   },
 
   pause: () => {
@@ -953,7 +1075,7 @@ export function serializeGameForSave(state: GameState): SavedGame | null {
     difficulty: state.difficulty,
     givens: state.givens,
     cells,
-    history: state.history.map(entryToSaved),
+    history: state.history.filter((e): e is HistoryEntry => !('prevByLocation' in e)).map(entryToSaved),
     historyIndex: state.historyIndex,
     elapsedMs: currentElapsed,
     startedAt: state.startedAt,

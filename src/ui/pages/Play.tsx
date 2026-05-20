@@ -55,7 +55,8 @@ export function Play() {
   const puzzleIdParam = params.get('puzzleId')
 
   const grid = useGameStore((s) => selectGrid(s))
-  const selected = useGameStore((s) => s.selected)
+  const selectedRaw = useGameStore((s) => s.selected)
+  const selected = selectedRaw && !('gridIdx' in selectedRaw) ? selectedRaw : null
   const mode = useGameStore((s) => s.mode)
   const puzzleId = useGameStore((s) => s.puzzleId)
   const historyIndex = useGameStore((s) => s.historyIndex)

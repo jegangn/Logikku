@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { entryToSaved, selectGrid, serializeGameForSave, useGameStore } from './gameStore'
+import { entryToSaved, selectGrid, serializeGameForSave, useGameStore, type HistoryEntry } from './gameStore'
 import { cellAt } from '@/engine'
 
 const EASY =
@@ -192,7 +192,7 @@ describe('gameStore', () => {
     useGameStore.getState().setMode('value')
     useGameStore.getState().select({ r: 0, c: 0 })
     useGameStore.getState().input(5)
-    const entry = useGameStore.getState().history[useGameStore.getState().historyIndex]!
+    const entry = useGameStore.getState().history[useGameStore.getState().historyIndex]! as HistoryEntry
     const saved = entryToSaved(entry)
     expect(saved.pr).toBeDefined()
     expect(saved.pr!.length).toBeGreaterThan(0)
