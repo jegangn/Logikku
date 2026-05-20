@@ -27,6 +27,7 @@ import {
   createXVConstraint,
   flatToCoords,
   parsePuzzle,
+  serializePuzzle,
   peersFromConstraints,
   recomputeCandidates,
   type Constraint,
@@ -637,6 +638,54 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   hydrate: (saved) => {
+    if (saved.kind === 'samurai' && saved.samurai) {
+      const board = createSamuraiBoard()
+      for (let g = 0; g < 5; g++) {
+        const subSaved = saved.samurai.grids[g]
+        if (!subSaved) continue
+        const parsed = parsePuzzle(subSaved.givens, board.grids[g]!.shape)
+        for (let i = 0; i < subSaved.cells.length; i++) {
+          const sc = subSaved.cells[i]!
+          const r = Math.floor(i / parsed.shape.size)
+          const c = i % parsed.shape.size
+          const cell = board.grids[g]!.cells[r]![c]!
+          cell.value = sc.v as Digit | null
+          cell.given = sc.g
+          cell.candidates = new Set(sc.c as ReadonlyArray<Digit>)
+        }
+      }
+      samuraiConsistencyCheck(board)
+      set({
+        board: { kind: 'samurai', board },
+        puzzleId: saved.id,
+        variant: saved.variant,
+        difficulty: saved.difficulty,
+        givens: '',
+        selected: null,
+        mode: 'value',
+        history: [],
+        historyIndex: -1,
+        startedAt: saved.startedAt,
+        elapsedMs: saved.elapsedMs,
+        resumeAt: Date.now(),
+        paused: false,
+        completedAt: saved.completedAt,
+        lockedCells: new Set(),
+        lastShakeKey: 0,
+        jigsawPieceMap: null,
+        parityMask: null,
+        edges: null,
+        thermometers: null,
+        arrows: null,
+        cages: null,
+        littleKillerClues: null,
+        sandwichClues: null,
+        skyscraperClues: null,
+        paths: null,
+      })
+      return
+    }
+    // Legacy / kind === 'grid': preserve existing hydrate implementation.
     const regions = saved.regions
     const parityMask = saved.parityMask
     const edges = saved.edges as ReadonlyArray<EdgeMarkRecord> | undefined
@@ -1071,53 +1120,97 @@ export function entryToSaved(e: HistoryEntry): SavedHistoryEntry {
 }
 
 export function serializeGameForSave(state: GameState): SavedGame | null {
-  const grid = gridOf(state.board)
-  if (!grid || !state.puzzleId) return null
-  const cells: SavedCell[] = []
-  const size = grid.shape.size
-  for (let r = 0; r < size; r++) {
-    for (let c = 0; c < size; c++) {
-      const cell = cellAt(grid, { r, c })
-      cells.push({
-        v: cell.value,
-        c: [...cell.candidates].sort((a, b) => a - b),
-        g: cell.given,
-      })
-    }
-  }
+  if (!state.puzzleId || !state.board) return null
+
   const currentElapsed =
     state.paused || !state.resumeAt
       ? state.elapsedMs
       : state.elapsedMs + (Date.now() - state.resumeAt)
-  const pieceMap = state.jigsawPieceMap
-  const regions: number[][] | undefined = pieceMap
-    ? pieceMapToRegions(pieceMap)
-    : undefined
-  return {
-    id: state.puzzleId,
-    variant: state.variant,
-    difficulty: state.difficulty,
-    givens: state.givens,
-    cells,
-    history: state.history.filter((e): e is HistoryEntry => !('prevByLocation' in e)).map(entryToSaved),
-    historyIndex: state.historyIndex,
-    elapsedMs: currentElapsed,
-    startedAt: state.startedAt,
-    lastPlayedAt: new Date().toISOString(),
-    completedAt: state.completedAt,
-    ...(regions ? { regions } : {}),
-    ...(state.parityMask ? { parityMask: state.parityMask } : {}),
-    ...(state.edges ? { edges: state.edges } : {}),
-    ...(state.thermometers ? { thermometers: state.thermometers } : {}),
-    ...(state.arrows ? { arrows: state.arrows } : {}),
-    ...(state.cages ? { cages: state.cages } : {}),
-    ...(state.littleKillerClues
-      ? { littleKillerClues: state.littleKillerClues }
-      : {}),
-    ...(state.sandwichClues ? { sandwichClues: state.sandwichClues } : {}),
-    ...(state.skyscraperClues ? { skyscraperClues: state.skyscraperClues } : {}),
-    ...(state.paths ? { paths: state.paths } : {}),
+
+  if (state.board.kind === 'grid') {
+    const grid = state.board.grid
+    const cells: SavedCell[] = []
+    const size = grid.shape.size
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        const cell = cellAt(grid, { r, c })
+        cells.push({
+          v: cell.value,
+          c: [...cell.candidates].sort((a, b) => a - b),
+          g: cell.given,
+        })
+      }
+    }
+    const pieceMap = state.jigsawPieceMap
+    const regions: number[][] | undefined = pieceMap
+      ? pieceMapToRegions(pieceMap)
+      : undefined
+    return {
+      kind: 'grid',
+      id: state.puzzleId,
+      variant: state.variant,
+      difficulty: state.difficulty,
+      givens: state.givens,
+      cells,
+      history: state.history.filter((e): e is HistoryEntry => !('prevByLocation' in e)).map(entryToSaved),
+      historyIndex: state.historyIndex,
+      elapsedMs: currentElapsed,
+      startedAt: state.startedAt,
+      lastPlayedAt: new Date().toISOString(),
+      completedAt: state.completedAt,
+      ...(regions ? { regions } : {}),
+      ...(state.parityMask ? { parityMask: state.parityMask } : {}),
+      ...(state.edges ? { edges: state.edges } : {}),
+      ...(state.thermometers ? { thermometers: state.thermometers } : {}),
+      ...(state.arrows ? { arrows: state.arrows } : {}),
+      ...(state.cages ? { cages: state.cages } : {}),
+      ...(state.littleKillerClues
+        ? { littleKillerClues: state.littleKillerClues }
+        : {}),
+      ...(state.sandwichClues ? { sandwichClues: state.sandwichClues } : {}),
+      ...(state.skyscraperClues ? { skyscraperClues: state.skyscraperClues } : {}),
+      ...(state.paths ? { paths: state.paths } : {}),
+    }
   }
+
+  if (state.board.kind === 'samurai') {
+    const sBoard = state.board.board
+    return {
+      kind: 'samurai',
+      id: state.puzzleId,
+      variant: state.variant,
+      difficulty: state.difficulty,
+      givens: '',
+      cells: [],
+      history: [],
+      historyIndex: -1,
+      elapsedMs: currentElapsed,
+      startedAt: state.startedAt,
+      lastPlayedAt: new Date().toISOString(),
+      completedAt: state.completedAt,
+      samurai: {
+        grids: sBoard.grids.map((g) => {
+          const cells: SavedCell[] = []
+          for (let r = 0; r < g.shape.size; r++) {
+            for (let c = 0; c < g.shape.size; c++) {
+              const cell = cellAt(g, { r, c })
+              cells.push({
+                v: cell.value,
+                c: [...cell.candidates].sort((a, b) => a - b),
+                g: cell.given,
+              })
+            }
+          }
+          return {
+            givens: serializePuzzle(g),
+            cells,
+          }
+        }),
+      },
+    }
+  }
+
+  return assertNever(state.board)
 }
 
 /**

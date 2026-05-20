@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useGameStore, samuraiCellConflicts, samuraiIsCompleteState } from './gameStore'
+import { useGameStore, samuraiCellConflicts, samuraiIsCompleteState, serializeGameForSave } from './gameStore'
 
 // A trivial 5-grid givens set: each sub-grid is empty (all '0').
 const EMPTY_GIVENS_9 = '0'.repeat(81)
@@ -115,6 +115,57 @@ describe('gameStore.undo/redo (samurai)', () => {
       expect(state.board.board.grids[0]!.cells[1]![1]!.value).toBeNull()
       expect(state.board.board.grids[1]!.cells[7]![7]!.value).toBeNull()
     }
+  })
+})
+
+describe('gameStore samurai save/load round-trip', () => {
+  it('serializes and re-hydrates a samurai game', () => {
+    loadEmptySamurai()
+    useGameStore.getState().select({ gridIdx: 0, coord: { r: 4, c: 4 } })
+    useGameStore.getState().input(7)
+    const saved = serializeGameForSave(useGameStore.getState())
+    expect(saved).not.toBeNull()
+    if (saved) {
+      expect(saved.kind).toBe('samurai')
+      expect(saved.samurai?.grids.length).toBe(5)
+    }
+    // Reset state and hydrate.
+    useGameStore.setState({
+      board: null,
+      puzzleId: null,
+      history: [],
+      historyIndex: -1,
+    } as Partial<ReturnType<typeof useGameStore.getState>>)
+    useGameStore.getState().hydrate(saved!)
+    const restored = useGameStore.getState()
+    expect(restored.board?.kind).toBe('samurai')
+    if (restored.board?.kind === 'samurai') {
+      expect(restored.board.board.grids[0]!.cells[4]![4]!.value).toBe(7)
+    }
+  })
+
+  it('hydrate of a legacy record (kind missing) treats as grid', () => {
+    // Use a minimal classic SavedGame as a legacy fixture.
+    const cells = []
+    for (let i = 0; i < 81; i++) {
+      cells.push({ v: null, c: [1, 2, 3, 4, 5, 6, 7, 8, 9], g: false })
+    }
+    const legacy = {
+      id: 'legacy-001',
+      variant: 'classic',
+      difficulty: 'easy' as const,
+      givens: '0'.repeat(81),
+      cells,
+      history: [],
+      historyIndex: -1,
+      elapsedMs: 0,
+      startedAt: new Date().toISOString(),
+      lastPlayedAt: new Date().toISOString(),
+      completedAt: null,
+    }
+    useGameStore.getState().hydrate(legacy as any)
+    const state = useGameStore.getState()
+    expect(state.board?.kind).toBe('grid')
   })
 })
 
