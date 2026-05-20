@@ -167,7 +167,20 @@ export function Play() {
       givens: next.givens,
       ...(next.regions ? { regions: next.regions } : {}),
       ...(next.parityMask ? { parityMask: next.parityMask } : {}),
-      ...(next.edges ? { edges: next.edges as never } : {}),
+      ...(next.edges
+        ? { edges: next.edges as ReadonlyArray<EdgeMarkRecord> }
+        : {}),
+      ...(next.thermometers ? { thermometers: next.thermometers } : {}),
+      ...(next.arrows ? { arrows: next.arrows } : {}),
+      ...(next.cages ? { cages: next.cages } : {}),
+      ...(next.littleKillerClues
+        ? { littleKillerClues: next.littleKillerClues }
+        : {}),
+      ...(next.sandwichClues ? { sandwichClues: next.sandwichClues } : {}),
+      ...(next.skyscraperClues
+        ? { skyscraperClues: next.skyscraperClues }
+        : {}),
+      ...(next.paths ? { paths: next.paths } : {}),
       ...(next.samuraiGivens ? { samuraiGivens: next.samuraiGivens } : {}),
     })
     setParams({ variant, difficulty, puzzleId: next.id }, { replace: true })
