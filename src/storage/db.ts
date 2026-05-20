@@ -86,6 +86,17 @@ export interface SavedGame {
     readonly kind: 'palindrome' | 'renban' | 'german-whispers'
     readonly cells: ReadonlyArray<{ readonly r: number; readonly c: number }>
   }>
+  /** Discriminator. Missing = legacy/grid. New writes always set this. */
+  readonly kind?: 'grid' | 'samurai'
+  /** Samurai-specific payload. Present iff kind === 'samurai'. */
+  readonly samurai?: SavedSamuraiPayload
+}
+
+export interface SavedSamuraiPayload {
+  readonly grids: ReadonlyArray<{
+    readonly givens: string
+    readonly cells: ReadonlyArray<SavedCell>
+  }>
 }
 
 export interface SavedSettings {
