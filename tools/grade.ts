@@ -20,6 +20,7 @@ import {
   CLASSIC_6,
   CLASSIC_9,
   CLASSIC_16,
+  cellAt,
   createAntiKingConstraint,
   createAntiKnightConstraint,
   createClassicConstraint,
@@ -35,16 +36,21 @@ import {
   createNonConsecutiveConstraint,
   createPalindromeConstraint,
   createRenbanConstraint,
+  createSamuraiBoard,
   createSandwichConstraint,
   createSkyscraperConstraint,
   createThermometerConstraint,
   createXDiagonalConstraint,
   createXVConstraint,
   flatToCoords,
+  gradeSamurai,
   parsePuzzle,
   recomputeCandidates,
   gradePuzzle,
   backtrackingSolve,
+  samuraiBacktrackingSolve,
+  samuraiConsistencyCheck,
+  serializePuzzle,
   type Constraint,
   type GridShape,
   type Arrow,
@@ -247,17 +253,94 @@ function constraintsForRequest(
   }
 }
 
+function buildSamuraiFromGivens(givens: ReadonlyArray<string>): ReturnType<typeof createSamuraiBoard> {
+  if (givens.length !== 5) {
+    throw new Error(`samurai requires samuraiGivens of length 5, got ${givens.length}`)
+  }
+  const board = createSamuraiBoard()
+  for (let g = 0; g < 5; g++) {
+    const s = givens[g]!
+    if (s.length !== 81) {
+      throw new Error(`samuraiGivens[${g}] must be 81 chars, got ${s.length}`)
+    }
+    const grid = board.grids[g]!
+    for (let i = 0; i < 81; i++) {
+      const ch = s[i]!
+      if (ch === '0') continue
+      const r = Math.floor(i / 9)
+      const c = i % 9
+      const digit = parseInt(ch, 16)
+      const cell = cellAt(grid, { r, c })
+      cell.value = digit as never
+      cell.given = true
+    }
+  }
+  samuraiConsistencyCheck(board)
+  // Recompute candidates per sub-grid (parsePuzzle did this for classic; we
+  // must do it manually here since we wrote values directly).
+  for (let g = 0; g < 5; g++) {
+    const grid = board.grids[g]!
+    recomputeCandidates(grid)
+  }
+  return board
+}
+
 rl.on('line', (raw) => {
   const trimmed = raw.trim()
   if (!trimmed) return
   try {
+    // Action branch (solve_samurai_empty) is a non-grade request.
+    if (trimmed.startsWith('{')) {
+      const obj = JSON.parse(trimmed) as Record<string, unknown>
+      if (obj['action'] === 'solve_samurai_empty') {
+        const seed = typeof obj['seed'] === 'number' ? obj['seed'] : 0
+        const result = samuraiBacktrackingSolve(createSamuraiBoard(), {
+          maxSolutions: 1,
+          randomized: true,
+          seed,
+        })
+        if (!result.hasSolution || !result.solvedBoard) {
+          process.stdout.write(JSON.stringify({ ok: false }) + '\n')
+          return
+        }
+        const givens = result.solvedBoard.grids.map((g) => serializePuzzle(g))
+        process.stdout.write(
+          JSON.stringify({ ok: true, samuraiGivens: givens }) + '\n',
+        )
+        return
+      }
+      if (obj['variant'] === 'samurai') {
+        const samGivens = obj['samuraiGivens']
+        if (!Array.isArray(samGivens)) {
+          process.stdout.write(
+            JSON.stringify({ ok: false, error: 'samurai requires samuraiGivens' }) + '\n',
+          )
+          return
+        }
+        const board = buildSamuraiFromGivens(samGivens as ReadonlyArray<string>)
+        const grade = gradeSamurai(board)
+        const techniqueOnly = grade.se < 9.0
+        const bt = samuraiBacktrackingSolve(board, { maxSolutions: 2 })
+        process.stdout.write(
+          JSON.stringify({
+            ok: true,
+            variant: 'samurai',
+            se: grade.se,
+            difficulty: grade.difficulty,
+            hardestTier: grade.hardestTier,
+            steps: grade.stepsBySubgrid.reduce((s, arr) => s + arr.length, 0),
+            techniqueOnly,
+            unique: bt.isUnique,
+          }) + '\n',
+        )
+        return
+      }
+    }
+    // Existing classic / variant grade path (unchanged below).
     const req = parseLine(trimmed)
     const shape = shapeForRequest(req)
     const constraints = constraintsForRequest(req, shape)
     const grid = { ...parsePuzzle(req.puzzle, shape), constraints }
-    // Variants whose constraint region topology differs from the classic peer
-    // partition need a candidate reset before grading (jigsaw replaces boxes;
-    // even-odd / edge variants add eliminations beyond classic peers).
     if (
       req.variant === 'jigsaw' ||
       req.variant === 'even-odd' ||
@@ -298,9 +381,7 @@ rl.on('line', (raw) => {
       }) + '\n',
     )
   } catch (err) {
-    process.stdout.write(
-      JSON.stringify({ ok: false, error: String(err) }) + '\n',
-    )
+    process.stdout.write(JSON.stringify({ ok: false, error: String(err) }) + '\n')
   }
 })
 
