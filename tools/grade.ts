@@ -269,6 +269,8 @@ function buildSamuraiFromGivens(givens: ReadonlyArray<string>): ReturnType<typeo
       if (ch === '0') continue
       const r = Math.floor(i / 9)
       const c = i % 9
+      // Base-16: covers 1-9 for samurai's 9x9 sub-grids and A-G if this
+      // helper is ever reused for mega-16-shaped samurai variants.
       const digit = parseInt(ch, 16)
       const cell = cellAt(grid, { r, c })
       cell.value = digit as never
@@ -341,6 +343,9 @@ rl.on('line', (raw) => {
     const shape = shapeForRequest(req)
     const constraints = constraintsForRequest(req, shape)
     const grid = { ...parsePuzzle(req.puzzle, shape), constraints }
+    // Variants whose constraint region topology differs from the classic peer
+    // partition need a candidate reset before grading (jigsaw replaces boxes;
+    // even-odd / edge variants add eliminations beyond classic peers).
     if (
       req.variant === 'jigsaw' ||
       req.variant === 'even-odd' ||
