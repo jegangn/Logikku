@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Board } from '@/ui/board/Board'
+import { SamuraiBoardView } from '@/ui/board/SamuraiBoardView'
+import { RotateDevicePrompt } from '@/ui/board/RotateDevicePrompt'
+import { useIsPortraitOrientation } from '@/ui/hooks/useIsPortraitOrientation'
 import { InputPad } from '@/ui/panels/InputPad'
 import { Toolbar } from '@/ui/panels/Toolbar'
 import { selectGrid, useGameStore } from '@/state/gameStore'
@@ -45,6 +48,7 @@ const VARIANT_LABELS: Record<string, string> = {
   palindrome: 'Palindrome',
   renban: 'Renban',
   'german-whispers': 'German Whispers',
+  samurai: 'Samurai',
 }
 
 export function Play() {
@@ -74,6 +78,8 @@ export function Play() {
   const sandwichClues = useGameStore((s) => s.sandwichClues)
   const skyscraperClues = useGameStore((s) => s.skyscraperClues)
   const paths = useGameStore((s) => s.paths)
+  const boardState = useGameStore((s) => s.board)
+  const isPortrait = useIsPortraitOrientation()
 
   const loadPuzzle = useGameStore((s) => s.loadPuzzle)
   const select = useGameStore((s) => s.select)
@@ -249,7 +255,7 @@ export function Play() {
     return () => window.removeEventListener('keydown', onKey)
   }, [input, erase, moveSelection, setMode, mode, undo, redo, gridSize])
 
-  if (!grid) {
+  if (!grid && boardState?.kind !== 'samurai') {
     return (
       <main className="min-h-dvh flex items-center justify-center">
         <p className="text-[var(--color-text-muted)]">Loading…</p>
@@ -270,25 +276,41 @@ export function Play() {
         onUndo={undo}
         onRedo={redo}
       />
-      <Board
-        grid={grid}
-        selected={selected}
-        variant={variant}
-        lockedCells={lockedCells}
-        shakeKey={shakeKey}
-        {...(jigsawPieceMap ? { jigsawPieceMap } : {})}
-        {...(parityMask ? { parityMask } : {})}
-        {...(edges ? { edges } : {})}
-        {...(thermometers ? { thermometers } : {})}
-        {...(arrows ? { arrows } : {})}
-        {...(cages ? { cages } : {})}
-        {...(outsideClues ? { outsideClues } : {})}
-        {...(variantPaths ? { paths: variantPaths } : {})}
-        onSelect={select}
-      />
+      {boardState?.kind === 'samurai' ? (
+        isPortrait ? (
+          <RotateDevicePrompt />
+        ) : (
+          <SamuraiBoardView
+            board={boardState.board}
+            selected={
+              selectedRaw && 'gridIdx' in selectedRaw ? selectedRaw : null
+            }
+            {...(lockedCells !== undefined ? { lockedCells } : {})}
+            shakeKey={shakeKey}
+            onSelect={(target) => select(target)}
+          />
+        )
+      ) : (
+        <Board
+          grid={grid!}
+          selected={selected}
+          variant={variant}
+          lockedCells={lockedCells}
+          shakeKey={shakeKey}
+          {...(jigsawPieceMap ? { jigsawPieceMap } : {})}
+          {...(parityMask ? { parityMask } : {})}
+          {...(edges ? { edges } : {})}
+          {...(thermometers ? { thermometers } : {})}
+          {...(arrows ? { arrows } : {})}
+          {...(cages ? { cages } : {})}
+          {...(outsideClues ? { outsideClues } : {})}
+          {...(variantPaths ? { paths: variantPaths } : {})}
+          onSelect={select}
+        />
+      )}
       <InputPad
         mode={mode}
-        size={grid.shape.size}
+        size={grid?.shape.size ?? 9}
         disabled={completedAt !== null}
         onDigit={input}
         onErase={erase}
