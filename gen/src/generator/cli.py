@@ -34,6 +34,11 @@ def cli() -> None:
     type=click.Path(path_type=Path),
     help="Output directory (used with --all).",
 )
+@click.option(
+    "--append",
+    is_flag=True,
+    help="Append to existing JSONL output instead of truncating.",
+)
 def gen(
     variant: str,
     count: int,
@@ -42,6 +47,7 @@ def gen(
     seed: int,
     out: Path | None,
     out_dir: Path | None,
+    append: bool,
 ) -> None:
     """Generate puzzles for a variant."""
     if variant not in list_variants():
@@ -65,6 +71,7 @@ def gen(
                         seed=seed,
                         grader=grader,
                     ),
+                    append=append,
                 )
                 click.echo(f"  wrote {emitted} -> {path}")
                 total += emitted
@@ -79,6 +86,7 @@ def gen(
         emitted = write_bank(
             out,
             generator(count=count, difficulty=difficulty, seed=seed, grader=grader),
+            append=append,
         )
     click.echo(f"wrote {emitted} -> {out}")
 

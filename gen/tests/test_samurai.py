@@ -35,7 +35,7 @@ def test_generate_samurai_yields_count_records_when_grades_match():
         "steps": 10,
         "techniqueOnly": True,
     })
-    records = list(generate_samurai(count=3, difficulty="easy", seed=1, bridge=bridge))
+    records = list(generate_samurai(count=3, difficulty="easy", seed=1, grader=bridge))
     assert len(records) == 3
     for rec in records:
         assert rec.variant == "samurai"
@@ -51,7 +51,7 @@ def test_generate_samurai_skips_out_of_band_se():
         "steps": 10, "techniqueOnly": True,
     })
     result = list(itertools.islice(
-        generate_samurai(count=100, difficulty="easy", seed=1, bridge=bridge),
+        generate_samurai(count=100, difficulty="easy", seed=1, grader=bridge),
         0,
     ))
     assert result == []
@@ -62,7 +62,7 @@ def test_generate_samurai_diabolical_requires_technique_only_false():
         "ok": True, "unique": True, "se": 9.0, "hardestTier": 9,
         "steps": 50, "techniqueOnly": False,  # required for diabolical
     })
-    records = list(generate_samurai(count=2, difficulty="diabolical", seed=1, bridge=bridge))
+    records = list(generate_samurai(count=2, difficulty="diabolical", seed=1, grader=bridge))
     assert len(records) == 2
 
 
@@ -71,7 +71,7 @@ def test_generate_samurai_to_dict_writes_samuraiGivens_field():
         "ok": True, "unique": True, "se": 2.0, "hardestTier": 1,
         "steps": 5, "techniqueOnly": True,
     })
-    records = list(generate_samurai(count=1, difficulty="easy", seed=1, bridge=bridge))
+    records = list(generate_samurai(count=1, difficulty="easy", seed=1, grader=bridge))
     d = records[0].to_dict()
     assert "samuraiGivens" in d
     assert isinstance(d["samuraiGivens"], list)

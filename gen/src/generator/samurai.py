@@ -32,14 +32,14 @@ def generate_samurai(
     count: int,
     difficulty: str,
     seed: int,
-    bridge: GraderBridge | None = None,
+    grader: GraderBridge | None = None,
     progress_every: int = 1,
     **_ignored,
 ) -> Iterator[GeneratedPuzzle]:
     if difficulty not in SAMURAI_DIFFICULTY_BANDS:
         raise ValueError(f"unknown samurai band: {difficulty}")
-    if bridge is None:
-        raise ValueError("bridge is required for samurai generator")
+    if grader is None:
+        raise ValueError("grader is required for samurai generator")
     se_lo, se_hi, max_removals = SAMURAI_DIFFICULTY_BANDS[difficulty]
     rng = random.Random(seed)
     timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
@@ -49,9 +49,9 @@ def generate_samurai(
     while emitted < count:
         attempts += 1
         try:
-            solved = bridge.solve_samurai_empty(seed=rng.randint(0, 2**31 - 1))
-            dug = dig_samurai(solved, rng, bridge, max_removals)
-            result = bridge.grade_samurai(dug)
+            solved = grader.solve_samurai_empty(seed=rng.randint(0, 2**31 - 1))
+            dug = dig_samurai(solved, rng, grader, max_removals)
+            result = grader.grade_samurai(dug)
         except RuntimeError as err:
             consecutive_failures += 1
             if consecutive_failures > 100:

@@ -35,6 +35,7 @@ from .non_consecutive import (
 )
 from .palindrome import PALINDROME_DIFFICULTY_BANDS, generate_palindrome
 from .renban import RENBAN_DIFFICULTY_BANDS, generate_renban
+from .samurai import SAMURAI_DIFFICULTY_BANDS, generate_samurai
 from .sandwich import SANDWICH_DIFFICULTY_BANDS, generate_sandwich
 from .skyscraper import SKYSCRAPER_DIFFICULTY_BANDS, generate_skyscraper
 from .thermometer import THERMO_DIFFICULTY_BANDS, generate_thermometer
@@ -66,6 +67,7 @@ REGISTRY: dict[str, GeneratorFn] = {
     "skyscraper": generate_skyscraper,
     "palindrome": generate_palindrome,
     "renban": generate_renban,
+    "samurai": generate_samurai,
     "german-whispers": generate_german_whispers,
 }
 
@@ -92,6 +94,7 @@ BANDS_BY_VARIANT: dict[str, dict[str, tuple[float, float, int]]] = {
     "skyscraper": SKYSCRAPER_DIFFICULTY_BANDS,
     "palindrome": PALINDROME_DIFFICULTY_BANDS,
     "renban": RENBAN_DIFFICULTY_BANDS,
+    "samurai": SAMURAI_DIFFICULTY_BANDS,
     "german-whispers": GERMAN_WHISPERS_DIFFICULTY_BANDS,
 }
 
