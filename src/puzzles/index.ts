@@ -237,6 +237,20 @@ function assertRecord(r: unknown, key: BankKey): asserts r is PuzzleRecord {
       }
     }
   }
+  if (obj['samuraiGivens'] !== undefined) {
+    if (!Array.isArray(obj['samuraiGivens']) || obj['samuraiGivens'].length !== 5) {
+      throw new Error(
+        `bank ${key.variant}/${key.difficulty}: 'samuraiGivens' must be a 5-element array`,
+      )
+    }
+    for (const s of obj['samuraiGivens'] as unknown[]) {
+      if (typeof s !== 'string' || s.length !== 81) {
+        throw new Error(
+          `bank ${key.variant}/${key.difficulty}: each samuraiGivens entry must be an 81-char string`,
+        )
+      }
+    }
+  }
 }
 
 export function getBank(variant: string, difficulty: Difficulty): PuzzleBank {

@@ -70,6 +70,8 @@ export interface PuzzleRecord {
     readonly kind: 'palindrome' | 'renban' | 'german-whispers'
     readonly cells: ReadonlyArray<{ readonly r: number; readonly c: number }>
   }>
+  /** Samurai: 5 × 81-char givens strings — order [center, NW, NE, SW, SE]. */
+  readonly samuraiGivens?: ReadonlyArray<string>
 }
 
 export type PuzzleBank = ReadonlyArray<PuzzleRecord>
