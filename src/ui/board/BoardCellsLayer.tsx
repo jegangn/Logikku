@@ -6,7 +6,6 @@ import { cellAt } from '@/engine'
 export interface BoardCellsLayerProps {
   readonly grid: Grid
   readonly cellSize: number
-  readonly gridIdx?: number
   readonly selectedCoord: Coord | null
   readonly selectedValue: Digit | null
   readonly peerSet: ReadonlySet<string>
@@ -64,7 +63,7 @@ export function BoardCellsLayer({
       }
     }
     return out
-  }, [grid, cellSize, selectedCoord, selectedValue, peerSet, conflictSet, lockedCells, shakeKey, onSelect, size])
+  }, [grid, cellSize, selectedCoord, selectedValue, peerSet, conflictSet, lockedCells, shakeKey, onSelect])
 
   return (
     <g>

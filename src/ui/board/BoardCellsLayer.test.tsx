@@ -105,44 +105,9 @@ describe('BoardCellsLayer', () => {
       </svg>,
     )
     const heavyLines = container.querySelectorAll('line[stroke-width="2.5"]')
-    // Only the 4 outer edges remain heavy (top, bottom, left, right).
     expect(heavyLines.length).toBe(4)
   })
 
-  it('accepts an optional gridIdx prop without changing visible output', () => {
-    const grid = makeGrid()
-    const a = render(
-      <svg>
-        <BoardCellsLayer
-          grid={grid}
-          cellSize={30}
-          selectedCoord={null}
-          selectedValue={null}
-          peerSet={new Set()}
-          conflictSet={new Set()}
-          onSelect={() => {}}
-        />
-      </svg>,
-    )
-    const html1 = a.container.innerHTML
-    a.unmount()
-    const b = render(
-      <svg>
-        <BoardCellsLayer
-          grid={grid}
-          gridIdx={1}
-          cellSize={30}
-          selectedCoord={null}
-          selectedValue={null}
-          peerSet={new Set()}
-          conflictSet={new Set()}
-          onSelect={() => {}}
-        />
-      </svg>,
-    )
-    const html2 = b.container.innerHTML
-    expect(html2).toBe(html1)
-  })
 })
 
 describe('Board (existing) still passes through to BoardCellsLayer', () => {
