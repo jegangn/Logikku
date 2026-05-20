@@ -102,21 +102,36 @@ def dig_samurai(
     bridge: GraderBridge,
     max_removals: int,
     symmetry: Symmetry = "rotational",
+    *,
+    max_failed_attempts: int | None = None,
 ) -> list[str]:
-    """Returns a new list[str] of length 5 with cells removed."""
+    """Returns a new list[str] of length 5 with cells removed.
+
+    `max_failed_attempts` (default 3 * max_removals) caps how many consecutive
+    uniqueness-rejected attempts the digger tolerates before giving up. Each
+    grade_samurai call is ~30-200ms; without a cap a single dig pass can hit
+    the bridge ~1000+ times on a tough board, which is the dominant wall-clock
+    cost. Capping bounds per-puzzle latency at the cost of leaving some safe
+    removals on the table — the generator just iterates with a fresh seed.
+    """
     if len(solved) != 5:
         raise ValueError(f"expected 5 solved sub-grids, got {len(solved)}")
     for i, s in enumerate(solved):
         if len(s) != 81:
             raise ValueError(f"solved[{i}] must be 81 chars, got {len(s)}")
+    if max_failed_attempts is None:
+        max_failed_attempts = 3 * max_removals
     state = list(solved)
     cells: list[tuple[int, int, int]] = [
         (g, r, c) for g in range(5) for r in range(9) for c in range(9)
     ]
     rng.shuffle(cells)
     removed = 0
+    failed = 0
     for (g, r, c) in cells:
         if removed >= max_removals:
+            break
+        if failed >= max_failed_attempts:
             break
         targets = _close_dig_set([(g, r, c)], symmetry)
         if all(_cell_at(state, t) == "0" for t in targets):
@@ -127,6 +142,8 @@ def dig_samurai(
         result = bridge.grade_samurai(state)
         if not result.get("ok") or not result.get("unique"):
             state = before
+            failed += 1
             continue
         removed += sum(1 for t in targets if _cell_at(before, t) != "0")
+        failed = 0
     return state

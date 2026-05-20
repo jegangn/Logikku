@@ -15,16 +15,23 @@ from .grader_bridge import GraderBridge
 from .samurai_digger import dig_samurai
 
 
-# Each tuple: (se_lo, se_hi, max_removals). max_removals empirically tuned
-# during 17c starter run; cells = 405 across cruciform.
+# Each tuple: (se_lo, se_hi, max_removals). Empirically calibrated during
+# the 17c starter run. Samurai SE is bimodal under this grader:
+# technique-only puzzles cluster at SE 1.5-2.4 (regardless of empty-cell
+# count, because cross-grid technique propagation resolves most positions),
+# then jump to SE=9 when techniques fail and backtracking is required. The
+# intermediate bands (medium/hard/tough/expert) are sparsely populated or
+# unreachable. We widen their SE ceilings/floors here so any emit that
+# happens to land mid-range is captured, even though most starter runs
+# will produce only easy + diabolical records.
 SAMURAI_DIFFICULTY_BANDS: dict[str, tuple[float, float, int]] = {
-    "very-easy": (0.0, 1.4, 200),
-    "easy":      (1.5, 2.4, 230),
-    "medium":    (2.5, 3.9, 260),
-    "hard":      (4.0, 5.9, 285),
-    "tough":     (6.0, 6.4, 295),
-    "expert":    (6.5, 7.9, 305),
-    "diabolical":(8.0, 99.9,320),
+    "very-easy": (0.0, 1.7,  15),
+    "easy":      (1.5, 2.4,  35),
+    "medium":    (2.5, 3.9,  60),
+    "hard":      (4.0, 5.9,  90),
+    "tough":     (6.0, 6.4, 115),
+    "expert":    (6.5, 7.9, 140),
+    "diabolical":(8.0, 99.9,170),
 }
 
 

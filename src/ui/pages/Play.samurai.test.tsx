@@ -70,13 +70,10 @@ describe('Play.tsx — samurai variant', () => {
     mountAt('/play?variant=samurai&difficulty=easy')
     await screen.findByTestId('samurai-board')
     const user = userEvent.setup()
-    const centerCell = within(screen.getByTestId('samurai-subgrid-0'))
-      .getByTestId('cell-1-1')
+    const { centerCell, nwCell } = await findEmptySharedCell()
     await user.click(centerCell)
     await user.keyboard('7')
     expect(centerCell.getAttribute('aria-label')).toMatch(/entered 7/)
-    const nwCell = within(screen.getByTestId('samurai-subgrid-1'))
-      .getByTestId('cell-7-7')
     expect(nwCell.getAttribute('aria-label')).toMatch(/entered 7/)
   })
 
@@ -84,13 +81,10 @@ describe('Play.tsx — samurai variant', () => {
     mountAt('/play?variant=samurai&difficulty=easy')
     await screen.findByTestId('samurai-board')
     const user = userEvent.setup()
-    const centerCell = within(screen.getByTestId('samurai-subgrid-0'))
-      .getByTestId('cell-1-1')
+    const { centerCell, nwCell } = await findEmptySharedCell()
     await user.click(centerCell)
     await user.keyboard('7')
     await user.keyboard('{Backspace}')
-    const nwCell = within(screen.getByTestId('samurai-subgrid-1'))
-      .getByTestId('cell-7-7')
     expect(centerCell.getAttribute('aria-label')).toMatch(/empty/)
     expect(nwCell.getAttribute('aria-label')).toMatch(/empty/)
   })
@@ -114,3 +108,39 @@ describe('Play.tsx — samurai variant', () => {
     expect(screen.queryByTestId('samurai-board')).toBeNull()
   })
 })
+
+// Walk all 4 shared boxes of the cruciform and return the first non-given
+// (center cell, mirror cell) pair. Per SAMURAI_LAYOUT: NW pairs center box
+// (0,0) ↔ NW (2,2); NE pairs (0,2) ↔ (2,0); SW pairs (2,0) ↔ (0,2); SE
+// pairs (2,2) ↔ (0,0). The "centerCell" we return is the center side; the
+// "nwCell" is its partner in the corresponding corner sub-grid.
+async function findEmptySharedCell(): Promise<{
+  centerCell: HTMLElement
+  nwCell: HTMLElement
+}> {
+  const center = screen.getByTestId('samurai-subgrid-0')
+  // Each tuple: (cornerIdx, centerBoxR, centerBoxC, cornerBoxR, cornerBoxC).
+  const corners: ReadonlyArray<[number, number, number, number, number]> = [
+    [1, 0, 0, 2, 2],
+    [2, 0, 2, 2, 0],
+    [3, 2, 0, 0, 2],
+    [4, 2, 2, 0, 0],
+  ]
+  for (const [cornerIdx, cbr, cbc, xbr, xbc] of corners) {
+    const corner = screen.getByTestId(`samurai-subgrid-${cornerIdx}`)
+    for (let dr = 0; dr < 3; dr++) {
+      for (let dc = 0; dc < 3; dc++) {
+        const centerR = cbr * 3 + dr
+        const centerC = cbc * 3 + dc
+        const cell = within(center).getByTestId(`cell-${centerR}-${centerC}`)
+        if (cell.getAttribute('data-given') === 'false') {
+          const cornerR = xbr * 3 + dr
+          const cornerC = xbc * 3 + dc
+          const partner = within(corner).getByTestId(`cell-${cornerR}-${cornerC}`)
+          return { centerCell: cell, nwCell: partner }
+        }
+      }
+    }
+  }
+  throw new Error('no empty shared cell across the four cruciform overlaps')
+}
