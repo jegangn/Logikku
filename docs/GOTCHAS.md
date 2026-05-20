@@ -166,3 +166,55 @@ Easy to miss: `tools/grade.ts` is the bun grader bridge, separate from `src/stat
 
 ### Mega 16×16 — iPad orientation decision pending user test — 2026-05-19
 Phase 16 ships with no orientation lock. Board auto-fits both portrait and landscape via the existing `aspect-square w-full max-w-[min(92vw,640px)]` constraint. At 640px / 16 cells the per-cell touch target is ~40px — borderline iOS 44px guideline. iPad readability and tap accuracy still need a manual smoke test by the user (Task 15). If portrait is unusable, follow-up: add an orientation lock or a one-time rotate hint and update this entry.
+
+### Phase 17a — Samurai engine + state — 2026-05-20
+
+Five overlapping 9×9 grids modeled as `SamuraiBoard` (5 × `Grid<9>` plus a
+`sharedCells` map). Architectural notes worth knowing before 17b/17c:
+
+- **Wrap, don't generalize.** `techniqueSolve` and `backtrackingSolve`
+  remain Grid-only. New `samuraiTechniqueSolve` and `samuraiBacktrackingSolve`
+  iterate per-sub-grid and sync shared cells. Avoiding a generic refactor
+  kept the 20+ existing variants regression-free (354/354 unit tests
+  still passing after the gameStore discriminated-union refactor).
+
+- **State is now a tagged union.** `state.board: { kind: 'grid', grid } |
+  { kind: 'samurai', board } | null`. Every consumer that touched
+  `state.grid` directly was rewritten to dispatch on `kind`. The
+  `selectGrid(state)` shim returns the Grid when grid-shaped, else null
+  — used by `Play.tsx` and similar consumers that only handle classic
+  variants today. Future work must continue this discipline; `assertNever`
+  falls through every switch.
+
+- **Duplicate + sync for shared cells.** A value placed in an overlap is
+  stored in both sub-grids that contain it. `setValueShared` is the only
+  correct write path; direct `setValue` on a sub-grid bypasses the sync
+  and breaks `samuraiConsistencyCheck`. The grader runs per-sub-grid SE
+  and takes the max — "puzzle is as hard as its hardest sub-grid".
+
+- **Cruciform layout is hard-coded.** `SAMURAI_LAYOUT` defines the
+  standard center-plus-4-corners topology with each corner's
+  `cornerBox` overlapping the center's `centerBox`. Non-standard
+  Samurai variants (e.g. Sumo Samurai) would require revisiting
+  `computeSharedCells`. The 5 sub-grids are indexed [center, NW, NE,
+  SW, SE]; `samuraiSharedLocations` does an O(72) linear scan, which
+  is fine at 36 entries.
+
+- **Selection model extended for samurai.** `state.selected` is now
+  `Coord | { gridIdx, coord } | null`. Existing classic actions pass a
+  plain `Coord` and check `'gridIdx' in sel` to skip the samurai shape;
+  samurai actions require the tagged form. `Play.tsx` was narrowed
+  manually to `Coord | null` since it doesn't yet handle samurai
+  (17b will).
+
+- **History hydration is reset on samurai save/load.** Per-entry replay
+  of `samurai-value` / `samurai-erase` from the saved-game payload is
+  intentionally deferred — the UI (17b) drives when it matters and we
+  hadn't built that exercise yet at this checkpoint. The board itself
+  round-trips cleanly via `serializeGameForSave` / `hydrate`.
+
+- **Storage discriminator is optional, not migrated.** `SavedGame.kind?:
+  'grid' | 'samurai'` was added as optional; legacy records without
+  `kind` are treated as `'grid'`. No IndexedDB schema bump — existing
+  classic saves load unchanged. New writes always stamp `kind`.
+
