@@ -10,6 +10,28 @@ import {
   type TechniqueSolveOptions,
 } from './techniqueSolver'
 
+// Tiny seeded PRNG (mulberry32). Deterministic — same seed yields the same
+// sequence. Used to shuffle candidate values during randomized backtracking.
+function mulberry32(seed: number): () => number {
+  let a = seed >>> 0
+  return () => {
+    a = (a + 0x6D2B79F5) >>> 0
+    let t = a
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+function shuffleInPlace<T>(arr: T[], rand: () => number): void {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1))
+    const tmp = arr[i]!
+    arr[i] = arr[j]!
+    arr[j] = tmp
+  }
+}
+
 export interface SamuraiSolveResult {
   readonly board: SamuraiBoard
   readonly solved: boolean
@@ -78,12 +100,15 @@ function boardIsFull(board: SamuraiBoard): boolean {
 
 export interface SamuraiBacktrackOptions {
   readonly maxSolutions: number
+  readonly randomized?: boolean
+  readonly seed?: number
 }
 
 export interface SamuraiBacktrackResult {
   readonly solutions: ReadonlyArray<SamuraiBoard>
   readonly hasSolution: boolean
   readonly isUnique: boolean
+  readonly solvedBoard?: SamuraiBoard
 }
 
 interface MRVPick {
@@ -118,22 +143,20 @@ export function samuraiBacktrackingSolve(
 ): SamuraiBacktrackResult {
   const solutions: SamuraiBoard[] = []
   const max = Math.max(1, opts.maxSolutions)
+  const rand = opts.randomized ? mulberry32(opts.seed ?? 0) : null
 
   function step(current: SamuraiBoard): void {
     if (solutions.length >= max) return
 
-    // Run technique solve as propagation; this also catches contradictions.
     const propagated = samuraiTechniqueSolve(current)
     const board = propagated.board
 
-    // Per-sub-grid validate check.
     for (let g = 0; g < 5; g++) {
       for (const constraint of board.grids[g]!.constraints) {
         if (!constraint.validate(board.grids[g]!)) return
       }
     }
 
-    // Empty-candidate check for any unfilled cell.
     for (let g = 0; g < 5; g++) {
       const grid = board.grids[g]!
       for (let r = 0; r < grid.shape.size; r++) {
@@ -156,7 +179,9 @@ export function samuraiBacktrackingSolve(
     }
     if (pick.candidates.length === 0) return
 
-    for (const digit of pick.candidates) {
+    const order = [...pick.candidates]
+    if (rand) shuffleInPlace(order, rand)
+    for (const digit of order) {
       const next = samuraiCloneBoard(board)
       setValueShared(next, pick.gridIdx, pick.coord, digit as Digit)
       step(next)
@@ -165,9 +190,11 @@ export function samuraiBacktrackingSolve(
   }
 
   step(samuraiCloneBoard(input))
+  const solvedBoard = solutions.length === 1 && max === 1 ? solutions[0] : undefined
   return {
     solutions,
     hasSolution: solutions.length > 0,
     isUnique: solutions.length === 1,
+    ...(solvedBoard !== undefined ? { solvedBoard } : {}),
   }
 }

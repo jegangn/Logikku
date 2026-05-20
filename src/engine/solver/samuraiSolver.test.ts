@@ -6,6 +6,7 @@ import {
 } from '../samurai'
 import type { Digit } from '../types'
 import { samuraiTechniqueSolve, samuraiBacktrackingSolve } from './samuraiSolver'
+import { samuraiIsComplete, samuraiConsistencyCheck } from '@/engine'
 
 function fillRowExcept(
   board: ReturnType<typeof createSamuraiBoard>,
@@ -94,3 +95,65 @@ describe('samuraiBacktrackingSolve', () => {
     expect(result.hasSolution).toBe(true)
   })
 })
+
+describe('samuraiBacktrackingSolve — randomization', () => {
+  it('with randomized=false, two calls return the same first solution', () => {
+    const a = samuraiBacktrackingSolve(createSamuraiBoard(), { maxSolutions: 1 })
+    const b = samuraiBacktrackingSolve(createSamuraiBoard(), { maxSolutions: 1 })
+    expect(a.hasSolution).toBe(true)
+    expect(b.hasSolution).toBe(true)
+    expect(serializeBoard(a)).toBe(serializeBoard(b))
+  })
+
+  it('with randomized=true, seed=1 returns a valid solved samurai board', () => {
+    const result = samuraiBacktrackingSolve(createSamuraiBoard(), {
+      maxSolutions: 1,
+      randomized: true,
+      seed: 1,
+    })
+    expect(result.hasSolution).toBe(true)
+    expect(result.solvedBoard).toBeDefined()
+    expect(samuraiIsComplete(result.solvedBoard!)).toBe(true)
+    expect(() => samuraiConsistencyCheck(result.solvedBoard!)).not.toThrow()
+  })
+
+  it('with randomized=true, same seed produces the same board', () => {
+    const a = samuraiBacktrackingSolve(createSamuraiBoard(), {
+      maxSolutions: 1,
+      randomized: true,
+      seed: 42,
+    })
+    const b = samuraiBacktrackingSolve(createSamuraiBoard(), {
+      maxSolutions: 1,
+      randomized: true,
+      seed: 42,
+    })
+    expect(serializeBoard(a)).toBe(serializeBoard(b))
+  })
+
+  it('with randomized=true, different seeds produce different boards', () => {
+    const a = samuraiBacktrackingSolve(createSamuraiBoard(), {
+      maxSolutions: 1,
+      randomized: true,
+      seed: 1,
+    })
+    const b = samuraiBacktrackingSolve(createSamuraiBoard(), {
+      maxSolutions: 1,
+      randomized: true,
+      seed: 2,
+    })
+    expect(serializeBoard(a)).not.toBe(serializeBoard(b))
+  })
+})
+
+function serializeBoard(r: { solvedBoard?: { grids: ReadonlyArray<{ cells: ReadonlyArray<ReadonlyArray<{ value: number | null }>> }> } }): string {
+  const board = r.solvedBoard
+  if (!board) return ''
+  const parts: string[] = []
+  for (const grid of board.grids) {
+    for (const row of grid.cells) {
+      for (const cell of row) parts.push(String(cell.value ?? 0))
+    }
+  }
+  return parts.join('')
+}
