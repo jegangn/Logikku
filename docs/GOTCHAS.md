@@ -218,3 +218,34 @@ Five overlapping 9×9 grids modeled as `SamuraiBoard` (5 × `Grid<9>` plus a
   `kind` are treated as `'grid'`. No IndexedDB schema bump — existing
   classic saves load unchanged. New writes always stamp `kind`.
 
+## 2026-05-20 — Phase 17b cruciform UI
+
+**`BoardCellsLayer` extraction is the one-time DRY win.** `Board.tsx` and `SamuraiBoardView.tsx` now share the inner cell-rendering machinery. The extracted component is pure — it takes derived state (selectedCoord, selectedValue, peerSet, conflictSet) and renders. All derivation stays in the parent. This lets `SamuraiBoardView` compute per-sub-grid view-state from a single global selection without `Board.tsx` having to know anything about samurai.
+
+**Selection state is a discriminated union, the view derives.** Per Phase 17a, `state.selected` is `Coord | {gridIdx, coord} | null`. `Play.tsx` reads `selectedRaw` and narrows in two places: classic gets `Coord | null` via the `!('gridIdx' in selectedRaw)` guard; samurai gets the wide shape via `'gridIdx' in selectedRaw`. `SamuraiBoardView` re-narrows per sub-grid via `samuraiSharedLocations`. The duplicate narrowing is intentional — each consumer derives only what it needs.
+
+**Paint order matters for visual cleanliness.** Corners (gridIdx 1–4) paint first; center (0) paints last. The 3×3 overlap regions belong to BOTH a corner box and a center box; without ordering, the corner's heavy box lines would peek through the center's box lines. With this order, the center's heavy lines win, and the cruciform reads as one connected board.
+
+**SVG axis convention bit us in `SUB_GRID_POSITIONS`.** `x` increases rightward, `y` increases downward. NE corner sits at `(12, 0)` (top-right), SW corner at `(0, 12)` (bottom-left). The initial plan code had these swapped — a hint that the table needs the `// top-right`, `// bottom-left` comments to survive future edits.
+
+**Mirror conflicts at the view layer, not the engine.** `samuraiConflicts` returns intra-sub-grid conflicts only (e.g., "0,1,1" when center row 1 has two of the same digit). The view needs the conflict highlight on the shared partner cell too — otherwise NW (7,7) shows clean while center (1,1) shows red. `SamuraiBoardView.computeSubGridState` mirrors a conflicted shared cell into the partner sub-grid's `conflictSet`. The engine stays semantically pure; the visual mirroring is a UI concern.
+
+**`CELL_SIZE=30` is a trade-off.** Yields 21×30 = 630 px side, which fits the iPad landscape ~768 px short axis with room for the InputPad. Below Apple's 44 px touch-target guideline. Acceptable for an iPad puzzle UI; revisit only if the iPad smoke uncovers tap accuracy issues. If we bump to 36 px, the board becomes 756 px square — still fits 1024 px landscape but crowds the pad.
+
+**Orientation lock is UI-only, not navigation.** Rotating the iPad doesn't unmount the game; the matchMedia hook toggles which child renders. State (selection, board values, history) survives every rotation. The user can play landscape → rotate to portrait (see prompt) → rotate back → resume from the same cell. Tested in `Play.samurai.test.tsx`.
+
+**`textContent` is unreliable on SVG Cell groups; use `aria-label` instead.** The integration test for Backspace originally used `expect(cell.textContent).not.toMatch(/7/)`. After erase, the engine restores all candidates (1..9), and Cell.tsx renders each candidate as a separate `<text>` element inside the same `<g>`. So `textContent` aggregates to `"123456789"` — which matches `/7/`. Switched to `expect(cell.getAttribute('aria-label')).toMatch(/empty/)` (and `/entered 7/` for the digit test). This is the semantically correct check anyway — assert on the accessibility hook, not the visual aggregation.
+
+**Demo fixture uses (4,4) givens only.** The middle-middle cell (r=4, c=4) is in box (1,1) of any 9×9 grid, which never overlaps with another sub-grid (overlaps live in corner boxes (0,0), (0,2), (2,0), (2,2)). One given per sub-grid at (4,4) trivially passes `samuraiConsistencyCheck`. Real banks land in 17c.
+
+**Manual iPad smoke checklist (run on real device before declaring 17b shipped):**
+- Open `/play?variant=samurai&difficulty=easy` in iPad Safari.
+- Portrait: rotate prompt visible, readable text.
+- Landscape: cruciform fills the short axis; InputPad fits to the right.
+- Tap a shared cell (e.g. center 1,1 or NW 7,7): both light up.
+- Enter a digit via keyboard or pad: both cells show it; classic peers in both sub-grids drop the candidate.
+- Pencil-mark on a shared cell: marks appear in both.
+- Undo/redo across mixed shared/unshared placements.
+- Background Safari, reopen: state restored.
+- Rotate during play: prompt appears, rotate back, same selection.
+
