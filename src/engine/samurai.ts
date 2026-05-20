@@ -1,5 +1,5 @@
-import type { Cell, Coord, SamuraiBoard } from './types'
-import { CLASSIC_9, cellAt, createGrid } from './grid'
+import type { Cell, Coord, Digit, SamuraiBoard } from './types'
+import { CLASSIC_9, cellAt, createGrid, recomputeCandidates, setValue } from './grid'
 import { createClassicConstraint } from './constraints/classic'
 
 export type CornerRole = 'NW' | 'NE' | 'SW' | 'SE'
@@ -106,4 +106,32 @@ export function samuraiSharedLocations(
     }
   }
   return [{ grid: gridIdx, coord }]
+}
+
+export function setValueShared(
+  board: SamuraiBoard,
+  gridIdx: number,
+  coord: Coord,
+  digit: Digit,
+): void {
+  const locations = samuraiSharedLocations(board, gridIdx, coord)
+  for (const loc of locations) {
+    setValue(board.grids[loc.grid]!, loc.coord, digit)
+  }
+}
+
+export function eraseShared(
+  board: SamuraiBoard,
+  gridIdx: number,
+  coord: Coord,
+): void {
+  const locations = samuraiSharedLocations(board, gridIdx, coord)
+  for (const loc of locations) {
+    const cell = cellAt(board.grids[loc.grid]!, loc.coord)
+    cell.value = null
+  }
+  const affectedGrids = new Set(locations.map((l) => l.grid))
+  for (const idx of affectedGrids) {
+    recomputeCandidates(board.grids[idx]!)
+  }
 }

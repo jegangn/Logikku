@@ -6,6 +6,8 @@ import {
   createSamuraiBoard,
   samuraiCellAt,
   samuraiSharedLocations,
+  setValueShared,
+  eraseShared,
 } from './samurai'
 
 describe('SAMURAI_LAYOUT', () => {
@@ -119,5 +121,49 @@ describe('samuraiSharedLocations', () => {
     const locs = samuraiSharedLocations(board, 2, { r: 0, c: 0 })
     expect(locs.length).toBe(1)
     expect(locs[0]).toEqual({ grid: 2, coord: { r: 0, c: 0 } })
+  })
+})
+
+describe('setValueShared', () => {
+  it('writes a value to the targeted sub-grid', () => {
+    const board = createSamuraiBoard()
+    setValueShared(board, 0, { r: 4, c: 4 }, 5)
+    expect(samuraiCellAt(board, 0, { r: 4, c: 4 }).value).toBe(5)
+  })
+
+  it('propagates a shared-cell write to all sub-grids containing it', () => {
+    const board = createSamuraiBoard()
+    // NW overlap: center (1,1) == NW corner (7,7)
+    setValueShared(board, 0, { r: 1, c: 1 }, 7)
+    expect(samuraiCellAt(board, 0, { r: 1, c: 1 }).value).toBe(7)
+    expect(samuraiCellAt(board, 1, { r: 7, c: 7 }).value).toBe(7)
+  })
+
+  it('runs classic peer-elim inside each affected sub-grid', () => {
+    const board = createSamuraiBoard()
+    setValueShared(board, 0, { r: 1, c: 1 }, 7)
+    // Center peer at (1, 5) (same row in center) should lose candidate 7
+    expect(samuraiCellAt(board, 0, { r: 1, c: 5 }).candidates.has(7)).toBe(false)
+    // NW corner peer at (7, 3) (same row in NW) should lose candidate 7
+    expect(samuraiCellAt(board, 1, { r: 7, c: 3 }).candidates.has(7)).toBe(false)
+  })
+
+  it('does not affect non-shared peers in non-shared sub-grids', () => {
+    const board = createSamuraiBoard()
+    setValueShared(board, 0, { r: 1, c: 1 }, 7)
+    // NE corner has no overlap with the center's (1,1); its cells should still have 7.
+    expect(samuraiCellAt(board, 2, { r: 0, c: 0 }).candidates.has(7)).toBe(true)
+  })
+})
+
+describe('eraseShared', () => {
+  it('clears the value and restores candidates across all shared sub-grids', () => {
+    const board = createSamuraiBoard()
+    setValueShared(board, 0, { r: 1, c: 1 }, 7)
+    eraseShared(board, 0, { r: 1, c: 1 })
+    expect(samuraiCellAt(board, 0, { r: 1, c: 1 }).value).toBeNull()
+    expect(samuraiCellAt(board, 1, { r: 7, c: 7 }).value).toBeNull()
+    // After erase, candidates are recomputed; (1,1) should once again have 7 available.
+    expect(samuraiCellAt(board, 0, { r: 1, c: 1 }).candidates.has(7)).toBe(true)
   })
 })
