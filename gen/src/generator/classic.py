@@ -36,9 +36,10 @@ class GeneratedPuzzle:
     hardest_tier: int
     steps: int
     generated_at: str
+    samurai_givens: tuple[str, ...] | None = None
 
     def to_dict(self) -> dict:
-        return {
+        out: dict = {
             "id": self.id,
             "variant": self.variant,
             "size": self.size,
@@ -49,6 +50,9 @@ class GeneratedPuzzle:
             "steps": self.steps,
             "generatedAt": self.generated_at,
         }
+        if self.samurai_givens is not None:
+            out["samuraiGivens"] = list(self.samurai_givens)
+        return out
 
 
 def generate_classic(
@@ -105,10 +109,16 @@ def generate_classic(
         )
 
 
-def write_bank(path: Path, puzzles: Iterator[GeneratedPuzzle]) -> int:
+def write_bank(
+    path: Path,
+    puzzles: Iterator[GeneratedPuzzle],
+    *,
+    append: bool = False,
+) -> int:
     path.parent.mkdir(parents=True, exist_ok=True)
     count = 0
-    with path.open("w", encoding="utf-8", newline="\n") as f:
+    mode = "a" if append else "w"
+    with path.open(mode, encoding="utf-8", newline="\n") as f:
         for p in puzzles:
             f.write(json.dumps(p.to_dict(), separators=(",", ":")) + "\n")
             f.flush()
