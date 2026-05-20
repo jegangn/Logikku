@@ -66,4 +66,16 @@ describe('useIsPortraitOrientation', () => {
     unmount()
     expect(fakeMQL.listeners.length).toBe(0)
   })
+
+  it('returns false when window.matchMedia is unavailable', () => {
+    const stash = window.matchMedia
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(window as any).matchMedia = undefined
+    try {
+      const { result } = renderHook(() => useIsPortraitOrientation())
+      expect(result.current).toBe(false)
+    } finally {
+      window.matchMedia = stash
+    }
+  })
 })
