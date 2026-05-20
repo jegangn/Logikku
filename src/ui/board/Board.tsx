@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Cell } from './Cell'
+import { BoardCellsLayer } from './BoardCellsLayer'
 import { OverlayLayer } from './OverlayLayer'
 import type { Coord, Digit, Grid } from '@/engine'
 import { cellAt, peersFromConstraints } from '@/engine'
@@ -66,38 +66,6 @@ export function Board({
 
   const conflictSet = useMemo(() => computeConflicts(grid), [grid])
 
-  const rows: React.ReactElement[] = []
-  for (let r = 0; r < size; r++) {
-    for (let c = 0; c < size; c++) {
-      const cell = cellAt(grid, { r, c })
-      const key = `${r},${c}`
-      const isSelected = selected !== null && selected.r === r && selected.c === c
-      const peerHighlight = peerSet.has(key) && !isSelected
-      const sameValue =
-        selectedValue !== null &&
-        cell.value === selectedValue &&
-        !isSelected
-      rows.push(
-        <Cell
-          key={key}
-          coord={{ r, c }}
-          cellSize={CELL_SIZE}
-          gridSize={size}
-          value={cell.value}
-          candidates={cell.candidates}
-          given={cell.given}
-          selected={isSelected}
-          peerHighlight={peerHighlight}
-          sameValueHighlight={sameValue}
-          conflict={conflictSet.has(key)}
-          locked={lockedCells?.has(key) ?? false}
-          shakeKey={shakeKey}
-          onSelect={onSelect}
-        />,
-      )
-    }
-  }
-
   return (
     <svg
       role="grid"
@@ -106,19 +74,18 @@ export function Board({
       viewBox={`${-margin} ${-margin} ${boardPx + margin * 2} ${boardPx + margin * 2}`}
       className="w-full max-w-[min(92vw,640px)] aspect-square select-none"
     >
-      <rect
-        x={0}
-        y={0}
-        width={boardPx}
-        height={boardPx}
-        fill="var(--color-surface)"
-      />
-      {rows}
-      <GridLines
-        size={size}
+      <rect x={0} y={0} width={boardPx} height={boardPx} fill="var(--color-surface)" />
+      <BoardCellsLayer
+        grid={grid}
         cellSize={CELL_SIZE}
-        shape={grid.shape}
+        selectedCoord={selected}
+        selectedValue={selectedValue}
+        peerSet={peerSet}
+        conflictSet={conflictSet}
+        {...(lockedCells !== undefined ? { lockedCells } : {})}
+        shakeKey={shakeKey}
         suppressBoxLines={variant === 'jigsaw'}
+        onSelect={onSelect}
       />
       <OverlayLayer
         gridSize={size}
@@ -135,58 +102,6 @@ export function Board({
       />
     </svg>
   )
-}
-
-function GridLines({
-  size,
-  cellSize,
-  shape,
-  suppressBoxLines = false,
-}: {
-  size: number
-  cellSize: number
-  shape: Grid['shape']
-  suppressBoxLines?: boolean
-}) {
-  const lines: React.ReactElement[] = []
-  const total = size * cellSize
-  for (let i = 0; i <= size; i++) {
-    const heavy = !suppressBoxLines && i % shape.boxCols === 0
-    const isEdge = i === 0 || i === size
-    const stroke =
-      heavy || isEdge ? 'var(--color-border-strong)' : 'var(--color-border)'
-    const w = heavy || isEdge ? 2.5 : 1
-    lines.push(
-      <line
-        key={`v-${i}`}
-        x1={i * cellSize}
-        y1={0}
-        x2={i * cellSize}
-        y2={total}
-        stroke={stroke}
-        strokeWidth={w}
-      />,
-    )
-  }
-  for (let i = 0; i <= size; i++) {
-    const heavy = !suppressBoxLines && i % shape.boxRows === 0
-    const isEdge = i === 0 || i === size
-    const stroke =
-      heavy || isEdge ? 'var(--color-border-strong)' : 'var(--color-border)'
-    const w = heavy || isEdge ? 2.5 : 1
-    lines.push(
-      <line
-        key={`h-${i}`}
-        x1={0}
-        y1={i * cellSize}
-        x2={total}
-        y2={i * cellSize}
-        stroke={stroke}
-        strokeWidth={w}
-      />,
-    )
-  }
-  return <g pointerEvents="none">{lines}</g>
 }
 
 function computeConflicts(grid: Grid): ReadonlySet<string> {
