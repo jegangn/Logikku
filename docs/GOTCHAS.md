@@ -249,3 +249,31 @@ Five overlapping 9×9 grids modeled as `SamuraiBoard` (5 × `Grid<9>` plus a
 - Background Safari, reopen: state restored.
 - Rotate during play: prompt appears, rotate back, same selection.
 
+
+## 2026-05-21 — Phase 17c samurai generator + banks
+
+**Randomization is opt-in in the samurai backtracker.** Default behavior is unchanged from 17a — `samuraiBacktrackingSolve(board, { maxSolutions: 2 })` still picks values in `1..9` order. Pass `randomized: true, seed: N` to shuffle (mulberry32, no deps). The bridge action `solve_samurai_empty` explicitly passes `maxSolutions: 1` so `solvedBoard` is always populated when a solution exists.
+
+**`tools/grade.ts` protocol is additive.** Legacy bare-string and tab-separated payloads still work. New JSON payloads with `variant: 'samurai'` carry `samuraiGivens` (not `puzzle`); new top-level `action: 'solve_samurai_empty'` is a non-grade verb. Existing classic / variant callers don't change.
+
+**Bridge gained a per-call timeout watchdog.** `GraderBridge(grade_timeout_s=60.0)` arms a `threading.Timer` that kills the subprocess if `readline()` hangs. The lambda captures `self._proc` into a local first because `_restart()` may null it. The watchdog only fires on `_send_and_recv`; the legacy tab-separated grade path still uses the original retry-once loop. (Acceptable: samurai uses JSON; classic uses the fast path.)
+
+**`samurai_digger` uses BFS closure for symmetry preservation.** The spec's two-step "rotational pair → expand to shared" didn't preserve per-sub-grid symmetry: cells dragged in from a shared expansion need their OWN rotational partners in the destination sub-grid. The `_close_dig_set` BFS expands to a fixed point under both transformations.
+
+**`dig_samurai` has a `max_failed_attempts` cap.** Default `3 * max_removals`. Without it, a single dig pass on a tough board can hit the bridge 1000+ times for a hard puzzle, dominating wall clock. The cap bounds per-puzzle latency at the cost of leaving safe removals on the table.
+
+**Samurai SE distribution is bimodal at this grader.** Empirical finding from the 17c starter sweep: technique-only samurai puzzles cluster at SE 1.5-2.4 regardless of empty-cell density. SE then JUMPS to 9.0 (diabolical) when techniques fail and backtracking is required. The middle bands (medium/hard/tough/expert) are sparsely populated under SAMURAI_LAYOUT and the current technique solver. Cause: cross-grid technique propagation resolves most positions once cells have a couple of givens, so even sparsely-filled boards collapse to "easy" until the constraint set crosses a threshold and falls off to backtracking.
+
+**Starter bank composition.** As a result of the bimodal SE: easy + diabolical + very-easy emit reliably (5 each). The middle bands (medium / hard / tough / expert) receive single placeholder records from `phase17_banks_backfill.py` so the runtime doesn't throw `no bank found`. These placeholders are degenerate (one digit at (4,4) per sub-grid, the same pattern as the 17b demo); they're loadable but not real puzzles. Followup tuning can either widen those bands' SE ceilings further or accept that those user-facing labels remap to "easy plus" in practice.
+
+**Diabolical band requires `techniqueOnly === false`.** Other bands require `techniqueOnly === true`. This matches 17a's `gradeSamurai` which only returns SE=9.0 when technique-solve fails — the diabolical signal.
+
+**`max_removals` retuning history.** Initially 200-320 per band (matching what classic / mega-16 use scaled to 405 cells). Calibration showed those values bottlenecked the digger — `bridge.grade_samurai` is ~30-200ms per call, and the digger evaluates up to 405 candidate cells per pass. Now 15-170 per band, which puts each dig pass under 5-10 seconds and keeps the starter under 15 minutes total wall clock. The followup script can tune up if a band's records cluster too low in its SE range.
+
+**Per-band wall-clock caps in the starter.** `gen/scripts/phase17_banks.sh` wraps each band's `python -m generator gen` in `timeout <cap>s`. Easy gets 120s, diabolical 180s, others 60s. `timeout` returns 124 on cap expiry; `|| true` keeps `set -e` from aborting the rest of the script. Bands that don't emit within their cap fall through to the backfill placeholder.
+
+**Test fixtures stopped hard-coding cell (1,1).** Both `src/ui/pages/Play.samurai.test.tsx` and `e2e/samurai.spec.ts` originally tapped cell (1,1) of the center sub-grid to demonstrate shared-cell behavior — that worked when the bank was the (4,4)-only demo. With real generated banks ~30 cells per sub-grid are given, often including (1,1), so the tests now call `findEmptySharedCell` / `findEmptyCenterPeerCell` helpers to dynamically pick a non-given cell.
+
+**Followup script will need manual max_removals tuning.** `gen/scripts/phase17_banks_followup.sh` appends to existing JSONLs for hours/days of background generation. If the middle bands still don't emit at the spec'd max_removals, edit `SAMURAI_DIFFICULTY_BANDS` in `gen/src/generator/samurai.py` and re-run. We don't have a clean answer for hitting samurai medium/hard/tough/expert SE bands at this grader — that's an open research question for Phase 18+.
+
+**Pencil mode is still a no-op on samurai (17b).** Real banks don't change this. Implementing pencil marks for samurai cells is post-17c work.
