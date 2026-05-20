@@ -836,6 +836,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (state.board.kind === 'samurai') {
       const sel = state.selected
       if (!sel || !('gridIdx' in sel)) return
+      if (mode === 'pencil') return
       const sBoard = state.board.board
       const targetCell = samuraiCellAt(sBoard, sel.gridIdx, sel.coord)
       if (targetCell.given) return

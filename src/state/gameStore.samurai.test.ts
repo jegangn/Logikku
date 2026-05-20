@@ -222,6 +222,21 @@ describe('gameStore samurai regression coverage', () => {
   })
 })
 
+describe('gameStore samurai pencil-mode guard', () => {
+  it('input in pencil mode is a no-op on samurai cells', () => {
+    loadEmptySamurai()
+    useGameStore.getState().setMode('pencil')
+    useGameStore.getState().select({ gridIdx: 0, coord: { r: 4, c: 4 } })
+    useGameStore.getState().input(7)
+    const state = useGameStore.getState()
+    if (state.board?.kind === 'samurai') {
+      expect(state.board.board.grids[0]!.cells[4]![4]!.value).toBeNull()
+    }
+    // Reset mode so other tests aren't affected.
+    useGameStore.getState().setMode('value')
+  })
+})
+
 describe('gameStore samurai completion + conflicts', () => {
   it('samuraiIsCompleteState is false on an empty samurai board', () => {
     loadEmptySamurai()

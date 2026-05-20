@@ -175,6 +175,7 @@ export function Play() {
 
   const moveSelection = useCallback(
     (dr: number, dc: number) => {
+      if (variant === 'samurai') return
       const cur = selected ?? { r: -1, c: -1 }
       const size = grid?.shape.size ?? 9
       const next = {
@@ -183,7 +184,7 @@ export function Play() {
       }
       select(next)
     },
-    [selected, grid, select],
+    [selected, grid, select, variant],
   )
 
   const gridSize = grid?.shape.size ?? 9
@@ -291,7 +292,7 @@ export function Play() {
             selected={
               selectedRaw && 'gridIdx' in selectedRaw ? selectedRaw : null
             }
-            {...(lockedCells !== undefined ? { lockedCells } : {})}
+            lockedCells={lockedCells}
             shakeKey={shakeKey}
             onSelect={(target) => select(target)}
           />
