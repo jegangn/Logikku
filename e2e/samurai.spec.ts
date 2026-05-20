@@ -105,3 +105,22 @@ test('landscape screenshot of the cruciform', async ({ page }) => {
     fullPage: false,
   })
 })
+
+test('real bank puzzle shows visible given cells', async ({ page }) => {
+  await page.setViewportSize(LANDSCAPE)
+  await page.goto(URL)
+  await expect(page.getByTestId('samurai-board')).toBeVisible()
+  const givens = await page.locator('[data-given="true"]').count()
+  expect(givens).toBeGreaterThan(50)
+})
+
+test('given cell rejects user input', async ({ page }) => {
+  await page.setViewportSize(LANDSCAPE)
+  await page.goto(URL)
+  await expect(page.getByTestId('samurai-board')).toBeVisible()
+  const givenCell = page.locator('[data-given="true"]').first()
+  const labelBefore = await givenCell.getAttribute('aria-label')
+  await givenCell.click()
+  await page.keyboard.press('9')
+  await expect(givenCell).toHaveAttribute('aria-label', labelBefore!)
+})
