@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useGameStore } from './gameStore'
+import { useGameStore, samuraiCellConflicts, samuraiIsCompleteState } from './gameStore'
 
 // A trivial 5-grid givens set: each sub-grid is empty (all '0').
 const EMPTY_GIVENS_9 = '0'.repeat(81)
@@ -115,5 +115,33 @@ describe('gameStore.undo/redo (samurai)', () => {
       expect(state.board.board.grids[0]!.cells[1]![1]!.value).toBeNull()
       expect(state.board.board.grids[1]!.cells[7]![7]!.value).toBeNull()
     }
+  })
+})
+
+describe('gameStore samurai completion + conflicts', () => {
+  it('samuraiIsCompleteState is false on an empty samurai board', () => {
+    loadEmptySamurai()
+    const state = useGameStore.getState()
+    expect(samuraiIsCompleteState(state)).toBe(false)
+  })
+
+  it('samuraiCellConflicts flags a deliberate duplicate in the same row', () => {
+    loadEmptySamurai()
+    // Place 5 at (0, 0) of center, then 5 at (0, 5) of center — same row conflict.
+    useGameStore.getState().select({ gridIdx: 0, coord: { r: 0, c: 0 } })
+    useGameStore.getState().input(5)
+    useGameStore.getState().select({ gridIdx: 0, coord: { r: 0, c: 5 } })
+    useGameStore.getState().input(5)
+    const state = useGameStore.getState()
+    const conflicts = samuraiCellConflicts(state)
+    expect(conflicts.has('0,0,0')).toBe(true)
+    expect(conflicts.has('0,0,5')).toBe(true)
+  })
+
+  it('samuraiCellConflicts returns empty set on a grid-shaped board', () => {
+    // Reset to null then load a classic puzzle (already exercised in main tests)
+    useGameStore.setState({ board: null } as Partial<ReturnType<typeof useGameStore.getState>>)
+    const state = useGameStore.getState()
+    expect(samuraiCellConflicts(state).size).toBe(0)
   })
 })

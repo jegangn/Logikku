@@ -49,6 +49,8 @@ import {
   samuraiSharedLocations,
   setValueShared,
   eraseShared,
+  samuraiConflicts,
+  samuraiIsComplete,
   type SamuraiBoard,
   type SandwichClue,
   type SkyscraperClue,
@@ -810,6 +812,17 @@ export const useGameStore = create<GameState>((set, get) => ({
         history: [...state.history.slice(0, state.historyIndex + 1), entry].slice(-HISTORY_CAP),
         historyIndex: Math.min(state.history.length, HISTORY_CAP - 1),
       })
+      {
+        const updated = get()
+        if (
+          updated.board?.kind === 'samurai' &&
+          !updated.completedAt &&
+          samuraiIsComplete(updated.board.board) &&
+          samuraiConflicts(updated.board.board).size === 0
+        ) {
+          set({ completedAt: new Date().toISOString() })
+        }
+      }
       return
     }
     assertNever(state.board)
@@ -870,6 +883,17 @@ export const useGameStore = create<GameState>((set, get) => ({
         history: [...state.history.slice(0, state.historyIndex + 1), entry].slice(-HISTORY_CAP),
         historyIndex: Math.min(state.history.length, HISTORY_CAP - 1),
       })
+      {
+        const updated = get()
+        if (
+          updated.board?.kind === 'samurai' &&
+          !updated.completedAt &&
+          samuraiIsComplete(updated.board.board) &&
+          samuraiConflicts(updated.board.board).size === 0
+        ) {
+          set({ completedAt: new Date().toISOString() })
+        }
+      }
       return
     }
     assertNever(state.board)
@@ -1102,6 +1126,16 @@ export function serializeGameForSave(state: GameState): SavedGame | null {
  */
 export function selectGrid(state: GameState): Grid | null {
   return gridOf(state.board)
+}
+
+export function samuraiCellConflicts(state: GameState): ReadonlySet<string> {
+  if (state.board?.kind !== 'samurai') return new Set()
+  return samuraiConflicts(state.board.board)
+}
+
+export function samuraiIsCompleteState(state: GameState): boolean {
+  if (state.board?.kind !== 'samurai') return false
+  return samuraiIsComplete(state.board.board)
 }
 
 function pieceMapToRegions(
