@@ -17,14 +17,17 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[3]
 BUN_PATH = Path(os.environ.get("USERPROFILE", os.path.expanduser("~"))) / ".bun" / "bin" / "bun.exe"
 GRADE_SCRIPT = REPO_ROOT / "tools" / "grade.ts"
-# Preemptively restart the bun subprocess after this many grade calls. On
-# Windows the long-running TS engine accumulates pipe / GC pressure; restarts
-# every few thousand calls keep the bridge healthy across very long runs.
-RESTART_EVERY = 3000
 
 
 class GraderBridge:
-    def __init__(self, bun: Path | str | None = None, script: Path | str | None = None):
+    def __init__(
+        self,
+        bun: Path | str | None = None,
+        script: Path | str | None = None,
+        *,
+        restart_every: int = 3000,
+        grade_timeout_s: float = 60.0,
+    ):
         self._bun = Path(bun) if bun else BUN_PATH
         self._script = Path(script) if script else GRADE_SCRIPT
         if not self._bun.exists():
@@ -40,6 +43,8 @@ class GraderBridge:
             raise FileNotFoundError(f"grade.ts not found at {self._script}")
         self._proc: subprocess.Popen[str] | None = None
         self._call_count = 0
+        self._restart_every = restart_every
+        self._grade_timeout_s = grade_timeout_s
 
     def __enter__(self) -> "GraderBridge":
         self._spawn()
@@ -102,6 +107,50 @@ class GraderBridge:
             except subprocess.TimeoutExpired:
                 self._proc.kill()
 
+    def _send_and_recv(self, payload: dict) -> dict:
+        if not self._proc or not self._proc.stdin or not self._proc.stdout:
+            raise RuntimeError("GraderBridge not entered")
+        line = json.dumps(payload, separators=(",", ":")) + "\n"
+        if self._call_count >= self._restart_every:
+            print(
+                f"grader: preemptive restart after {self._call_count} calls",
+                file=sys.stderr,
+                flush=True,
+            )
+            self._restart()
+        import threading
+        watchdog: threading.Timer | None = None
+        for attempt in range(2):
+            try:
+                if not self._proc or not self._proc.stdin or not self._proc.stdout:
+                    raise RuntimeError("grader subprocess not running")
+                # Arm the watchdog: if readline() hangs past the timeout, kill the
+                # subprocess so we fall through to the restart-and-retry branch.
+                proc_local = self._proc
+                watchdog = threading.Timer(self._grade_timeout_s, lambda: proc_local.kill())
+                watchdog.daemon = True
+                watchdog.start()
+                self._proc.stdin.write(line)
+                self._proc.stdin.flush()
+                out = self._proc.stdout.readline()
+                watchdog.cancel()
+                if not out:
+                    raise RuntimeError("grader subprocess returned no data")
+                self._call_count += 1
+                return json.loads(out)
+            except (OSError, RuntimeError) as err:
+                if watchdog is not None:
+                    watchdog.cancel()
+                if attempt >= 1:
+                    raise
+                print(
+                    f"grader subprocess died ({err}); restarting and retrying once",
+                    file=sys.stderr,
+                    flush=True,
+                )
+                self._restart()
+        raise RuntimeError("unreachable")
+
     def grade(
         self,
         puzzle: str,
@@ -119,8 +168,6 @@ class GraderBridge:
         skyscraper_clues: list[dict] | None = None,
         paths: list[dict] | None = None,
     ) -> dict:
-        if not self._proc or not self._proc.stdin or not self._proc.stdout:
-            raise RuntimeError("GraderBridge not entered")
         needs_json = (
             regions is not None
             or parity_mask is not None
@@ -134,62 +181,63 @@ class GraderBridge:
             or paths is not None
             or size is not None
         )
-        payload_str: str
-        if needs_json:
-            payload: dict = {"variant": variant, "puzzle": puzzle}
-            if size is not None:
-                payload["size"] = size
-            if regions is not None:
-                payload["regions"] = regions
-            if parity_mask is not None:
-                payload["parityMask"] = parity_mask
-            if edges is not None:
-                payload["edges"] = edges
-            if thermometers is not None:
-                payload["thermometers"] = thermometers
-            if arrows is not None:
-                payload["arrows"] = arrows
-            if cages is not None:
-                payload["cages"] = cages
-            if little_killer_clues is not None:
-                payload["littleKillerClues"] = little_killer_clues
-            if sandwich_clues is not None:
-                payload["sandwichClues"] = sandwich_clues
-            if skyscraper_clues is not None:
-                payload["skyscraperClues"] = skyscraper_clues
-            if paths is not None:
-                payload["paths"] = paths
-            payload_str = json.dumps(payload, separators=(",", ":")) + "\n"
-        else:
-            payload_str = f"{variant}\t{puzzle}\n"
+        if not needs_json:
+            # Fast path: tab-separated for classic-shaped requests.
+            if not self._proc or not self._proc.stdin or not self._proc.stdout:
+                raise RuntimeError("GraderBridge not entered")
+            line = f"{variant}\t{puzzle}\n"
+            for attempt in range(2):
+                try:
+                    self._proc.stdin.write(line)
+                    self._proc.stdin.flush()
+                    out = self._proc.stdout.readline()
+                    if not out:
+                        raise RuntimeError("grader subprocess returned no data")
+                    self._call_count += 1
+                    return json.loads(out)
+                except (OSError, RuntimeError) as err:
+                    if attempt >= 1:
+                        raise
+                    print(
+                        f"grader subprocess died ({err}); restarting and retrying once",
+                        file=sys.stderr,
+                        flush=True,
+                    )
+                    self._restart()
+            raise RuntimeError("unreachable")
+        payload: dict = {"variant": variant, "puzzle": puzzle}
+        if size is not None:
+            payload["size"] = size
+        if regions is not None:
+            payload["regions"] = regions
+        if parity_mask is not None:
+            payload["parityMask"] = parity_mask
+        if edges is not None:
+            payload["edges"] = edges
+        if thermometers is not None:
+            payload["thermometers"] = thermometers
+        if arrows is not None:
+            payload["arrows"] = arrows
+        if cages is not None:
+            payload["cages"] = cages
+        if little_killer_clues is not None:
+            payload["littleKillerClues"] = little_killer_clues
+        if sandwich_clues is not None:
+            payload["sandwichClues"] = sandwich_clues
+        if skyscraper_clues is not None:
+            payload["skyscraperClues"] = skyscraper_clues
+        if paths is not None:
+            payload["paths"] = paths
+        return self._send_and_recv(payload)
 
-        # Preemptive restart to avoid pipe / GC pressure on long Windows runs.
-        if self._proc and self._call_count >= RESTART_EVERY:
-            print(
-                f"grader: preemptive restart after {self._call_count} calls",
-                file=sys.stderr,
-                flush=True,
-            )
-            self._restart()
+    def grade_samurai(self, samurai_givens: list[str]) -> dict:
+        return self._send_and_recv({"variant": "samurai", "samuraiGivens": samurai_givens})
 
-        for attempt in range(2):
-            try:
-                if not self._proc or not self._proc.stdin or not self._proc.stdout:
-                    raise RuntimeError("grader subprocess not running")
-                self._proc.stdin.write(payload_str)
-                self._proc.stdin.flush()
-                line = self._proc.stdout.readline()
-                if not line:
-                    raise RuntimeError("grader subprocess returned no data")
-                self._call_count += 1
-                return json.loads(line)
-            except (OSError, RuntimeError) as err:
-                if attempt >= 1:
-                    raise
-                print(
-                    f"grader subprocess died ({err}); restarting and retrying once",
-                    file=sys.stderr,
-                    flush=True,
-                )
-                self._restart()
-        raise RuntimeError("unreachable")
+    def solve_samurai_empty(self, seed: int) -> list[str]:
+        result = self._send_and_recv({"action": "solve_samurai_empty", "seed": seed})
+        if not result.get("ok"):
+            raise RuntimeError(f"samurai solve failed: {result}")
+        givens = result.get("samuraiGivens")
+        if not isinstance(givens, list) or len(givens) != 5:
+            raise RuntimeError(f"samurai solve returned malformed payload: {result}")
+        return givens

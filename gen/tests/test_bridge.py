@@ -34,3 +34,42 @@ def test_grader_bridge_marks_diabolical_for_inkala():
     assert result["ok"] is True
     assert result["difficulty"] == "diabolical"
     assert result["unique"] is True
+
+
+EMPTY_81 = "0" * 81
+
+
+@pytest.mark.slow
+def test_grade_samurai_empty_returns_unique_false():
+    with GraderBridge() as g:
+        result = g.grade_samurai([EMPTY_81] * 5)
+    assert result.get("ok") is True
+    # An empty samurai has many solutions; unique should be False.
+    assert result.get("unique") is False
+
+
+@pytest.mark.slow
+def test_solve_samurai_empty_returns_5_strings_of_length_81():
+    with GraderBridge() as g:
+        givens = g.solve_samurai_empty(seed=1)
+    assert isinstance(givens, list)
+    assert len(givens) == 5
+    for s in givens:
+        assert isinstance(s, str)
+        assert len(s) == 81
+        assert "0" not in s
+
+
+@pytest.mark.slow
+def test_solve_samurai_empty_is_deterministic_per_seed():
+    with GraderBridge() as g:
+        a = g.solve_samurai_empty(seed=42)
+        b = g.solve_samurai_empty(seed=42)
+    assert a == b
+
+
+@pytest.mark.slow
+def test_grade_samurai_rejects_wrong_length():
+    with GraderBridge() as g:
+        result = g.grade_samurai([EMPTY_81, EMPTY_81])
+    assert result.get("ok") is False
