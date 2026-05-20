@@ -837,6 +837,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       const sel = state.selected
       if (!sel || !('gridIdx' in sel)) return
       const sBoard = state.board.board
+      const targetCell = samuraiCellAt(sBoard, sel.gridIdx, sel.coord)
+      if (targetCell.given) return
       const locs = samuraiSharedLocations(sBoard, sel.gridIdx, sel.coord)
       const prevByLocation = locs.map((l) => ({
         gridIdx: l.grid,
@@ -856,10 +858,11 @@ export const useGameStore = create<GameState>((set, get) => ({
         prevByLocation,
         nextByLocation,
       }
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), entry].slice(-HISTORY_CAP)
       set({
         board: { kind: 'samurai', board: sBoard },
-        history: [...state.history.slice(0, state.historyIndex + 1), entry].slice(-HISTORY_CAP),
-        historyIndex: Math.min(state.history.length, HISTORY_CAP - 1),
+        history: newHistory,
+        historyIndex: newHistory.length - 1,
       })
       {
         const updated = get()
@@ -908,6 +911,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       const sel = state.selected
       if (!sel || !('gridIdx' in sel)) return
       const sBoard = state.board.board
+      const targetCell = samuraiCellAt(sBoard, sel.gridIdx, sel.coord)
+      if (targetCell.given) return
       const locs = samuraiSharedLocations(sBoard, sel.gridIdx, sel.coord)
       const prevByLocation = locs.map((l) => ({
         gridIdx: l.grid,
@@ -927,10 +932,11 @@ export const useGameStore = create<GameState>((set, get) => ({
         prevByLocation,
         nextByLocation,
       }
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), entry].slice(-HISTORY_CAP)
       set({
         board: { kind: 'samurai', board: sBoard },
-        history: [...state.history.slice(0, state.historyIndex + 1), entry].slice(-HISTORY_CAP),
-        historyIndex: Math.min(state.history.length, HISTORY_CAP - 1),
+        history: newHistory,
+        historyIndex: newHistory.length - 1,
       })
       {
         const updated = get()
@@ -970,6 +976,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       set({
         board: { kind: 'samurai', board: sBoard },
         historyIndex: state.historyIndex - 1,
+        completedAt: null,
       })
       return
     }
@@ -1003,6 +1010,17 @@ export const useGameStore = create<GameState>((set, get) => ({
         board: { kind: 'samurai', board: sBoard },
         historyIndex: historyIndex + 1,
       })
+      {
+        const updated = get()
+        if (
+          updated.board?.kind === 'samurai' &&
+          !updated.completedAt &&
+          samuraiIsComplete(updated.board.board) &&
+          samuraiConflicts(updated.board.board).size === 0
+        ) {
+          set({ completedAt: new Date().toISOString() })
+        }
+      }
       return
     }
   },

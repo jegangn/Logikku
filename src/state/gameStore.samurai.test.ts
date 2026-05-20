@@ -169,6 +169,59 @@ describe('gameStore samurai save/load round-trip', () => {
   })
 })
 
+describe('gameStore samurai regression coverage', () => {
+  it('historyIndex stays in bounds after undo + new move', () => {
+    loadEmptySamurai()
+    useGameStore.getState().select({ gridIdx: 0, coord: { r: 0, c: 0 } })
+    useGameStore.getState().input(1)
+    useGameStore.getState().select({ gridIdx: 0, coord: { r: 0, c: 1 } })
+    useGameStore.getState().input(2)
+    useGameStore.getState().undo()
+    // Now historyIndex = 0, history.length = 2
+    useGameStore.getState().select({ gridIdx: 0, coord: { r: 0, c: 2 } })
+    useGameStore.getState().input(3)
+    const state = useGameStore.getState()
+    // After undo+new, history is [entry1, entry3], historyIndex must be 1.
+    expect(state.history.length).toBe(2)
+    expect(state.historyIndex).toBe(1)
+  })
+
+  it('input on a given cell is a no-op in samurai', () => {
+    loadEmptySamurai()
+    // Manually mark a cell as given (bypassing loadPuzzle, since 17a has no
+    // samurai bank fixtures with givens).
+    const state = useGameStore.getState()
+    if (state.board?.kind === 'samurai') {
+      const cell = state.board.board.grids[0]!.cells[0]![0]!
+      cell.value = 4
+      cell.given = true
+    }
+    useGameStore.getState().select({ gridIdx: 0, coord: { r: 0, c: 0 } })
+    useGameStore.getState().input(7)
+    const after = useGameStore.getState()
+    if (after.board?.kind === 'samurai') {
+      // Value must still be 4 (the given), not overwritten to 7.
+      expect(after.board.board.grids[0]!.cells[0]![0]!.value).toBe(4)
+    }
+  })
+
+  it('erase on a given cell is a no-op in samurai', () => {
+    loadEmptySamurai()
+    const state = useGameStore.getState()
+    if (state.board?.kind === 'samurai') {
+      const cell = state.board.board.grids[0]!.cells[0]![0]!
+      cell.value = 4
+      cell.given = true
+    }
+    useGameStore.getState().select({ gridIdx: 0, coord: { r: 0, c: 0 } })
+    useGameStore.getState().erase()
+    const after = useGameStore.getState()
+    if (after.board?.kind === 'samurai') {
+      expect(after.board.board.grids[0]!.cells[0]![0]!.value).toBe(4)
+    }
+  })
+})
+
 describe('gameStore samurai completion + conflicts', () => {
   it('samuraiIsCompleteState is false on an empty samurai board', () => {
     loadEmptySamurai()
