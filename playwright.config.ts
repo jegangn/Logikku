@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env['CI'] ? 1 : undefined,
   reporter: 'list',
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: process.env['LOGIKKU_E2E_URL'] ?? 'http://localhost:5173',
     trace: 'on-first-retry',
   },
   projects: [
@@ -16,8 +16,10 @@ export default defineConfig({
     { name: 'ipad', use: { ...devices['iPad (gen 7)'] } },
   ],
   webServer: {
-    command: 'bun run dev',
-    url: 'http://localhost:5173',
+    command: process.env['LOGIKKU_E2E_PORT']
+      ? `bun run dev -- --port ${process.env['LOGIKKU_E2E_PORT']} --strictPort`
+      : 'bun run dev',
+    url: process.env['LOGIKKU_E2E_URL'] ?? 'http://localhost:5173',
     reuseExistingServer: !process.env['CI'],
     timeout: 60_000,
   },

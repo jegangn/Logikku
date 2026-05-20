@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { BoardCellsLayer } from './BoardCellsLayer'
 import type { Coord, Digit, SamuraiBoard } from '@/engine'
 import {
@@ -96,7 +95,10 @@ export function SamuraiBoardView({
   shakeKey,
   onSelect,
 }: SamuraiBoardViewProps) {
-  const globalConflicts = useMemo(() => samuraiConflicts(board), [board])
+  // Recompute every render: the samurai input mutates board in place and the
+  // outer SamuraiBoard ref is preserved across set(), so useMemo([board]) would
+  // serve stale conflicts. Conflict detection is O(5 × 27 × 9) — cheap.
+  const globalConflicts = samuraiConflicts(board)
 
   return (
     <svg
