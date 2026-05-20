@@ -146,7 +146,7 @@ describe('samuraiBacktrackingSolve — randomization', () => {
   })
 })
 
-function serializeBoard(r: { solvedBoard?: { grids: ReadonlyArray<{ cells: ReadonlyArray<ReadonlyArray<{ value: number | null }>> }> } }): string {
+function serializeBoard(r: ReturnType<typeof samuraiBacktrackingSolve>): string {
   const board = r.solvedBoard
   if (!board) return ''
   const parts: string[] = []
