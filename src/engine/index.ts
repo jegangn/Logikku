@@ -120,3 +120,18 @@ export { backtrackingSolve } from './solver/backtrack'
 export { techniqueSolve, ALL_TECHNIQUES } from './solver/techniqueSolver'
 export { gradePuzzle, difficultyFromSE } from './grader/se'
 export type { Difficulty, GradeResult } from './grader/se'
+export {
+  SAMURAI_LAYOUT,
+  createSamuraiBoard,
+  samuraiCellAt,
+  samuraiSharedLocations,
+  setValueShared,
+  eraseShared,
+  samuraiIsComplete,
+  samuraiCloneBoard,
+  samuraiConflicts,
+  samuraiConsistencyCheck,
+  globalCoordKey,
+  computeSharedCells,
+} from './samurai'
+export type { CornerRole, CornerLayout, SharedLocation } from './samurai'
