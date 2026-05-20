@@ -163,7 +163,7 @@ describe('gameStore samurai save/load round-trip', () => {
       lastPlayedAt: new Date().toISOString(),
       completedAt: null,
     }
-    useGameStore.getState().hydrate(legacy as any)
+    useGameStore.getState().hydrate(legacy as unknown as Parameters<ReturnType<typeof useGameStore.getState>['hydrate']>[0])
     const state = useGameStore.getState()
     expect(state.board?.kind).toBe('grid')
   })
