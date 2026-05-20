@@ -18,7 +18,7 @@
 
 | Action | Path | Responsibility |
 |---|---|---|
-| Create | `src/ui/board/BoardCellsLayer.tsx` | Pure cells + grid-lines render for ONE `Grid`. Returns a single `<g>`. |
+| Create | `src/ui/board/BoardCellsLayer.tsx` | Pure cells + grid-lines render for ONE `Grid`. Returns a single `<g>`. Caller closes any gridIdx over `onSelect`. |
 | Create | `src/ui/board/BoardCellsLayer.test.tsx` | Unit tests for BoardCellsLayer. |
 | Modify | `src/ui/board/Board.tsx` | Outer SVG shell + OverlayLayer; delegates inner cells to BoardCellsLayer. Public API unchanged. |
 | Create | `src/ui/hooks/useIsPortraitOrientation.ts` | `matchMedia('(orientation: portrait)')` boolean hook. |
@@ -1209,7 +1209,6 @@ export function SamuraiBoardView({
             <BoardCellsLayer
               grid={board.grids[gridIdx]!}
               cellSize={CELL_SIZE}
-              gridIdx={gridIdx}
               selectedCoord={state.selectedCoord}
               selectedValue={state.selectedValue}
               peerSet={state.peerSet}
