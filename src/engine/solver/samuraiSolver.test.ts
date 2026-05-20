@@ -5,7 +5,7 @@ import {
   setValueShared,
 } from '../samurai'
 import type { Digit } from '../types'
-import { samuraiTechniqueSolve } from './samuraiSolver'
+import { samuraiTechniqueSolve, samuraiBacktrackingSolve } from './samuraiSolver'
 
 function fillRowExcept(
   board: ReturnType<typeof createSamuraiBoard>,
@@ -63,5 +63,34 @@ describe('samuraiTechniqueSolve', () => {
     fillRowExcept(board, 0, 4, 4, [1, 2, 3, 4, 6, 7, 8, 9])
     const result = samuraiTechniqueSolve(board)
     expect(result.hardestTier).toBeGreaterThanOrEqual(1)
+  })
+})
+
+describe('samuraiBacktrackingSolve', () => {
+  it('finds a single solution for an empty board with maxSolutions=1', () => {
+    const board = createSamuraiBoard()
+    const result = samuraiBacktrackingSolve(board, { maxSolutions: 1 })
+    expect(result.hasSolution).toBe(true)
+    expect(result.solutions.length).toBe(1)
+  })
+
+  it('reports isUnique=false when maxSolutions=2 finds 2 solutions', () => {
+    const board = createSamuraiBoard()
+    const result = samuraiBacktrackingSolve(board, { maxSolutions: 2 })
+    expect(result.solutions.length).toBe(2)
+    expect(result.isUnique).toBe(false)
+  })
+
+  it('reports hasSolution=true on a tightly-constrained board', () => {
+    const board = createSamuraiBoard()
+    // Fill row 4 of center with 1..9 leaving col 4 empty (forces 5).
+    const digits = [1, 2, 3, 4, 6, 7, 8, 9]
+    let d = 0
+    for (let c = 0; c < 9; c++) {
+      if (c === 4) continue
+      setValueShared(board, 0, { r: 4, c }, digits[d++] as Digit)
+    }
+    const result = samuraiBacktrackingSolve(board, { maxSolutions: 1 })
+    expect(result.hasSolution).toBe(true)
   })
 })

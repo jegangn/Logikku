@@ -4,7 +4,7 @@ import {
   samuraiSharedLocations,
   setValueShared,
 } from '../samurai'
-import type { SamuraiBoard, Step } from '../types'
+import type { Digit, SamuraiBoard, Step } from '../types'
 import {
   techniqueSolve,
   type TechniqueSolveOptions,
@@ -74,4 +74,100 @@ function boardIsFull(board: SamuraiBoard): boolean {
     }
   }
   return true
+}
+
+export interface SamuraiBacktrackOptions {
+  readonly maxSolutions: number
+}
+
+export interface SamuraiBacktrackResult {
+  readonly solutions: ReadonlyArray<SamuraiBoard>
+  readonly hasSolution: boolean
+  readonly isUnique: boolean
+}
+
+interface MRVPick {
+  readonly gridIdx: number
+  readonly coord: { r: number; c: number }
+  readonly candidates: ReadonlyArray<number>
+}
+
+function pickMRV(board: SamuraiBoard): MRVPick | null {
+  let best: MRVPick | null = null
+  for (let g = 0; g < 5; g++) {
+    const grid = board.grids[g]!
+    for (let r = 0; r < grid.shape.size; r++) {
+      for (let c = 0; c < grid.shape.size; c++) {
+        const cell = cellAt(grid, { r, c })
+        if (cell.value !== null) continue
+        const candidates = [...cell.candidates]
+        if (candidates.length === 0) return { gridIdx: g, coord: { r, c }, candidates }
+        if (!best || candidates.length < best.candidates.length) {
+          best = { gridIdx: g, coord: { r, c }, candidates }
+          if (candidates.length === 1) return best
+        }
+      }
+    }
+  }
+  return best
+}
+
+export function samuraiBacktrackingSolve(
+  input: SamuraiBoard,
+  opts: SamuraiBacktrackOptions,
+): SamuraiBacktrackResult {
+  const solutions: SamuraiBoard[] = []
+  const max = Math.max(1, opts.maxSolutions)
+
+  function step(current: SamuraiBoard): void {
+    if (solutions.length >= max) return
+
+    // Run technique solve as propagation; this also catches contradictions.
+    const propagated = samuraiTechniqueSolve(current)
+    const board = propagated.board
+
+    // Per-sub-grid validate check.
+    for (let g = 0; g < 5; g++) {
+      for (const constraint of board.grids[g]!.constraints) {
+        if (!constraint.validate(board.grids[g]!)) return
+      }
+    }
+
+    // Empty-candidate check for any unfilled cell.
+    for (let g = 0; g < 5; g++) {
+      const grid = board.grids[g]!
+      for (let r = 0; r < grid.shape.size; r++) {
+        for (let c = 0; c < grid.shape.size; c++) {
+          const cell = cellAt(grid, { r, c })
+          if (cell.value === null && cell.candidates.size === 0) return
+        }
+      }
+    }
+
+    if (boardIsFull(board)) {
+      solutions.push(board)
+      return
+    }
+
+    const pick = pickMRV(board)
+    if (!pick) {
+      solutions.push(board)
+      return
+    }
+    if (pick.candidates.length === 0) return
+
+    for (const digit of pick.candidates) {
+      const next = samuraiCloneBoard(board)
+      setValueShared(next, pick.gridIdx, pick.coord, digit as Digit)
+      step(next)
+      if (solutions.length >= max) return
+    }
+  }
+
+  step(samuraiCloneBoard(input))
+  return {
+    solutions,
+    hasSolution: solutions.length > 0,
+    isUnique: solutions.length === 1,
+  }
 }
