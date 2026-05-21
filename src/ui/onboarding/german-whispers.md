@@ -8,4 +8,4 @@ title: How it works
 ---
 title: Quick example
 ---
-If a cell on the path holds `5`, its neighbour on the path cannot be `5` plus or minus 4, leaving no valid digit, so `5` is impossible there. Path cells tend to alternate between low and high digits.
+A cell on the path needs a neighbour at least 5 away, but every digit is within 4 of `5`, so `5` can never sit on a whisper path. Path cells tend to alternate between low and high digits.
