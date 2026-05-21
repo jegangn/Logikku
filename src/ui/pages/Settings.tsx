@@ -179,6 +179,7 @@ export function Settings() {
             {onboardingResetMsg && (
               <p
                 data-testid="onboarding-reset-status"
+                aria-live="polite"
                 className="mt-2 text-sm text-[var(--color-accent-strong)]"
               >
                 {onboardingResetMsg}
@@ -207,6 +208,7 @@ export function Settings() {
           {status && (
             <p
               data-testid="status"
+              aria-live="polite"
               className={`mt-3 text-sm ${
                 status.kind === 'ok'
                   ? 'text-[var(--color-accent-strong)]'
