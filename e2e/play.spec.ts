@@ -1,9 +1,14 @@
 import { test, expect } from '@playwright/test'
 
-test('home → pick easy → play loads the board', async ({ page }) => {
+test('home → classic → easy → play loads the board', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'Logikku' })).toBeVisible()
+  await page.getByTestId('variant-card-classic').click()
+  await expect(page).toHaveURL(/\/variant\/classic/)
   await page.getByTestId('difficulty-easy').click()
+  // First play of a variant shows the onboarding wizard; dismiss it.
+  await page.getByTestId('onboarding-next').click()
+  await page.getByTestId('onboarding-done').click()
   await expect(page).toHaveURL(/\/play/)
   await expect(page.getByRole('grid', { name: /sudoku board/i })).toBeVisible()
   const cells = page.getByRole('gridcell')

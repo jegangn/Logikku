@@ -1,110 +1,181 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import type { Difficulty } from '@/engine'
-import { hasBank } from '@/puzzles'
+import { VariantCard } from '@/ui/components/VariantCard'
+import {
+  VARIANT_CATALOG,
+  type VariantFeature,
+  type VariantSize,
+} from '@/ui/variantCatalog'
+import { listBanks } from '@/puzzles'
 import { mostRecentUnfinished, type SavedGame } from '@/storage/db'
 import { InstallBanner } from '@/pwa/InstallBanner'
+import { t } from '@/i18n/en'
 
-const DIFFICULTIES: ReadonlyArray<Difficulty> = [
-  'easy',
-  'medium',
-  'hard',
-  'tough',
-  'expert',
+const SIZE_FILTERS: ReadonlyArray<{ value: VariantSize | 'all'; labelKey: keyof typeof t.home.filters }> = [
+  { value: 'all',     labelKey: 'sizeAll' },
+  { value: '9x9',     labelKey: 'size9x9' },
+  { value: '6x6',     labelKey: 'size6x6' },
+  { value: '16x16',   labelKey: 'size16x16' },
+  { value: 'samurai', labelKey: 'sizeSamurai' },
 ]
 
-const DIFFICULTY_LABELS: Record<Difficulty, string> = {
-  'very-easy': 'Very Easy',
-  easy: 'Easy',
-  medium: 'Medium',
-  hard: 'Hard',
-  tough: 'Tough',
-  expert: 'Expert',
-  diabolical: 'Diabolical',
-}
+const FEATURE_FILTERS: ReadonlyArray<{ value: VariantFeature; labelKey: keyof typeof t.home.filters }> = [
+  { value: 'classic-like',  labelKey: 'featureClassicLike' },
+  { value: 'cage',          labelKey: 'featureCage' },
+  { value: 'path',          labelKey: 'featurePath' },
+  { value: 'outside-clue',  labelKey: 'featureOutsideClue' },
+  { value: 'parity',        labelKey: 'featureParity' },
+  { value: 'edge-clue',     labelKey: 'featureEdgeClue' },
+  { value: 'arithmetic',    labelKey: 'featureArithmetic' },
+]
 
 export function Home() {
   const [continueGame, setContinueGame] = useState<SavedGame | null>(null)
+  const [size, setSize] = useState<VariantSize | 'all'>('all')
+  const [features, setFeatures] = useState<ReadonlySet<VariantFeature>>(new Set())
 
   useEffect(() => {
     void mostRecentUnfinished().then(setContinueGame)
   }, [])
 
+  const variantsWithBanks = useMemo(() => {
+    return new Set(listBanks().map((b) => b.variant))
+  }, [])
+
+  const visible = useMemo(() => {
+    return VARIANT_CATALOG.filter((v) => {
+      if (size !== 'all' && v.size !== size) return false
+      for (const need of features) {
+        if (!v.features.includes(need)) return false
+      }
+      return true
+    })
+  }, [size, features])
+
+  function toggleFeature(f: VariantFeature) {
+    const next = new Set(features)
+    if (next.has(f)) next.delete(f)
+    else next.add(f)
+    setFeatures(next)
+  }
+
+  const continueLabel = continueGame
+    ? `${t.catalog[continueGame.variant as keyof typeof t.catalog]?.name ?? continueGame.variant} · ${t.difficulty[continueGame.difficulty]} · ${t.home.startedAgo(minutesAgo(continueGame.startedAt))}`
+    : ''
+
   return (
-    <main className="min-h-dvh flex flex-col items-center justify-center px-6 py-10">
-      <div className="w-full max-w-md">
-        <h1 className="text-5xl font-semibold tracking-tight text-center">
-          Logikku
-        </h1>
-        <p className="mt-2 text-center text-[var(--color-text-muted)]">
-          Sudoku, every variant.
-        </p>
+    <main className="min-h-dvh px-6 py-8">
+      <div className="mx-auto w-full max-w-5xl">
+        <h1 className="text-4xl font-semibold tracking-tight">{t.appName}</h1>
+        <p className="mt-1 text-[var(--color-text-muted)]">{t.tagline}</p>
 
         {continueGame && (
           <Link
             to={`/play?variant=${continueGame.variant}&difficulty=${continueGame.difficulty}&puzzleId=${continueGame.id}`}
             data-testid="continue-card"
-            className="mt-8 block rounded-xl border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-5 py-4 hover:bg-[var(--color-accent-soft)] active:scale-[0.99] transition-transform"
+            className="mt-6 block rounded-xl border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-5 py-4 hover:bg-[var(--color-accent-soft)]"
           >
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xs uppercase tracking-wider text-[var(--color-accent-strong)] font-medium">
-                  Continue
+                  {t.home.continueLabel}
                 </div>
-                <div className="mt-1 text-base font-medium">
-                  {continueGame.variant.charAt(0).toUpperCase() +
-                    continueGame.variant.slice(1)}{' '}
-                  · {DIFFICULTY_LABELS[continueGame.difficulty]}
-                </div>
+                <div className="mt-1 text-base font-medium">{continueLabel}</div>
               </div>
               <span className="text-[var(--color-accent-strong)]">→</span>
             </div>
           </Link>
         )}
 
-        <section className="mt-8">
-          <h2 className="text-sm uppercase tracking-wider text-[var(--color-text-faint)] mb-3">
-            Classic Sudoku
-          </h2>
-          <div className="grid gap-2">
-            {DIFFICULTIES.map((difficulty) =>
-              hasBank('classic', difficulty) ? (
-                <Link
-                  key={difficulty}
-                  to={`/play?variant=classic&difficulty=${difficulty}`}
-                  data-testid={`difficulty-${difficulty}`}
-                  className="block min-h-[56px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-5 flex items-center justify-between hover:bg-[var(--color-surface-2)] active:scale-[0.99] transition-transform"
-                >
-                  <span className="text-base font-medium">
-                    {DIFFICULTY_LABELS[difficulty]}
-                  </span>
-                  <span className="text-[var(--color-text-faint)]">→</span>
-                </Link>
-              ) : null,
-            )}
-          </div>
+        <section className="mt-6 space-y-3">
+          <FilterRow
+            label={t.home.filters.sizeLabel}
+            chips={SIZE_FILTERS.map((f) => ({
+              key: f.value,
+              testId: `filter-size-${f.value}`,
+              label: t.home.filters[f.labelKey],
+              active: size === f.value,
+              onClick: () => setSize(f.value),
+            }))}
+          />
+          <FilterRow
+            label={t.home.filters.featuresLabel}
+            chips={FEATURE_FILTERS.map((f) => ({
+              key: f.value,
+              testId: `filter-feature-${f.value}`,
+              label: t.home.filters[f.labelKey],
+              active: features.has(f.value),
+              onClick: () => toggleFeature(f.value),
+            }))}
+          />
         </section>
+
+        {visible.length === 0 ? (
+          <p
+            data-testid="home-empty"
+            className="mt-10 text-center text-sm text-[var(--color-text-muted)]"
+          >
+            {t.home.empty}
+          </p>
+        ) : (
+          <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            {visible.map((v) => (
+              <VariantCard
+                key={v.kind}
+                kind={v.kind}
+                disabled={!variantsWithBanks.has(v.kind)}
+              />
+            ))}
+          </section>
+        )}
 
         <InstallBanner />
 
         <nav className="mt-10 flex items-center justify-center gap-6 text-sm text-[var(--color-text-muted)]">
-          <Link
-            to="/stats"
-            data-testid="link-stats"
-            className="hover:text-[var(--color-text)]"
-          >
-            Stats
-          </Link>
+          <Link to="/stats" data-testid="link-stats" className="hover:text-[var(--color-text)]">{t.home.stats}</Link>
           <span className="text-[var(--color-text-faint)]">·</span>
-          <Link
-            to="/settings"
-            data-testid="link-settings"
-            className="hover:text-[var(--color-text)]"
-          >
-            Settings
-          </Link>
+          <Link to="/settings" data-testid="link-settings" className="hover:text-[var(--color-text)]">{t.home.settings}</Link>
         </nav>
       </div>
     </main>
   )
+}
+
+interface ChipProps {
+  readonly key: string
+  readonly testId: string
+  readonly label: string
+  readonly active: boolean
+  readonly onClick: () => void
+}
+
+function FilterRow({ label, chips }: { label: string; chips: ReadonlyArray<ChipProps> }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="text-xs uppercase tracking-wider text-[var(--color-text-faint)] mr-1">
+        {label}
+      </span>
+      {chips.map((c) => (
+        <button
+          key={c.key}
+          type="button"
+          data-testid={c.testId}
+          onClick={c.onClick}
+          className={`min-h-[36px] rounded-full border px-3 text-sm transition-colors ${
+            c.active
+              ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-accent-strong)]'
+              : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+          }`}
+        >
+          {c.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function minutesAgo(isoString: string): number {
+  const then = new Date(isoString).getTime()
+  if (Number.isNaN(then)) return 0
+  return Math.max(0, Math.floor((Date.now() - then) / 60000))
 }
