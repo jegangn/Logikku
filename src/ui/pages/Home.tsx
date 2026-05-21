@@ -91,7 +91,7 @@ export function Home() {
           <FilterRow
             label={t.home.filters.sizeLabel}
             chips={SIZE_FILTERS.map((f) => ({
-              key: f.value,
+              id: f.value,
               testId: `filter-size-${f.value}`,
               label: t.home.filters[f.labelKey],
               active: size === f.value,
@@ -101,7 +101,7 @@ export function Home() {
           <FilterRow
             label={t.home.filters.featuresLabel}
             chips={FEATURE_FILTERS.map((f) => ({
-              key: f.value,
+              id: f.value,
               testId: `filter-feature-${f.value}`,
               label: t.home.filters[f.labelKey],
               active: features.has(f.value),
@@ -142,7 +142,7 @@ export function Home() {
 }
 
 interface ChipProps {
-  readonly key: string
+  readonly id: string
   readonly testId: string
   readonly label: string
   readonly active: boolean
@@ -157,9 +157,10 @@ function FilterRow({ label, chips }: { label: string; chips: ReadonlyArray<ChipP
       </span>
       {chips.map((c) => (
         <button
-          key={c.key}
+          key={c.id}
           type="button"
           data-testid={c.testId}
+          aria-pressed={c.active}
           onClick={c.onClick}
           className={`min-h-[36px] rounded-full border px-3 text-sm transition-colors ${
             c.active
