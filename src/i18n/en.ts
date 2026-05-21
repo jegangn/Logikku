@@ -7,6 +7,29 @@ export const en = {
     continueLabel: 'Continue',
     settings: 'Settings',
     stats: 'Stats',
+    startedAgo: (mins: number): string => {
+      if (mins < 1) return 'just now'
+      if (mins < 60) return `${mins} min ago`
+      const hours = Math.floor(mins / 60)
+      return `${hours} h ago`
+    },
+    filters: {
+      sizeLabel: 'Grid size',
+      featuresLabel: 'Features',
+      sizeAll: 'All',
+      size9x9: '9×9',
+      size6x6: '6×6',
+      size16x16: '16×16',
+      sizeSamurai: 'Samurai',
+      featureClassicLike: 'Classic',
+      featureCage: 'Cage',
+      featurePath: 'Path',
+      featureOutsideClue: 'Outside',
+      featureParity: 'Parity',
+      featureEdgeClue: 'Edge',
+      featureArithmetic: 'Arithmetic',
+    },
+    empty: 'No variants match these filters.',
   },
 
   difficulty: {
@@ -17,6 +40,25 @@ export const en = {
     tough: 'Tough',
     expert: 'Expert',
     diabolical: 'Diabolical',
+  },
+
+  variant: {
+    backToHome: 'Home',
+    rules: 'Rules',
+    pickDifficulty: 'Pick difficulty',
+    stats: 'Stats',
+    statsPlayed: (n: number) => `Played ${n}`,
+    statsBestTime: (mmss: string) => `Best time ${mmss}`,
+    statsStreak: (n: number) => `Streak ${n}`,
+    notFound: 'Variant not found.',
+  },
+
+  onboarding: {
+    skip: 'Skip',
+    next: 'Next',
+    done: 'Done',
+    close: 'Close',
+    stepOf: (i: number, n: number) => `${i} of ${n}`,
   },
 
   play: {
@@ -55,6 +97,9 @@ export const en = {
     confirmClearSecond: 'Are you absolutely sure? This cannot be undone.',
     restoreError: 'That file is not a valid Logikku backup.',
     restoreOk: 'Backup restored.',
+    resetOnboarding: 'Reset onboarding',
+    resetOnboardingHint: 'Show the rules wizard again the next time you start a variant.',
+    resetOnboardingDone: 'Onboarding reset.',
   },
 
   stats: {
@@ -76,8 +121,33 @@ export const en = {
     installPrompt: 'Tap Share → Add to Home Screen for the best experience.',
     installDismiss: 'Got it',
   },
+
+  catalog: {
+    classic:           { name: 'Classic',           description: 'The original. Row, column, box.' },
+    'x-diagonal':      { name: 'X / Diagonal',      description: 'Plus both main diagonals.' },
+    hyper:             { name: 'Hyper',             description: 'Four extra inner boxes.' },
+    'anti-knight':     { name: 'Anti-Knight',       description: "No two knight's-move cells share a digit." },
+    'anti-king':       { name: 'Anti-King',         description: 'No two adjacent cells share, even diagonally.' },
+    'non-consecutive': { name: 'Non-Consecutive',   description: "Adjacent cells can't differ by 1." },
+    'even-odd':        { name: 'Even-Odd',          description: 'Some cells are even-only; others odd-only.' },
+    jigsaw:            { name: 'Jigsaw',            description: 'Boxes replaced by irregular shapes.' },
+    kropki:            { name: 'Kropki',            description: 'Dots between cells mark consecutive or 1:2 ratio.' },
+    xv:                { name: 'XV',                description: 'V means sum 5; X means sum 10.' },
+    'greater-than':    { name: 'Greater Than',      description: 'Arrows show which neighbour is larger.' },
+    thermometer:       { name: 'Thermometer',       description: 'Cells from bulb to tip increase.' },
+    arrow:             { name: 'Arrow',             description: 'Circle equals the sum along its tail.' },
+    killer:            { name: 'Killer',            description: 'Cages with target sums; no digit repeats inside.' },
+    'little-killer':   { name: 'Little Killer',     description: 'Outside arrows sum the diagonal.' },
+    sandwich:          { name: 'Sandwich',          description: 'Outside number sums digits between 1 and 9.' },
+    skyscraper:        { name: 'Skyscraper',        description: 'Outside number counts visible buildings.' },
+    palindrome:        { name: 'Palindrome',        description: 'Path reads the same both ways.' },
+    renban:            { name: 'Renban',            description: 'Path holds a consecutive set.' },
+    'german-whispers': { name: 'German Whispers',   description: 'Adjacent path cells differ by at least 5.' },
+    'mini-6':          { name: 'Mini 6×6',          description: '6×6 with 2×3 boxes.' },
+    'mega-16':         { name: 'Mega 16×16',        description: '16×16 with 4×4 boxes.' },
+    samurai:           { name: 'Samurai',           description: 'Five overlapping 9×9 grids.' },
+  },
 } as const
 
 export type Strings = typeof en
-
 export const t = en
