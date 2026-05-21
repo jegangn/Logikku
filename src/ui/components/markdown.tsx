@@ -1,5 +1,9 @@
 import type { ReactNode } from 'react'
 
+// Supported subset for in-repo onboarding content: paragraphs, `-` bullet
+// lists, **bold**, *italic*, `code`. No nesting, no literal * inside a span,
+// no multi-level lists — unsupported syntax falls through as plain text.
+
 interface MarkdownProps {
   readonly source: string
   readonly className?: string
