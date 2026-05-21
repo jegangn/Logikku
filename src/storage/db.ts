@@ -2,7 +2,7 @@ import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
 import type { Difficulty } from '@/engine'
 
 const DB_NAME = 'logikku'
-const DB_VERSION = 1
+const DB_VERSION = 2
 
 export interface SavedCell {
   readonly v: number | null
@@ -121,6 +121,11 @@ export interface SavedStats {
   }>>
 }
 
+export interface SavedOnboarding {
+  readonly key: 'v1'
+  readonly kinds: ReadonlyArray<string>
+}
+
 interface Schema extends DBSchema {
   games: {
     key: string
@@ -135,6 +140,10 @@ interface Schema extends DBSchema {
     key: string
     value: SavedStats
   }
+  onboardingSeen: {
+    key: string
+    value: SavedOnboarding
+  }
 }
 
 let dbPromise: Promise<IDBPDatabase<Schema>> | null = null
@@ -148,6 +157,9 @@ function db(): Promise<IDBPDatabase<Schema>> {
           games.createIndex('byLastPlayed', 'lastPlayedAt')
           database.createObjectStore('settings', { keyPath: 'key' })
           database.createObjectStore('stats', { keyPath: 'key' })
+        }
+        if (oldVersion < 2) {
+          database.createObjectStore('onboardingSeen', { keyPath: 'key' })
         }
       },
     })
@@ -202,6 +214,17 @@ export async function getStats(): Promise<SavedStats> {
 export async function putStats(stats: SavedStats): Promise<void> {
   const d = await db()
   await d.put('stats', stats)
+}
+
+export async function getOnboarding(): Promise<SavedOnboarding> {
+  const d = await db()
+  const existing = await d.get('onboardingSeen', 'v1')
+  return existing ?? { key: 'v1', kinds: [] }
+}
+
+export async function putOnboarding(value: SavedOnboarding): Promise<void> {
+  const d = await db()
+  await d.put('onboardingSeen', value)
 }
 
 export async function _resetDbForTests(): Promise<void> {

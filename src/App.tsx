@@ -5,6 +5,7 @@ import { Play } from '@/ui/pages/Play'
 import { Settings } from '@/ui/pages/Settings'
 import { Stats } from '@/ui/pages/Stats'
 import { useSettingsStore } from '@/state/settingsStore'
+import { useOnboardingStore } from '@/state/onboardingStore'
 import { applyTheme, watchSystemTheme } from '@/theme'
 import { UpdatePrompt } from '@/pwa/UpdatePrompt'
 
@@ -12,10 +13,15 @@ export default function App() {
   const theme = useSettingsStore((s) => s.theme)
   const loadSettings = useSettingsStore((s) => s.loadFromDb)
   const loaded = useSettingsStore((s) => s.loaded)
+  const loadOnboarding = useOnboardingStore((s) => s.loadFromDb)
 
   useEffect(() => {
     void loadSettings()
   }, [loadSettings])
+
+  useEffect(() => {
+    void loadOnboarding()
+  }, [loadOnboarding])
 
   useEffect(() => {
     applyTheme(theme)
