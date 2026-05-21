@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="22" cy="58" r="11"/>
+  <text x="22" y="63" font-family="ui-sans-serif" font-size="14" text-anchor="middle" fill="currentColor" stroke="none">9</text>
+  <polyline points="30,50 50,30 62,18"/>
+  <polyline points="52,18 62,18 62,28"/>
+</svg>
