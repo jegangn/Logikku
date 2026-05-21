@@ -112,6 +112,8 @@ export interface OnboardingSection {
 const TITLE_LINE = /^title:\s*(.+)$/m
 
 export function parseOnboardingSections(src: string): ReadonlyArray<OnboardingSection> {
+  // Every `---` line is a section fence, so onboarding bodies must not use
+  // `---` as a markdown horizontal rule — it would mis-split the sections.
   const parts = src.split(/^---$/m)
   const sections: OnboardingSection[] = []
   for (let i = 1; i < parts.length; i += 2) {
