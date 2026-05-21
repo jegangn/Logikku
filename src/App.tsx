@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { Home } from '@/ui/pages/Home'
 import { Play } from '@/ui/pages/Play'
+import { VariantDetail } from '@/ui/pages/VariantDetail'
 import { Settings } from '@/ui/pages/Settings'
 import { Stats } from '@/ui/pages/Stats'
 import { useSettingsStore } from '@/state/settingsStore'
@@ -44,6 +45,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/play" element={<Play />} />
+        <Route path="/variant/:kind" element={<VariantDetail />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/stats" element={<Stats />} />
       </Routes>
