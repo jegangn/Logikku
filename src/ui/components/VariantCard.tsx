@@ -28,9 +28,12 @@ export function VariantCard({ kind, disabled = false }: VariantCardProps) {
       <div
         data-testid={`variant-card-${kind}`}
         aria-disabled="true"
-        className={`${sharedClasses} opacity-50 cursor-not-allowed`}
+        className={`${sharedClasses} opacity-60 cursor-not-allowed`}
       >
         {inner}
+        <div className="mt-1 text-[10px] uppercase tracking-wider text-[var(--color-text-faint)]">
+          {t.home.comingSoon}
+        </div>
       </div>
     )
   }

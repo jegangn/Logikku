@@ -30,6 +30,7 @@ export const en = {
       featureArithmetic: 'Arithmetic',
     },
     empty: 'No variants match these filters.',
+    comingSoon: 'Coming soon',
   },
 
   difficulty: {
