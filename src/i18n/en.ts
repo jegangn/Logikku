@@ -49,7 +49,6 @@ export const en = {
     stats: 'Stats',
     statsPlayed: (n: number) => `Played ${n}`,
     statsBestTime: (mmss: string) => `Best time ${mmss}`,
-    statsStreak: (n: number) => `Streak ${n}`,
     notFound: 'Variant not found.',
   },
 

@@ -190,7 +190,7 @@ Portrait: single column, filters stack vertically, cards in `grid-cols-2`.
 │  [ Diabolical ]                                      │
 │                                                      │
 │  ── Stats ──                                         │
-│  Played 12 · Best time 4:23 · Streak 3               │
+│  Played 12 · Best time 4:23                          │
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -239,7 +239,7 @@ interface DifficultyPickerProps {
 
 ### Stats block (per variant)
 
-Reads from existing `statsStore`. Displays played count, best time, current streak — same shape as the Stats page but scoped to the variant. Hidden if zero plays.
+Reads from existing `statsStore`. Displays played count and best time, aggregated across the variant's bands — same shape as the Stats page but scoped to the variant. Hidden if zero plays. (No streak: the stats model never tracked one, and streaks are a hard non-negotiable in CLAUDE.md — "no daily-login streaks". The original mockup's "Streak 3" was dropped for this reason.)
 
 ## Onboarding flow
 

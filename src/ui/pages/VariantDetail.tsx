@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { DifficultyPicker } from '@/ui/components/DifficultyPicker'
 import { Markdown } from '@/ui/components/markdown'
@@ -10,14 +10,28 @@ import {
   parseOnboardingSections,
 } from '@/ui/variantCatalog'
 import { useOnboardingStore } from '@/state/onboardingStore'
+import { useStatsStore } from '@/state/statsStore'
 import { t } from '@/i18n/en'
 import type { Difficulty } from '@/engine'
+
+function formatMs(ms: number): string {
+  const totalSec = Math.floor(ms / 1000)
+  const m = Math.floor(totalSec / 60)
+  const s = totalSec % 60
+  return `${m}m ${String(s).padStart(2, '0')}s`
+}
 
 export function VariantDetail() {
   const { kind } = useParams<{ kind: string }>()
   const navigate = useNavigate()
   const hasSeen = useOnboardingStore((s) => s.hasSeen)
+  const byBand = useStatsStore((s) => s.byBand)
+  const loadStats = useStatsStore((s) => s.loadFromDb)
   const [pendingOnboarding, setPendingOnboarding] = useState<Difficulty | null>(null)
+
+  useEffect(() => {
+    void loadStats()
+  }, [loadStats])
 
   if (!kind || !isVariantKind(kind)) {
     return <Navigate to="/" replace />
@@ -28,6 +42,15 @@ export function VariantDetail() {
   const sections = parseOnboardingSections(meta.onboarding)
   const rulesBody = sections[0]?.body ?? ''
   const catalogEntry = t.catalog[variantKind]
+
+  const variantBands = Object.entries(byBand).filter(
+    ([k]) => k.split(':')[0] === variantKind,
+  )
+  const played = variantBands.reduce((sum, [, s]) => sum + s.completed, 0)
+  const bestMs = variantBands.reduce<number | null>((best, [, s]) => {
+    if (s.bestTimeMs === null) return best
+    return best === null ? s.bestTimeMs : Math.min(best, s.bestTimeMs)
+  }, null)
 
   function startPlay(difficulty: Difficulty) {
     navigate(`/play?variant=${variantKind}&difficulty=${difficulty}`)
@@ -79,6 +102,18 @@ export function VariantDetail() {
             <DifficultyPicker variant={variantKind} onPick={onPick} />
           </div>
         </section>
+
+        {played > 0 && (
+          <section className="mt-8" data-testid="variant-stats">
+            <h2 className="text-sm uppercase tracking-wider text-[var(--color-text-faint)]">
+              {t.variant.stats}
+            </h2>
+            <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+              {t.variant.statsPlayed(played)}
+              {bestMs !== null && ` · ${t.variant.statsBestTime(formatMs(bestMs))}`}
+            </p>
+          </section>
+        )}
       </div>
 
       {pendingOnboarding !== null && (

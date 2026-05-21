@@ -5,7 +5,8 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import 'fake-indexeddb/auto'
 import { VariantDetail } from './VariantDetail'
 import { useOnboardingStore } from '@/state/onboardingStore'
-import { _resetDbForTests } from '@/storage/db'
+import { useStatsStore } from '@/state/statsStore'
+import { _resetDbForTests, putStats } from '@/storage/db'
 
 function mountAt(path: string) {
   return render(
@@ -22,6 +23,8 @@ function mountAt(path: string) {
 beforeEach(async () => {
   await _resetDbForTests()
   useOnboardingStore.setState({ seen: new Set(), loaded: true })
+  useStatsStore.setState({ byBand: {}, loaded: false })
+  await putStats({ key: 'v1', byBand: {} })
 })
 
 describe('VariantDetail', () => {
@@ -50,5 +53,27 @@ describe('VariantDetail', () => {
     mountAt('/variant/killer')
     await userEvent.click(screen.getByTestId('difficulty-easy'))
     expect(await screen.findByTestId('play-stub')).toBeInTheDocument()
+  })
+
+  it('hides the stats block when the variant has no completions', async () => {
+    mountAt('/variant/killer')
+    await screen.findByText('Pick difficulty')
+    expect(screen.queryByTestId('variant-stats')).toBeNull()
+  })
+
+  it('shows played count and best time aggregated across the variant bands', async () => {
+    await useStatsStore.getState().recordCompletion('killer', 'easy', 263_000)
+    await useStatsStore.getState().recordCompletion('killer', 'hard', 600_000)
+    mountAt('/variant/killer')
+    const stats = await screen.findByTestId('variant-stats')
+    expect(stats).toHaveTextContent('Played 2')
+    expect(stats).toHaveTextContent('Best time 4m 23s')
+  })
+
+  it('does not count another variant toward this one', async () => {
+    await useStatsStore.getState().recordCompletion('classic', 'easy', 120_000)
+    mountAt('/variant/killer')
+    await screen.findByText('Pick difficulty')
+    expect(screen.queryByTestId('variant-stats')).toBeNull()
   })
 })
