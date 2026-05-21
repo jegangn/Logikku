@@ -127,7 +127,7 @@ export const en = {
     'x-diagonal':      { name: 'X / Diagonal',      description: 'Plus both main diagonals.' },
     hyper:             { name: 'Hyper',             description: 'Four extra inner boxes.' },
     'anti-knight':     { name: 'Anti-Knight',       description: "No two knight's-move cells share a digit." },
-    'anti-king':       { name: 'Anti-King',         description: 'No two adjacent cells share, even diagonally.' },
+    'anti-king':       { name: 'Anti-King',         description: 'No two touching cells share a digit, even diagonally.' },
     'non-consecutive': { name: 'Non-Consecutive',   description: "Adjacent cells can't differ by 1." },
     'even-odd':        { name: 'Even-Odd',          description: 'Some cells are even-only; others odd-only.' },
     jigsaw:            { name: 'Jigsaw',            description: 'Boxes replaced by irregular shapes.' },
