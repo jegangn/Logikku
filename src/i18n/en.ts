@@ -3,7 +3,6 @@ export const en = {
   tagline: 'Sudoku, every variant.',
 
   home: {
-    classicHeader: 'Classic Sudoku',
     continueLabel: 'Continue',
     settings: 'Settings',
     stats: 'Stats',
@@ -58,7 +57,6 @@ export const en = {
     skip: 'Skip',
     next: 'Next',
     done: 'Done',
-    close: 'Close',
     stepOf: (i: number, n: number) => `${i} of ${n}`,
   },
 
