@@ -9,6 +9,7 @@ import {
   parseBackup,
   restoreBackup,
 } from '@/storage/backup'
+import { useOnboardingStore } from '@/state/onboardingStore'
 import { t } from '@/i18n/en'
 
 const THEMES: ReadonlyArray<{ value: Theme; label: string }> = [
@@ -27,6 +28,14 @@ export function Settings() {
   const setSetting = useSettingsStore((s) => s.set)
   const fileInput = useRef<HTMLInputElement>(null)
   const [status, setStatus] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null)
+  const resetOnboarding = useOnboardingStore((s) => s.reset)
+  const [onboardingResetMsg, setOnboardingResetMsg] = useState<string | null>(null)
+
+  async function handleResetOnboarding() {
+    await resetOnboarding()
+    setOnboardingResetMsg(t.settings.resetOnboardingDone)
+    setTimeout(() => setOnboardingResetMsg(null), 2000)
+  }
 
   async function handleBackup() {
     const backup = await buildBackup()
@@ -159,6 +168,22 @@ export function Settings() {
               onClick={handleRestoreClick}
               testId="action-restore"
             />
+            <ActionRow
+              label={t.settings.resetOnboarding}
+              hint={t.settings.resetOnboardingHint}
+              onClick={() => {
+                void handleResetOnboarding()
+              }}
+              testId="action-reset-onboarding"
+            />
+            {onboardingResetMsg && (
+              <p
+                data-testid="onboarding-reset-status"
+                className="mt-2 text-sm text-[var(--color-accent-strong)]"
+              >
+                {onboardingResetMsg}
+              </p>
+            )}
             <ActionRow
               label={t.settings.clear}
               hint={t.settings.clearHint}

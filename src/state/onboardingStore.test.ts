@@ -43,4 +43,12 @@ describe('onboardingStore', () => {
     await useOnboardingStore.getState().loadFromDb()
     expect(useOnboardingStore.getState().seen.size).toBe(0)
   })
+
+  it('reset can be called multiple times safely', async () => {
+    await useOnboardingStore.getState().loadFromDb()
+    await useOnboardingStore.getState().markSeen('killer')
+    await useOnboardingStore.getState().reset()
+    await useOnboardingStore.getState().reset()
+    expect(useOnboardingStore.getState().seen.size).toBe(0)
+  })
 })
