@@ -30,11 +30,14 @@ export function Onboarding({ kind, onDone }: OnboardingProps) {
     >
       <div
         data-testid="onboarding-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="onboarding-title"
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-md rounded-2xl bg-[var(--color-surface)] p-6 shadow-xl"
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{section.title}</h2>
+          <h2 id="onboarding-title" className="text-lg font-semibold">{section.title}</h2>
           <button
             type="button"
             data-testid="onboarding-skip"
