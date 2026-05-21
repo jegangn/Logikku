@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
   _resetDbForTests,
+  getOnboarding,
   getSettings,
   getStats,
   listGames,
   putGame,
+  putOnboarding,
   putSettings,
   putStats,
   type SavedGame,
@@ -44,18 +46,26 @@ beforeEach(async () => {
 })
 
 describe('storage/backup', () => {
-  it('builds a backup with current games, settings, stats', async () => {
+  it('builds a backup with current games, settings, stats, onboarding', async () => {
     await putGame(game('a'))
     await putSettings({ key: 'v1', theme: 'light' })
     await putStats({
       key: 'v1',
       byBand: { 'classic:easy': { completed: 2, bestTimeMs: 1000, totalTimeMs: 3000 } },
     })
+    await putOnboarding({ key: 'v1', kinds: ['killer', 'samurai'] })
     const backup = await buildBackup()
-    expect(backup.version).toBe(1)
+    expect(backup.version).toBe(2)
     expect(backup.games).toHaveLength(1)
     expect(backup.settings?.theme).toBe('light')
     expect(backup.stats?.byBand['classic:easy']?.completed).toBe(2)
+    expect(backup.onboarding?.kinds).toEqual(['killer', 'samurai'])
+  })
+
+  it('omits onboarding when nothing has been seen', async () => {
+    await putGame(game('a'))
+    const backup = await buildBackup()
+    expect(backup.onboarding).toBeNull()
   })
 
   it('serializes to a Blob and is JSON-parseable', async () => {
@@ -82,28 +92,48 @@ describe('storage/backup', () => {
     ).toThrow()
   })
 
-  it('restoreBackup replaces all data', async () => {
+  it('restoreBackup replaces all data including onboarding', async () => {
     await putGame(game('old'))
     await putSettings({ key: 'v1', theme: 'light' })
+    await putOnboarding({ key: 'v1', kinds: ['killer'] })
     const backup = await buildBackup()
 
     await putGame(game('new'))
+    await putOnboarding({ key: 'v1', kinds: ['classic', 'hyper'] })
     await restoreBackup(backup)
 
     const games = await listGames()
     expect(games.map((g) => g.id).sort()).toEqual(['old'])
     const settings = await getSettings()
     expect(settings?.theme).toBe('light')
+    const onboarding = await getOnboarding()
+    expect(onboarding.kinds).toEqual(['killer'])
   })
 
-  it('clearAllData wipes games, settings, stats', async () => {
+  it('restores a legacy v1 backup that has no onboarding field', async () => {
+    const legacy = JSON.stringify({
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      games: [game('legacy')],
+      settings: { key: 'v1', theme: 'dark' },
+      stats: null,
+    })
+    const parsed = parseBackup(legacy)
+    await restoreBackup(parsed)
+    expect((await listGames()).map((g) => g.id)).toEqual(['legacy'])
+    expect((await getOnboarding()).kinds).toEqual([])
+  })
+
+  it('clearAllData wipes games, settings, stats, onboarding', async () => {
     await putGame(game('a'))
     await putSettings({ key: 'v1', theme: 'light' })
     await putStats({ key: 'v1', byBand: { 'classic:easy': { completed: 1, bestTimeMs: 100, totalTimeMs: 100 } } })
+    await putOnboarding({ key: 'v1', kinds: ['killer'] })
     await clearAllData()
     expect(await listGames()).toHaveLength(0)
     const s = await getStats()
     expect(s.byBand).toEqual({})
+    expect((await getOnboarding()).kinds).toEqual([])
   })
 
   it('defaultBackupFilename produces YYYY-MM-DD format', () => {

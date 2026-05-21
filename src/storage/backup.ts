@@ -1,32 +1,39 @@
 import {
   _resetDbForTests,
+  getOnboarding,
   getSettings,
   getStats,
   listGames,
   putGame,
+  putOnboarding,
   putSettings,
   putStats,
   deleteGame,
   type SavedGame,
+  type SavedOnboarding,
   type SavedSettings,
   type SavedStats,
 } from './db'
 
-const BACKUP_VERSION = 1
+const BACKUP_VERSION = 2
+const SUPPORTED_VERSIONS = [1, 2]
 
 export interface BackupFile {
-  readonly version: 1
+  readonly version: 1 | 2
   readonly exportedAt: string
   readonly games: ReadonlyArray<SavedGame>
   readonly settings: SavedSettings | null
   readonly stats: SavedStats | null
+  // Added in v2. Absent in v1 backups.
+  readonly onboarding?: SavedOnboarding | null
 }
 
 export async function buildBackup(): Promise<BackupFile> {
-  const [games, settings, stats] = await Promise.all([
+  const [games, settings, stats, onboarding] = await Promise.all([
     listGames(),
     getSettings().then((s) => s ?? null),
     getStats().then((s) => (s.byBand && Object.keys(s.byBand).length === 0 ? null : s)),
+    getOnboarding().then((o) => (o.kinds.length === 0 ? null : o)),
   ])
   return {
     version: BACKUP_VERSION,
@@ -34,6 +41,7 @@ export async function buildBackup(): Promise<BackupFile> {
     games,
     settings,
     stats,
+    onboarding,
   }
 }
 
@@ -57,7 +65,9 @@ export function parseBackup(json: string): BackupFile {
   }
   if (typeof parsed !== 'object' || parsed === null) throw new Error('backup is not an object')
   const obj = parsed as Record<string, unknown>
-  if (obj['version'] !== BACKUP_VERSION) throw new Error(`unsupported backup version ${String(obj['version'])}`)
+  if (!SUPPORTED_VERSIONS.includes(obj['version'] as number)) {
+    throw new Error(`unsupported backup version ${String(obj['version'])}`)
+  }
   if (!Array.isArray(obj['games'])) throw new Error('backup missing games array')
   for (const g of obj['games']) {
     if (typeof g !== 'object' || g === null) throw new Error('game is not an object')
@@ -74,6 +84,7 @@ export async function restoreBackup(backup: BackupFile): Promise<void> {
   for (const game of backup.games) await putGame(game)
   if (backup.settings) await putSettings(backup.settings)
   if (backup.stats) await putStats(backup.stats)
+  if (backup.onboarding) await putOnboarding(backup.onboarding)
 }
 
 export async function clearAllData(): Promise<void> {
@@ -81,6 +92,7 @@ export async function clearAllData(): Promise<void> {
   await Promise.all(games.map((g) => deleteGame(g.id)))
   await putSettings({ key: 'v1' })
   await putStats({ key: 'v1', byBand: {} })
+  await putOnboarding({ key: 'v1', kinds: [] })
 }
 
 export const _internal = { _resetDbForTests }
