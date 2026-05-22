@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Markdown } from './markdown'
 import { getVariant, parseOnboardingSections, type VariantKind } from '@/ui/variantCatalog'
 import { useOnboardingStore } from '@/state/onboardingStore'
-import { useT } from '@/i18n'
+import { useT, useLang } from '@/i18n'
 
 interface OnboardingProps {
   readonly kind: VariantKind
@@ -11,8 +11,9 @@ interface OnboardingProps {
 
 export function Onboarding({ kind, onDone }: OnboardingProps) {
   const t = useT()
+  const lang = useLang()
   const meta = getVariant(kind)
-  const sections = parseOnboardingSections(meta.onboarding)
+  const sections = parseOnboardingSections(meta.onboarding[lang] ?? meta.onboarding.en)
   const markSeen = useOnboardingStore((s) => s.markSeen)
   const [index, setIndex] = useState(0)
   const section = sections[index]!

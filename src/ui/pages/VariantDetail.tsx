@@ -11,7 +11,7 @@ import {
 } from '@/ui/variantCatalog'
 import { useOnboardingStore } from '@/state/onboardingStore'
 import { useStatsStore } from '@/state/statsStore'
-import { useT } from '@/i18n'
+import { useT, useLang } from '@/i18n'
 import type { Difficulty } from '@/engine'
 
 function formatMs(ms: number): string {
@@ -23,6 +23,7 @@ function formatMs(ms: number): string {
 
 export function VariantDetail() {
   const t = useT()
+  const lang = useLang()
   const { kind } = useParams<{ kind: string }>()
   const navigate = useNavigate()
   const hasSeen = useOnboardingStore((s) => s.hasSeen)
@@ -40,7 +41,7 @@ export function VariantDetail() {
 
   const variantKind = kind
   const meta = getVariant(variantKind)
-  const sections = parseOnboardingSections(meta.onboarding)
+  const sections = parseOnboardingSections(meta.onboarding[lang] ?? meta.onboarding.en)
   const rulesBody = sections[0]?.body ?? ''
   const catalogEntry = t.catalog[variantKind]
 

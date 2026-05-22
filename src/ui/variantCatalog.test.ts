@@ -35,7 +35,8 @@ describe('variantCatalog', () => {
   it('every entry has a Thumbnail component and onboarding string', () => {
     for (const v of VARIANT_CATALOG) {
       expect(typeof v.Thumbnail).toBe('function')
-      expect(v.onboarding.length).toBeGreaterThan(50)
+      expect(v.onboarding.en.length).toBeGreaterThan(50)
+      expect(v.onboarding.ms.length).toBeGreaterThan(50)
     }
   })
 
