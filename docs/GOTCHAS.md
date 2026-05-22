@@ -277,3 +277,12 @@ Five overlapping 9×9 grids modeled as `SamuraiBoard` (5 × `Grid<9>` plus a
 **Followup script will need manual max_removals tuning.** `gen/scripts/phase17_banks_followup.sh` appends to existing JSONLs for hours/days of background generation. If the middle bands still don't emit at the spec'd max_removals, edit `SAMURAI_DIFFICULTY_BANDS` in `gen/src/generator/samurai.py` and re-run. We don't have a clean answer for hitting samurai medium/hard/tough/expert SE bands at this grader — that's an open research question for Phase 18+.
 
 **Pencil mode is still a no-op on samurai (17b).** Real banks don't change this. Implementing pencil marks for samurai cells is post-17c work.
+
+## 2026-05-23 — Samurai grid ARIA indices (Phase 19)
+
+The Samurai board renders five overlapping 9×9 grids in one `role="grid"`. There is
+no single coherent row/column index space across the overlap, so Samurai cells keep
+`role="gridcell"` + a descriptive `aria-label` and `role="row"` wrappers (valid ARIA
+tree) but **omit** `aria-rowindex`/`aria-colindex`. Controlled by the
+`withIndices={false}` prop on `BoardCellsLayer`. The axe e2e scan covers a non-Samurai
+Play screen where full row/column indices apply.

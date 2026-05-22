@@ -1,4 +1,5 @@
 import { BoardCellsLayer } from './BoardCellsLayer'
+import { useT } from '@/i18n'
 import type { Coord, Digit, SamuraiBoard } from '@/engine'
 import {
   peersFromConstraints,
@@ -95,6 +96,7 @@ export function SamuraiBoardView({
   shakeKey,
   onSelect,
 }: SamuraiBoardViewProps) {
+  const t = useT()
   // Recompute every render: the samurai input mutates board in place and the
   // outer SamuraiBoard ref is preserved across set(), so useMemo([board]) would
   // serve stale conflicts. Conflict detection is O(5 × 27 × 9) — cheap.
@@ -103,7 +105,7 @@ export function SamuraiBoardView({
   return (
     <svg
       role="grid"
-      aria-label="Samurai board"
+      aria-label={t.play.samuraiBoardLabel}
       data-testid="samurai-board"
       viewBox={`0 0 ${SIDE_PX} ${SIDE_PX}`}
       className="w-full max-w-[min(92vh,720px)] aspect-square select-none"
@@ -125,6 +127,7 @@ export function SamuraiBoardView({
               selectedValue={state.selectedValue}
               peerSet={state.peerSet}
               conflictSet={state.conflictSet}
+              withIndices={false}
               {...(lockedCells !== undefined ? { lockedCells } : {})}
               {...(shakeKey !== undefined ? { shakeKey } : {})}
               onSelect={(coord) => onSelect({ gridIdx, coord })}

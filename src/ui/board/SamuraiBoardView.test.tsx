@@ -105,6 +105,19 @@ describe('SamuraiBoardView', () => {
     expect(rect?.getAttribute('fill')).toBe('rgba(255, 255, 255, 0.03)')
   })
 
+  it('omits aria-colindex on samurai cells (documented exception)', () => {
+    const board = createSamuraiBoard()
+    render(<SamuraiBoardView board={board} selected={null} onSelect={() => {}} />)
+    const center = screen
+      .getByTestId('samurai-subgrid-0')
+      .querySelector('[data-testid="cell-1-1"]')
+    const corner = screen
+      .getByTestId('samurai-subgrid-1')
+      .querySelector('[data-testid="cell-1-1"]')
+    expect(center?.getAttribute('aria-colindex')).toBeNull()
+    expect(corner?.getAttribute('aria-colindex')).toBeNull()
+  })
+
   it('reflects samuraiConflicts in both center and corner for a shared duplicate', () => {
     const board = createSamuraiBoard()
     setValueShared(board, 0, { r: 1, c: 1 }, 5)

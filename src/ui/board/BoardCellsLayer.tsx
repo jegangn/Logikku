@@ -13,6 +13,7 @@ export interface BoardCellsLayerProps {
   readonly lockedCells?: ReadonlySet<string>
   readonly shakeKey?: number
   readonly suppressBoxLines?: boolean
+  readonly withIndices?: boolean
   readonly onSelect: (coord: Coord) => void
 }
 
@@ -26,13 +27,15 @@ export function BoardCellsLayer({
   lockedCells,
   shakeKey = 0,
   suppressBoxLines = false,
+  withIndices = true,
   onSelect,
 }: BoardCellsLayerProps) {
   const size = grid.shape.size
-  const cells = useMemo(() => {
+  const rows = useMemo(() => {
     const s = grid.shape.size
     const out: React.ReactElement[] = []
     for (let r = 0; r < s; r++) {
+      const rowCells: React.ReactElement[] = []
       for (let c = 0; c < s; c++) {
         const cell = cellAt(grid, { r, c })
         const key = `${r},${c}`
@@ -40,10 +43,8 @@ export function BoardCellsLayer({
           selectedCoord !== null && selectedCoord.r === r && selectedCoord.c === c
         const peerHighlight = peerSet.has(key) && !isSelected
         const sameValue =
-          selectedValue !== null &&
-          cell.value === selectedValue &&
-          !isSelected
-        out.push(
+          selectedValue !== null && cell.value === selectedValue && !isSelected
+        rowCells.push(
           <Cell
             key={key}
             coord={{ r, c }}
@@ -58,17 +59,27 @@ export function BoardCellsLayer({
             conflict={conflictSet.has(key)}
             locked={lockedCells?.has(key) ?? false}
             shakeKey={shakeKey}
+            withIndices={withIndices}
             onSelect={onSelect}
           />,
         )
       }
+      out.push(
+        <g
+          key={`row-${r}`}
+          role="row"
+          {...(withIndices ? { 'aria-rowindex': r + 1 } : {})}
+        >
+          {rowCells}
+        </g>,
+      )
     }
     return out
-  }, [grid, cellSize, selectedCoord, selectedValue, peerSet, conflictSet, lockedCells, shakeKey, onSelect])
+  }, [grid, cellSize, selectedCoord, selectedValue, peerSet, conflictSet, lockedCells, shakeKey, withIndices, onSelect])
 
   return (
     <g>
-      {cells}
+      {rows}
       <GridLines
         size={size}
         cellSize={cellSize}
