@@ -1,6 +1,8 @@
 import React from 'react'
+import { useT } from '@/i18n'
 
 export function RotateDevicePrompt(): React.ReactElement {
+  const t = useT()
   return (
     <div
       data-testid="rotate-device-prompt"
@@ -9,7 +11,7 @@ export function RotateDevicePrompt(): React.ReactElement {
       <svg
         data-testid="rotate-icon"
         role="img"
-        aria-label="Rotate device to landscape"
+        aria-label={t.play.rotateIcon}
         viewBox="0 0 64 64"
         width="80"
         height="80"
@@ -25,7 +27,7 @@ export function RotateDevicePrompt(): React.ReactElement {
         <polyline points="48,32 54,38 60,32" />
       </svg>
       <p className="text-base text-[var(--color-text-muted)]">
-        Samurai needs landscape — please rotate your device.
+        {t.play.rotatePrompt}
       </p>
     </div>
   )

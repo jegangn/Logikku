@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useSettingsStore, type Theme } from '@/state/settingsStore'
+import type { Language } from '@/i18n/lang'
 import {
   buildBackup,
   backupToBlob,
@@ -10,15 +11,21 @@ import {
   restoreBackup,
 } from '@/storage/backup'
 import { useOnboardingStore } from '@/state/onboardingStore'
-import { t } from '@/i18n/en'
-
-const THEMES: ReadonlyArray<{ value: Theme; label: string }> = [
-  { value: 'light', label: t.settings.themeLight },
-  { value: 'dark', label: t.settings.themeDark },
-  { value: 'system', label: t.settings.themeSystem },
-]
+import { useT } from '@/i18n'
 
 export function Settings() {
+  const t = useT()
+  const THEMES: ReadonlyArray<{ value: Theme; label: string }> = [
+    { value: 'light', label: t.settings.themeLight },
+    { value: 'dark', label: t.settings.themeDark },
+    { value: 'system', label: t.settings.themeSystem },
+  ]
+  const language = useSettingsStore((s) => s.language)
+  const LANGUAGES: ReadonlyArray<{ value: Language; label: string }> = [
+    { value: 'en', label: t.settings.languageEnglish },
+    { value: 'ms', label: t.settings.languageMalay },
+    { value: 'system', label: t.settings.languageSystem },
+  ]
   const navigate = useNavigate()
   const theme = useSettingsStore((s) => s.theme)
   const strictMode = useSettingsStore((s) => s.strictMode)
@@ -72,7 +79,7 @@ export function Settings() {
     if (!confirm(t.settings.confirmClearFirst)) return
     if (!confirm(t.settings.confirmClearSecond)) return
     await clearAllData()
-    setStatus({ kind: 'ok', msg: 'Data cleared.' })
+    setStatus({ kind: 'ok', msg: t.settings.clearDone })
   }
 
   return (
@@ -92,7 +99,7 @@ export function Settings() {
         <section className="mt-8 space-y-4">
           <div>
             <Label>{t.settings.theme}</Label>
-            <div className="mt-2 grid grid-cols-3 gap-2" role="tablist">
+            <div className="mt-2 grid grid-cols-3 gap-2" role="tablist" aria-label={t.settings.theme}>
               {THEMES.map(({ value, label }) => (
                 <button
                   key={value}
@@ -105,6 +112,31 @@ export function Settings() {
                   }}
                   className={`min-h-[44px] rounded-xl border text-sm font-medium transition-colors ${
                     theme === value
+                      ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-accent-strong)]'
+                      : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <Label>{t.settings.language}</Label>
+            <div className="mt-2 grid grid-cols-3 gap-2" role="tablist" aria-label={t.settings.language}>
+              {LANGUAGES.map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  role="tab"
+                  aria-selected={language === value}
+                  data-testid={`language-${value}`}
+                  onClick={() => {
+                    void setSetting('language', value)
+                  }}
+                  className={`min-h-[44px] rounded-xl border text-sm font-medium transition-colors ${
+                    language === value
                       ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-accent-strong)]'
                       : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
                   }`}
@@ -265,6 +297,7 @@ function ToggleRow({
         type="button"
         role="switch"
         aria-checked={value}
+        aria-label={label}
         data-testid={testId}
         onClick={() => onChange(!value)}
         className={`relative h-7 w-12 rounded-full transition-colors ${
@@ -310,7 +343,7 @@ function ActionRow({
       <div className="flex-1">
         <div className="text-sm font-medium">{label}</div>
         {hint && (
-          <div className={`text-xs mt-1 ${destructive ? 'text-[var(--color-conflict)] opacity-70' : 'text-[var(--color-text-muted)]'}`}>
+          <div className={`text-xs mt-1 ${destructive ? 'text-[var(--color-conflict)]' : 'text-[var(--color-text-muted)]'}`}>
             {hint}
           </div>
         )}

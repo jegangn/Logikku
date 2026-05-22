@@ -69,6 +69,15 @@ export const en = {
     modeValue: 'Value',
     modePencil: 'Pencil',
     back: '← Back',
+    newPuzzle: 'New puzzle',
+    inputPad: 'Input pad',
+    inputMode: 'Input mode',
+    digitPad: 'Digit pad',
+    digit: (glyph: string) => `Digit ${glyph}`,
+    boardLabel: 'Sudoku board',
+    samuraiBoardLabel: 'Samurai board',
+    rotatePrompt: 'Samurai needs landscape — please rotate your device.',
+    rotateIcon: 'Rotate device to landscape',
   },
 
   settings: {
@@ -77,6 +86,10 @@ export const en = {
     themeLight: 'Light',
     themeDark: 'Dark',
     themeSystem: 'System',
+    language: 'Language',
+    languageEnglish: 'English',
+    languageMalay: 'Bahasa Malaysia',
+    languageSystem: 'System',
     strictMode: 'Strict mode',
     strictModeHint: 'Wrong entries lock for 5 seconds.',
     highlightConflicts: 'Highlight conflicts',
@@ -90,6 +103,7 @@ export const en = {
     restoreHint: 'Replaces all current data with the backup contents.',
     clear: 'Clear all data',
     clearHint: 'Deletes all games, settings, and stats from this device.',
+    clearDone: 'Data cleared.',
     confirmRestore: 'Restore will REPLACE your current games, settings, and stats. Continue?',
     confirmClearFirst: 'Delete all your games, settings, and stats?',
     confirmClearSecond: 'Are you absolutely sure? This cannot be undone.',
@@ -145,7 +159,6 @@ export const en = {
     'mega-16':         { name: 'Mega 16×16',        description: '16×16 with 4×4 boxes.' },
     samurai:           { name: 'Samurai',           description: 'Five overlapping 9×9 grids.' },
   },
-} as const
+}
 
 export type Strings = typeof en
-export const t = en

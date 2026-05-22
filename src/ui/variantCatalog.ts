@@ -24,29 +24,52 @@ import Mini6 from './thumbnails/mini-6.svg?react'
 import Mega16 from './thumbnails/mega-16.svg?react'
 import Samurai from './thumbnails/samurai.svg?react'
 
-import classicMd from './onboarding/classic.md?raw'
-import xDiagonalMd from './onboarding/x-diagonal.md?raw'
-import hyperMd from './onboarding/hyper.md?raw'
-import antiKnightMd from './onboarding/anti-knight.md?raw'
-import antiKingMd from './onboarding/anti-king.md?raw'
-import nonConsecutiveMd from './onboarding/non-consecutive.md?raw'
-import evenOddMd from './onboarding/even-odd.md?raw'
-import jigsawMd from './onboarding/jigsaw.md?raw'
-import kropkiMd from './onboarding/kropki.md?raw'
-import xvMd from './onboarding/xv.md?raw'
-import greaterThanMd from './onboarding/greater-than.md?raw'
-import thermometerMd from './onboarding/thermometer.md?raw'
-import arrowMd from './onboarding/arrow.md?raw'
-import killerMd from './onboarding/killer.md?raw'
-import littleKillerMd from './onboarding/little-killer.md?raw'
-import sandwichMd from './onboarding/sandwich.md?raw'
-import skyscraperMd from './onboarding/skyscraper.md?raw'
-import palindromeMd from './onboarding/palindrome.md?raw'
-import renbanMd from './onboarding/renban.md?raw'
-import germanWhispersMd from './onboarding/german-whispers.md?raw'
-import mini6Md from './onboarding/mini-6.md?raw'
-import mega16Md from './onboarding/mega-16.md?raw'
-import samuraiMd from './onboarding/samurai.md?raw'
+import classicEnMd from './onboarding/classic.md?raw'
+import classicMsMd from './onboarding/classic.ms.md?raw'
+import xDiagonalEnMd from './onboarding/x-diagonal.md?raw'
+import xDiagonalMsMd from './onboarding/x-diagonal.ms.md?raw'
+import hyperEnMd from './onboarding/hyper.md?raw'
+import hyperMsMd from './onboarding/hyper.ms.md?raw'
+import antiKnightEnMd from './onboarding/anti-knight.md?raw'
+import antiKnightMsMd from './onboarding/anti-knight.ms.md?raw'
+import antiKingEnMd from './onboarding/anti-king.md?raw'
+import antiKingMsMd from './onboarding/anti-king.ms.md?raw'
+import nonConsecutiveEnMd from './onboarding/non-consecutive.md?raw'
+import nonConsecutiveMsMd from './onboarding/non-consecutive.ms.md?raw'
+import evenOddEnMd from './onboarding/even-odd.md?raw'
+import evenOddMsMd from './onboarding/even-odd.ms.md?raw'
+import jigsawEnMd from './onboarding/jigsaw.md?raw'
+import jigsawMsMd from './onboarding/jigsaw.ms.md?raw'
+import kropkiEnMd from './onboarding/kropki.md?raw'
+import kropkiMsMd from './onboarding/kropki.ms.md?raw'
+import xvEnMd from './onboarding/xv.md?raw'
+import xvMsMd from './onboarding/xv.ms.md?raw'
+import greaterThanEnMd from './onboarding/greater-than.md?raw'
+import greaterThanMsMd from './onboarding/greater-than.ms.md?raw'
+import thermometerEnMd from './onboarding/thermometer.md?raw'
+import thermometerMsMd from './onboarding/thermometer.ms.md?raw'
+import arrowEnMd from './onboarding/arrow.md?raw'
+import arrowMsMd from './onboarding/arrow.ms.md?raw'
+import killerEnMd from './onboarding/killer.md?raw'
+import killerMsMd from './onboarding/killer.ms.md?raw'
+import littleKillerEnMd from './onboarding/little-killer.md?raw'
+import littleKillerMsMd from './onboarding/little-killer.ms.md?raw'
+import sandwichEnMd from './onboarding/sandwich.md?raw'
+import sandwichMsMd from './onboarding/sandwich.ms.md?raw'
+import skyscraperEnMd from './onboarding/skyscraper.md?raw'
+import skyscraperMsMd from './onboarding/skyscraper.ms.md?raw'
+import palindromeEnMd from './onboarding/palindrome.md?raw'
+import palindromeMsMd from './onboarding/palindrome.ms.md?raw'
+import renbanEnMd from './onboarding/renban.md?raw'
+import renbanMsMd from './onboarding/renban.ms.md?raw'
+import germanWhispersEnMd from './onboarding/german-whispers.md?raw'
+import germanWhispersMsMd from './onboarding/german-whispers.ms.md?raw'
+import mini6EnMd from './onboarding/mini-6.md?raw'
+import mini6MsMd from './onboarding/mini-6.ms.md?raw'
+import mega16EnMd from './onboarding/mega-16.md?raw'
+import mega16MsMd from './onboarding/mega-16.ms.md?raw'
+import samuraiEnMd from './onboarding/samurai.md?raw'
+import samuraiMsMd from './onboarding/samurai.ms.md?raw'
 
 export type VariantKind =
   | 'classic' | 'x-diagonal' | 'hyper' | 'anti-knight' | 'anti-king'
@@ -65,33 +88,33 @@ export interface VariantMeta {
   readonly size: VariantSize
   readonly features: ReadonlyArray<VariantFeature>
   readonly Thumbnail: ComponentType<SVGProps<SVGSVGElement>>
-  readonly onboarding: string
+  readonly onboarding: { readonly en: string; readonly ms: string }
 }
 
 export const VARIANT_CATALOG: ReadonlyArray<VariantMeta> = [
-  { kind: 'classic',          size: '9x9',     features: ['classic-like'],          Thumbnail: Classic,         onboarding: classicMd },
-  { kind: 'x-diagonal',       size: '9x9',     features: ['classic-like'],          Thumbnail: XDiagonal,       onboarding: xDiagonalMd },
-  { kind: 'hyper',            size: '9x9',     features: ['classic-like'],          Thumbnail: Hyper,           onboarding: hyperMd },
-  { kind: 'anti-knight',      size: '9x9',     features: ['classic-like'],          Thumbnail: AntiKnight,      onboarding: antiKnightMd },
-  { kind: 'anti-king',        size: '9x9',     features: ['classic-like'],          Thumbnail: AntiKing,        onboarding: antiKingMd },
-  { kind: 'non-consecutive',  size: '9x9',     features: ['classic-like'],          Thumbnail: NonConsecutive,  onboarding: nonConsecutiveMd },
-  { kind: 'even-odd',         size: '9x9',     features: ['parity'],                Thumbnail: EvenOdd,         onboarding: evenOddMd },
-  { kind: 'jigsaw',           size: '9x9',     features: ['classic-like'],          Thumbnail: Jigsaw,          onboarding: jigsawMd },
-  { kind: 'kropki',           size: '9x9',     features: ['edge-clue'],             Thumbnail: Kropki,          onboarding: kropkiMd },
-  { kind: 'xv',               size: '9x9',     features: ['edge-clue','arithmetic'],Thumbnail: Xv,              onboarding: xvMd },
-  { kind: 'greater-than',     size: '9x9',     features: ['edge-clue'],             Thumbnail: GreaterThan,     onboarding: greaterThanMd },
-  { kind: 'thermometer',      size: '9x9',     features: ['path'],                  Thumbnail: Thermometer,     onboarding: thermometerMd },
-  { kind: 'arrow',            size: '9x9',     features: ['path','arithmetic'],     Thumbnail: Arrow,           onboarding: arrowMd },
-  { kind: 'killer',           size: '9x9',     features: ['cage','arithmetic'],     Thumbnail: Killer,          onboarding: killerMd },
-  { kind: 'little-killer',    size: '9x9',     features: ['outside-clue','arithmetic'], Thumbnail: LittleKiller,onboarding: littleKillerMd },
-  { kind: 'sandwich',         size: '9x9',     features: ['outside-clue','arithmetic'], Thumbnail: Sandwich,    onboarding: sandwichMd },
-  { kind: 'skyscraper',       size: '9x9',     features: ['outside-clue'],          Thumbnail: Skyscraper,      onboarding: skyscraperMd },
-  { kind: 'palindrome',       size: '9x9',     features: ['path'],                  Thumbnail: Palindrome,      onboarding: palindromeMd },
-  { kind: 'renban',           size: '9x9',     features: ['path'],                  Thumbnail: Renban,          onboarding: renbanMd },
-  { kind: 'german-whispers',  size: '9x9',     features: ['path'],                  Thumbnail: GermanWhispers,  onboarding: germanWhispersMd },
-  { kind: 'mini-6',           size: '6x6',     features: ['classic-like'],          Thumbnail: Mini6,           onboarding: mini6Md },
-  { kind: 'mega-16',          size: '16x16',   features: ['classic-like'],          Thumbnail: Mega16,          onboarding: mega16Md },
-  { kind: 'samurai',          size: 'samurai', features: ['classic-like'],          Thumbnail: Samurai,         onboarding: samuraiMd },
+  { kind: 'classic',          size: '9x9',     features: ['classic-like'],          Thumbnail: Classic,         onboarding: { en: classicEnMd,         ms: classicMsMd } },
+  { kind: 'x-diagonal',       size: '9x9',     features: ['classic-like'],          Thumbnail: XDiagonal,       onboarding: { en: xDiagonalEnMd,       ms: xDiagonalMsMd } },
+  { kind: 'hyper',            size: '9x9',     features: ['classic-like'],          Thumbnail: Hyper,           onboarding: { en: hyperEnMd,           ms: hyperMsMd } },
+  { kind: 'anti-knight',      size: '9x9',     features: ['classic-like'],          Thumbnail: AntiKnight,      onboarding: { en: antiKnightEnMd,      ms: antiKnightMsMd } },
+  { kind: 'anti-king',        size: '9x9',     features: ['classic-like'],          Thumbnail: AntiKing,        onboarding: { en: antiKingEnMd,        ms: antiKingMsMd } },
+  { kind: 'non-consecutive',  size: '9x9',     features: ['classic-like'],          Thumbnail: NonConsecutive,  onboarding: { en: nonConsecutiveEnMd,  ms: nonConsecutiveMsMd } },
+  { kind: 'even-odd',         size: '9x9',     features: ['parity'],                Thumbnail: EvenOdd,         onboarding: { en: evenOddEnMd,         ms: evenOddMsMd } },
+  { kind: 'jigsaw',           size: '9x9',     features: ['classic-like'],          Thumbnail: Jigsaw,          onboarding: { en: jigsawEnMd,          ms: jigsawMsMd } },
+  { kind: 'kropki',           size: '9x9',     features: ['edge-clue'],             Thumbnail: Kropki,          onboarding: { en: kropkiEnMd,          ms: kropkiMsMd } },
+  { kind: 'xv',               size: '9x9',     features: ['edge-clue','arithmetic'],Thumbnail: Xv,              onboarding: { en: xvEnMd,              ms: xvMsMd } },
+  { kind: 'greater-than',     size: '9x9',     features: ['edge-clue'],             Thumbnail: GreaterThan,     onboarding: { en: greaterThanEnMd,     ms: greaterThanMsMd } },
+  { kind: 'thermometer',      size: '9x9',     features: ['path'],                  Thumbnail: Thermometer,     onboarding: { en: thermometerEnMd,     ms: thermometerMsMd } },
+  { kind: 'arrow',            size: '9x9',     features: ['path','arithmetic'],     Thumbnail: Arrow,           onboarding: { en: arrowEnMd,           ms: arrowMsMd } },
+  { kind: 'killer',           size: '9x9',     features: ['cage','arithmetic'],     Thumbnail: Killer,          onboarding: { en: killerEnMd,          ms: killerMsMd } },
+  { kind: 'little-killer',    size: '9x9',     features: ['outside-clue','arithmetic'], Thumbnail: LittleKiller,onboarding: { en: littleKillerEnMd,    ms: littleKillerMsMd } },
+  { kind: 'sandwich',         size: '9x9',     features: ['outside-clue','arithmetic'], Thumbnail: Sandwich,    onboarding: { en: sandwichEnMd,        ms: sandwichMsMd } },
+  { kind: 'skyscraper',       size: '9x9',     features: ['outside-clue'],          Thumbnail: Skyscraper,      onboarding: { en: skyscraperEnMd,      ms: skyscraperMsMd } },
+  { kind: 'palindrome',       size: '9x9',     features: ['path'],                  Thumbnail: Palindrome,      onboarding: { en: palindromeEnMd,      ms: palindromeMsMd } },
+  { kind: 'renban',           size: '9x9',     features: ['path'],                  Thumbnail: Renban,          onboarding: { en: renbanEnMd,          ms: renbanMsMd } },
+  { kind: 'german-whispers',  size: '9x9',     features: ['path'],                  Thumbnail: GermanWhispers,  onboarding: { en: germanWhispersEnMd,  ms: germanWhispersMsMd } },
+  { kind: 'mini-6',           size: '6x6',     features: ['classic-like'],          Thumbnail: Mini6,           onboarding: { en: mini6EnMd,           ms: mini6MsMd } },
+  { kind: 'mega-16',          size: '16x16',   features: ['classic-like'],          Thumbnail: Mega16,          onboarding: { en: mega16EnMd,          ms: mega16MsMd } },
+  { kind: 'samurai',          size: 'samurai', features: ['classic-like'],          Thumbnail: Samurai,         onboarding: { en: samuraiEnMd,         ms: samuraiMsMd } },
 ]
 
 const BY_KIND: ReadonlyMap<VariantKind, VariantMeta> = new Map(

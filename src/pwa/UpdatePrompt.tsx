@@ -1,7 +1,8 @@
 import { useRegisterSW } from './useRegisterSW'
-import { t } from '@/i18n/en'
+import { useT } from '@/i18n'
 
 export function UpdatePrompt() {
+  const t = useT()
   const { needRefresh, update, dismiss } = useRegisterSW()
 
   if (!needRefresh) return null

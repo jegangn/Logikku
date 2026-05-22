@@ -15,6 +15,7 @@ export interface CellProps {
   readonly conflict: boolean
   readonly locked: boolean
   readonly shakeKey: number
+  readonly withIndices?: boolean
   readonly onSelect: (coord: Coord) => void
 }
 
@@ -32,6 +33,7 @@ function CellImpl(props: CellProps) {
     conflict,
     locked,
     shakeKey,
+    withIndices = true,
     onSelect,
   } = props
 
@@ -56,6 +58,7 @@ function CellImpl(props: CellProps) {
       onPointerDown={() => onSelect(coord)}
       role="gridcell"
       aria-label={ariaLabel(coord, value, given)}
+      {...(withIndices ? { 'aria-colindex': coord.c + 1 } : {})}
       tabIndex={-1}
       style={{ cursor: 'pointer' }}
     >

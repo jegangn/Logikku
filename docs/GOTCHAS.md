@@ -277,3 +277,39 @@ Five overlapping 9×9 grids modeled as `SamuraiBoard` (5 × `Grid<9>` plus a
 **Followup script will need manual max_removals tuning.** `gen/scripts/phase17_banks_followup.sh` appends to existing JSONLs for hours/days of background generation. If the middle bands still don't emit at the spec'd max_removals, edit `SAMURAI_DIFFICULTY_BANDS` in `gen/src/generator/samurai.py` and re-run. We don't have a clean answer for hitting samurai medium/hard/tough/expert SE bands at this grader — that's an open research question for Phase 18+.
 
 **Pencil mode is still a no-op on samurai (17b).** Real banks don't change this. Implementing pencil marks for samurai cells is post-17c work.
+
+## 2026-05-23 — Dark-mode AA contrast (Phase 19)
+
+Measured dark-theme ratios after tuning: text/bg 15.59:1, text/surface 14.77:1, text-muted/surface 7.15:1, text-faint/bg 5.01:1 (raised from 3.11, token `#5a6076` → `#7c8194`), text-faint/surface 4.75:1 (raised from 2.95), accent-strong/surface 6.80:1, conflict/surface 5.13:1, given/surface 16.32:1.
+Light theme: text-faint/bg 4.56:1, text-faint/surface 4.80:1 (raised from 3.21/3.38, token `#8d8a96` → `#747178`).
+Deliberate exceptions: none. All body-text tokens meet 4.5:1; all large-text/UI tokens meet 3:1.
+
+## 2026-05-23 — Samurai grid ARIA indices (Phase 19)
+
+The Samurai board renders five overlapping 9×9 grids in one `role="grid"`. There is
+no single coherent row/column index space across the overlap, so Samurai cells keep
+`role="gridcell"` + a descriptive `aria-label` and `role="row"` wrappers (valid ARIA
+tree) but **omit** `aria-rowindex`/`aria-colindex`. Controlled by the
+`withIndices={false}` prop on `BoardCellsLayer`. The axe e2e scan covers a non-Samurai
+Play screen where full row/column indices apply.
+
+## 2026-05-23 — E2E: Continue-card flake from hard-nav racing the save (Phase 19)
+
+`discovery.spec.ts` "Continue card …" loaded a game then did `page.goto('/')` (a HARD
+navigation). The game persists via a fire-and-forget `void flushSave()` in Play's unmount
+cleanup (`state/persistence.ts`); a hard navigation tears down the document and can interrupt
+that async IndexedDB write, so Home's `mostRecentUnfinished()` finds nothing and the
+continue-card never renders. Flaky on WebKit (the `ipad` project) — ~4/5 failures, pre-dates
+Phase 19 (reproduced on `main`). Fix: navigate the way a user actually does — click the in-app
+`back-home` control (React Router SPA nav, same document), so the flush commits before Home reads.
+Lesson: in e2e, prefer in-app SPA navigation over `page.goto()` whenever asserting on state that
+was just written by an unmount/teardown side effect.
+
+## 2026-05-23 — E2E flakes under high `--workers` (Phase 19)
+
+Running the full Playwright suite with `--workers=4` against the single Vite dev server caused
+~8 unrelated chromium specs to fail (they pass in isolation): the dev server gets overwhelmed by
+parallel cold-transform requests. CI is unaffected (`playwright.config.ts` sets `workers: 1` under
+CI). Locally, use `--workers=2` (or 1). Also: to run the dev server on a non-default port you must
+set BOTH `LOGIKKU_E2E_PORT` and `LOGIKKU_E2E_URL` to that port — the `webServer.url` check ignores
+the port flag otherwise and times out waiting on :5173.

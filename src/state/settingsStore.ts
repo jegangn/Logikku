@@ -1,10 +1,12 @@
 import { create } from 'zustand'
 import { getSettings, putSettings, type SavedSettings } from '@/storage/db'
+import type { Language } from '@/i18n/lang'
 
 export type Theme = 'light' | 'dark' | 'system'
 
 export interface SettingsState {
   readonly theme: Theme
+  readonly language: Language
   readonly strictMode: boolean
   readonly highlightConflicts: boolean
   readonly highlightPeers: boolean
@@ -19,6 +21,7 @@ export interface SettingsState {
 
 const DEFAULTS: Omit<SettingsState, 'loaded' | 'loadFromDb' | 'set'> = {
   theme: 'system',
+  language: 'system',
   strictMode: false,
   highlightConflicts: true,
   highlightPeers: true,
@@ -34,6 +37,7 @@ export const useSettingsStore = create<SettingsState>((setState, get) => ({
     if (saved) {
       setState({
         theme: saved.theme ?? DEFAULTS.theme,
+        language: saved.language ?? DEFAULTS.language,
         strictMode: false,
         highlightConflicts: saved.highlightConflicts ?? DEFAULTS.highlightConflicts,
         highlightPeers: saved.highlightPeers ?? DEFAULTS.highlightPeers,
@@ -51,6 +55,7 @@ export const useSettingsStore = create<SettingsState>((setState, get) => ({
     const next: SavedSettings = {
       key: 'v1',
       theme: s.theme,
+      language: s.language,
       highlightConflicts: s.highlightConflicts,
       highlightPeers: s.highlightPeers,
       pencilAutoClean: s.pencilAutoClean,

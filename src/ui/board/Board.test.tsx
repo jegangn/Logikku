@@ -145,6 +145,19 @@ describe('Board', () => {
     )
   })
 
+  it('exposes grid row/column counts and cell indices', () => {
+    const grid = makeGrid()
+    render(<Board grid={grid} selected={null} onSelect={() => {}} />)
+    const board = screen.getByTestId('board')
+    expect(board.getAttribute('aria-rowcount')).toBe('9')
+    expect(board.getAttribute('aria-colcount')).toBe('9')
+    const rows = within(board).getAllByRole('row')
+    expect(rows).toHaveLength(9)
+    expect(rows[2]?.getAttribute('aria-rowindex')).toBe('3')
+    const cell = screen.getByTestId('cell-2-3')
+    expect(cell.getAttribute('aria-colindex')).toBe('4')
+  })
+
   it('detects conflicts on the NE-SW diagonal under x-diagonal', () => {
     const classic = createClassicConstraint({ shape: CLASSIC_9 })
     const xdiag = createXDiagonalConstraint({ shape: CLASSIC_9 })

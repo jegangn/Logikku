@@ -1,3 +1,5 @@
+import { useT } from '@/i18n'
+
 export interface ToolbarProps {
   readonly puzzleLabel: string
   readonly canUndo: boolean
@@ -15,13 +17,14 @@ export function Toolbar({
   onUndo,
   onRedo,
 }: ToolbarProps) {
+  const t = useT()
   return (
     <header
       data-testid="toolbar"
       className="flex items-center justify-between gap-3 w-full max-w-[min(92vw,640px)] pb-2"
     >
       <div className="flex items-baseline gap-3">
-        <h1 className="text-xl font-semibold tracking-tight">Logikku</h1>
+        <h1 className="text-xl font-semibold tracking-tight">{t.appName}</h1>
         <span className="text-sm text-[var(--color-text-muted)]">
           {puzzleLabel}
         </span>
@@ -29,7 +32,7 @@ export function Toolbar({
       <div className="flex items-center gap-2">
         <IconButton
           testId="undo-btn"
-          label="Undo"
+          label={t.play.undo}
           disabled={!canUndo}
           onClick={onUndo}
         >
@@ -37,7 +40,7 @@ export function Toolbar({
         </IconButton>
         <IconButton
           testId="redo-btn"
-          label="Redo"
+          label={t.play.redo}
           disabled={!canRedo}
           onClick={onRedo}
         >
@@ -48,9 +51,9 @@ export function Toolbar({
           data-testid="new-btn"
           onClick={onNew}
           className="min-h-[44px] px-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm font-medium hover:bg-[var(--color-surface-2)] active:scale-[0.97] transition-transform"
-          aria-label="New puzzle"
+          aria-label={t.play.newPuzzle}
         >
-          New
+          {t.play.new}
         </button>
       </div>
     </header>

@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useT } from '@/i18n'
 import { BoardCellsLayer } from './BoardCellsLayer'
 import { OverlayLayer } from './OverlayLayer'
 import type { Coord, Digit, Grid } from '@/engine'
@@ -53,6 +54,7 @@ export function Board({
   paths,
   onSelect,
 }: BoardProps) {
+  const t = useT()
   const size = grid.shape.size
   const boardPx = size * CELL_SIZE
   const margin = outsideClues && outsideClues.length > 0 ? CELL_SIZE * 0.6 : 0
@@ -69,7 +71,9 @@ export function Board({
   return (
     <svg
       role="grid"
-      aria-label="Sudoku board"
+      aria-label={t.play.boardLabel}
+      aria-rowcount={size}
+      aria-colcount={size}
       data-testid="board"
       viewBox={`${-margin} ${-margin} ${boardPx + margin * 2} ${boardPx + margin * 2}`}
       className="w-full max-w-[min(92vw,640px)] aspect-square select-none"

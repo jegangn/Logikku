@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { t } from '@/i18n/en'
+import { useT } from '@/i18n'
 
 const DISMISS_KEY = 'logikku:installBannerDismissed'
 
@@ -29,6 +29,7 @@ function shouldShowBanner(): boolean {
 }
 
 export function InstallBanner() {
+  const t = useT()
   const [visible, setVisible] = useState(shouldShowBanner)
 
   if (!visible) return null

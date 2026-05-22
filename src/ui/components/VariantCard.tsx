@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { VariantThumbnail } from './VariantThumbnail'
-import { t } from '@/i18n/en'
+import { useT } from '@/i18n'
 import type { VariantKind } from '@/ui/variantCatalog'
 
 interface VariantCardProps {
@@ -9,6 +9,7 @@ interface VariantCardProps {
 }
 
 export function VariantCard({ kind, disabled = false }: VariantCardProps) {
+  const t = useT()
   const meta = t.catalog[kind]
   const inner = (
     <>

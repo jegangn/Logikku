@@ -14,44 +14,11 @@ import { digitFromGlyph } from '@/ui/glyph'
 import type { EdgeMarkRecord } from '@/state/gameStore'
 import type { OutsideClueDisplay } from '@/ui/board/overlays/OutsideClueOverlay'
 import type { VariantPath } from '@/ui/board/overlays/PathOverlay'
-
-const DIFFICULTY_LABELS: Record<Difficulty, string> = {
-  'very-easy': 'Very Easy',
-  easy: 'Easy',
-  medium: 'Medium',
-  hard: 'Hard',
-  tough: 'Tough',
-  expert: 'Expert',
-  diabolical: 'Diabolical',
-}
-
-const VARIANT_LABELS: Record<string, string> = {
-  classic: 'Classic',
-  'x-diagonal': 'X-Sudoku',
-  hyper: 'Hyper',
-  'anti-knight': 'Anti-Knight',
-  'anti-king': 'Anti-King',
-  'non-consecutive': 'Non-Consecutive',
-  jigsaw: 'Jigsaw',
-  'even-odd': 'Even-Odd',
-  'mini-6': 'Mini 6×6',
-  'mega-16': 'Mega 16×16',
-  kropki: 'Kropki',
-  xv: 'XV',
-  'greater-than': 'Greater Than',
-  thermometer: 'Thermometer',
-  arrow: 'Arrow',
-  killer: 'Killer',
-  'little-killer': 'Little Killer',
-  sandwich: 'Sandwich',
-  skyscraper: 'Skyscraper',
-  palindrome: 'Palindrome',
-  renban: 'Renban',
-  'german-whispers': 'German Whispers',
-  samurai: 'Samurai',
-}
+import { useT } from '@/i18n'
+import { isVariantKind } from '@/ui/variantCatalog'
 
 export function Play() {
+  const t = useT()
   const [params, setParams] = useSearchParams()
   const navigate = useNavigate()
   const variant = params.get('variant') ?? 'classic'
@@ -274,7 +241,7 @@ export function Play() {
   if (!grid && boardState?.kind !== 'samurai') {
     return (
       <main className="min-h-dvh flex items-center justify-center">
-        <p className="text-[var(--color-text-muted)]">Loading…</p>
+        <p className="text-[var(--color-text-muted)]">{t.play.loading}</p>
       </main>
     )
   }
@@ -289,7 +256,7 @@ export function Play() {
       }
     >
       <Toolbar
-        puzzleLabel={`${VARIANT_LABELS[variant] ?? variant} · ${DIFFICULTY_LABELS[difficulty]}`}
+        puzzleLabel={`${isVariantKind(variant) ? t.catalog[variant].name : variant} · ${t.difficulty[difficulty]}`}
         canUndo={historyIndex >= 0}
         canRedo={historyIndex < historyLen - 1}
         onNew={handleNew}
@@ -341,7 +308,7 @@ export function Play() {
           data-testid="completed-banner"
           className="text-[var(--color-accent-strong)] font-medium"
         >
-          Solved!
+          {t.play.solved}
         </p>
       )}
       <button
@@ -350,7 +317,7 @@ export function Play() {
         className="mt-2 text-sm text-[var(--color-text-faint)] hover:text-[var(--color-text-muted)]"
         data-testid="back-home"
       >
-        ← Back
+        {t.play.back}
       </button>
       <span data-testid="puzzle-id" className="sr-only">
         {puzzleId}
