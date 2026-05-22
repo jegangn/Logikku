@@ -278,6 +278,12 @@ Five overlapping 9×9 grids modeled as `SamuraiBoard` (5 × `Grid<9>` plus a
 
 **Pencil mode is still a no-op on samurai (17b).** Real banks don't change this. Implementing pencil marks for samurai cells is post-17c work.
 
+## 2026-05-23 — Dark-mode AA contrast (Phase 19)
+
+Measured dark-theme ratios after tuning: text/bg 15.59:1, text/surface 14.77:1, text-muted/surface 7.15:1, text-faint/bg 5.01:1 (raised from 3.11, token `#5a6076` → `#7c8194`), text-faint/surface 4.75:1 (raised from 2.95), accent-strong/surface 6.80:1, conflict/surface 5.13:1, given/surface 16.32:1.
+Light theme: text-faint/bg 4.56:1, text-faint/surface 4.80:1 (raised from 3.21/3.38, token `#8d8a96` → `#747178`).
+Deliberate exceptions: none. All body-text tokens meet 4.5:1; all large-text/UI tokens meet 3:1.
+
 ## 2026-05-23 — Samurai grid ARIA indices (Phase 19)
 
 The Samurai board renders five overlapping 9×9 grids in one `role="grid"`. There is
