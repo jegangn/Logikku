@@ -252,9 +252,15 @@ export function Settings() {
           )}
         </section>
 
-        <p className="mt-10 text-center text-xs text-[var(--color-text-faint)]">
+        <p className="mt-10 flex justify-center gap-4 text-center text-xs text-[var(--color-text-faint)]">
           <Link to="/stats" className="hover:text-[var(--color-text-muted)]">
             {t.home.stats}
+          </Link>
+          <Link to="/privacy" className="hover:text-[var(--color-text-muted)]">
+            {t.privacy.title}
+          </Link>
+          <Link to="/about" className="hover:text-[var(--color-text-muted)]">
+            {t.about.title}
           </Link>
         </p>
       </div>

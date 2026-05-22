@@ -5,6 +5,8 @@ import { Play } from '@/ui/pages/Play'
 import { VariantDetail } from '@/ui/pages/VariantDetail'
 import { Settings } from '@/ui/pages/Settings'
 import { Stats } from '@/ui/pages/Stats'
+import { Privacy } from '@/ui/pages/Privacy'
+import { About } from '@/ui/pages/About'
 import { useSettingsStore } from '@/state/settingsStore'
 import { useOnboardingStore } from '@/state/onboardingStore'
 import { applyTheme, watchSystemTheme } from '@/theme'
@@ -50,6 +52,8 @@ export default function App() {
           <Route path="/variant/:kind" element={<VariantDetail />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/stats" element={<Stats />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/about" element={<About />} />
         </Routes>
         <UpdatePrompt />
       </BrowserRouter>
