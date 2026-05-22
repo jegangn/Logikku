@@ -292,3 +292,24 @@ no single coherent row/column index space across the overlap, so Samurai cells k
 tree) but **omit** `aria-rowindex`/`aria-colindex`. Controlled by the
 `withIndices={false}` prop on `BoardCellsLayer`. The axe e2e scan covers a non-Samurai
 Play screen where full row/column indices apply.
+
+## 2026-05-23 — E2E: Continue-card flake from hard-nav racing the save (Phase 19)
+
+`discovery.spec.ts` "Continue card …" loaded a game then did `page.goto('/')` (a HARD
+navigation). The game persists via a fire-and-forget `void flushSave()` in Play's unmount
+cleanup (`state/persistence.ts`); a hard navigation tears down the document and can interrupt
+that async IndexedDB write, so Home's `mostRecentUnfinished()` finds nothing and the
+continue-card never renders. Flaky on WebKit (the `ipad` project) — ~4/5 failures, pre-dates
+Phase 19 (reproduced on `main`). Fix: navigate the way a user actually does — click the in-app
+`back-home` control (React Router SPA nav, same document), so the flush commits before Home reads.
+Lesson: in e2e, prefer in-app SPA navigation over `page.goto()` whenever asserting on state that
+was just written by an unmount/teardown side effect.
+
+## 2026-05-23 — E2E flakes under high `--workers` (Phase 19)
+
+Running the full Playwright suite with `--workers=4` against the single Vite dev server caused
+~8 unrelated chromium specs to fail (they pass in isolation): the dev server gets overwhelmed by
+parallel cold-transform requests. CI is unaffected (`playwright.config.ts` sets `workers: 1` under
+CI). Locally, use `--workers=2` (or 1). Also: to run the dev server on a non-default port you must
+set BOTH `LOGIKKU_E2E_PORT` and `LOGIKKU_E2E_URL` to that port — the `webServer.url` check ignores
+the port flag otherwise and times out waiting on :5173.

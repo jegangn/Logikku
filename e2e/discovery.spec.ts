@@ -43,7 +43,10 @@ test('Continue card appears after starting a game, labelled with catalog name', 
   await page.getByTestId('onboarding-next').click()
   await page.getByTestId('onboarding-done').click()
   await expect(page.getByTestId('board')).toBeVisible()
-  await page.goto('/')
+  // Return Home the way a user does — an in-app (SPA) navigation — so the
+  // save-on-unmount flush commits before Home reads it. A hard page.goto('/')
+  // races that fire-and-forget write and flakes on WebKit.
+  await page.getByTestId('back-home').click()
   await expect(page.getByTestId('continue-card')).toContainText('Killer')
   await expect(page.getByTestId('continue-card')).toContainText('Easy')
 })
