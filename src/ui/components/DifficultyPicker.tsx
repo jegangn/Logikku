@@ -1,6 +1,6 @@
 import type { Difficulty } from '@/engine'
 import { hasBank } from '@/puzzles'
-import { t } from '@/i18n/en'
+import { useT } from '@/i18n'
 import type { VariantKind } from '@/ui/variantCatalog'
 
 const BAND_ORDER: ReadonlyArray<Difficulty> = [
@@ -13,6 +13,7 @@ interface DifficultyPickerProps {
 }
 
 export function DifficultyPicker({ variant, onPick }: DifficultyPickerProps) {
+  const t = useT()
   const present = BAND_ORDER.filter((b) => hasBank(variant, b))
   return (
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">

@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStatsStore } from '@/state/statsStore'
-import { t } from '@/i18n/en'
+import { useT } from '@/i18n'
+import type { Strings } from '@/i18n/en'
 import { putStats } from '@/storage/db'
 
 function formatMs(ms: number | null): string {
@@ -12,7 +13,7 @@ function formatMs(ms: number | null): string {
   return `${m}m ${String(s).padStart(2, '0')}s`
 }
 
-function formatBand(key: string): string {
+function formatBand(key: string, t: Strings): string {
   const [variant, difficulty] = key.split(':')
   const label = t.difficulty[difficulty as keyof typeof t.difficulty] ?? difficulty
   const variantName = (variant ?? '').charAt(0).toUpperCase() + (variant ?? '').slice(1)
@@ -20,6 +21,7 @@ function formatBand(key: string): string {
 }
 
 export function Stats() {
+  const t = useT()
   const navigate = useNavigate()
   const byBand = useStatsStore((s) => s.byBand)
   const loaded = useStatsStore((s) => s.loaded)
@@ -76,7 +78,7 @@ export function Stats() {
                 .sort(([a], [b]) => a.localeCompare(b))
                 .map(([k, s]) => (
                   <tr key={k} className="border-t border-[var(--color-border)]">
-                    <td className="py-3">{formatBand(k)}</td>
+                    <td className="py-3">{formatBand(k, t)}</td>
                     <td className="py-3 text-right tabular-nums">{s.completed}</td>
                     <td className="py-3 text-right tabular-nums">{formatMs(s.bestTimeMs)}</td>
                     <td className="py-3 text-right tabular-nums">

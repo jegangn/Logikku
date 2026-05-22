@@ -11,7 +11,7 @@ import {
 } from '@/ui/variantCatalog'
 import { useOnboardingStore } from '@/state/onboardingStore'
 import { useStatsStore } from '@/state/statsStore'
-import { t } from '@/i18n/en'
+import { useT } from '@/i18n'
 import type { Difficulty } from '@/engine'
 
 function formatMs(ms: number): string {
@@ -22,6 +22,7 @@ function formatMs(ms: number): string {
 }
 
 export function VariantDetail() {
+  const t = useT()
   const { kind } = useParams<{ kind: string }>()
   const navigate = useNavigate()
   const hasSeen = useOnboardingStore((s) => s.hasSeen)

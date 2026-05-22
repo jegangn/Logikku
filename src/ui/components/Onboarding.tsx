@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Markdown } from './markdown'
 import { getVariant, parseOnboardingSections, type VariantKind } from '@/ui/variantCatalog'
 import { useOnboardingStore } from '@/state/onboardingStore'
-import { t } from '@/i18n/en'
+import { useT } from '@/i18n'
 
 interface OnboardingProps {
   readonly kind: VariantKind
@@ -10,6 +10,7 @@ interface OnboardingProps {
 }
 
 export function Onboarding({ kind, onDone }: OnboardingProps) {
+  const t = useT()
   const meta = getVariant(kind)
   const sections = parseOnboardingSections(meta.onboarding)
   const markSeen = useOnboardingStore((s) => s.markSeen)

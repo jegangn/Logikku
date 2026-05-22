@@ -9,9 +9,10 @@ import {
 import { listBanks } from '@/puzzles'
 import { mostRecentUnfinished, type SavedGame } from '@/storage/db'
 import { InstallBanner } from '@/pwa/InstallBanner'
-import { t } from '@/i18n/en'
+import { useT } from '@/i18n'
+import type { Strings } from '@/i18n/en'
 
-const SIZE_FILTERS: ReadonlyArray<{ value: VariantSize | 'all'; labelKey: keyof typeof t.home.filters }> = [
+const SIZE_FILTERS: ReadonlyArray<{ value: VariantSize | 'all'; labelKey: keyof Strings['home']['filters'] }> = [
   { value: 'all',     labelKey: 'sizeAll' },
   { value: '9x9',     labelKey: 'size9x9' },
   { value: '6x6',     labelKey: 'size6x6' },
@@ -19,7 +20,7 @@ const SIZE_FILTERS: ReadonlyArray<{ value: VariantSize | 'all'; labelKey: keyof 
   { value: 'samurai', labelKey: 'sizeSamurai' },
 ]
 
-const FEATURE_FILTERS: ReadonlyArray<{ value: VariantFeature; labelKey: keyof typeof t.home.filters }> = [
+const FEATURE_FILTERS: ReadonlyArray<{ value: VariantFeature; labelKey: keyof Strings['home']['filters'] }> = [
   { value: 'classic-like',  labelKey: 'featureClassicLike' },
   { value: 'cage',          labelKey: 'featureCage' },
   { value: 'path',          labelKey: 'featurePath' },
@@ -30,6 +31,7 @@ const FEATURE_FILTERS: ReadonlyArray<{ value: VariantFeature; labelKey: keyof ty
 ]
 
 export function Home() {
+  const t = useT()
   const [continueGame, setContinueGame] = useState<SavedGame | null>(null)
   const [size, setSize] = useState<VariantSize | 'all'>('all')
   const [features, setFeatures] = useState<ReadonlySet<VariantFeature>>(new Set())
