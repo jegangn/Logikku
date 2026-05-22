@@ -23,7 +23,7 @@ describe('Privacy', () => {
         </Routes>
       </MemoryRouter>,
     )
-    await userEvent.click(screen.getByText('← Back'))
+    await userEvent.click(screen.getByRole('button', { name: /back/i }))
     expect(screen.getByTestId('home-stub')).toBeInTheDocument()
   })
 })
