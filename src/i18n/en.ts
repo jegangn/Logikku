@@ -76,6 +76,8 @@ export const en = {
     digit: (glyph: string) => `Digit ${glyph}`,
     boardLabel: 'Sudoku board',
     samuraiBoardLabel: 'Samurai board',
+    rotatePrompt: 'Samurai needs landscape — please rotate your device.',
+    rotateIcon: 'Rotate device to landscape',
   },
 
   settings: {
@@ -101,6 +103,7 @@ export const en = {
     restoreHint: 'Replaces all current data with the backup contents.',
     clear: 'Clear all data',
     clearHint: 'Deletes all games, settings, and stats from this device.',
+    clearDone: 'Data cleared.',
     confirmRestore: 'Restore will REPLACE your current games, settings, and stats. Continue?',
     confirmClearFirst: 'Delete all your games, settings, and stats?',
     confirmClearSecond: 'Are you absolutely sure? This cannot be undone.',
@@ -159,4 +162,3 @@ export const en = {
 }
 
 export type Strings = typeof en
-export const t = en

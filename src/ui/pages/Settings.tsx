@@ -79,7 +79,7 @@ export function Settings() {
     if (!confirm(t.settings.confirmClearFirst)) return
     if (!confirm(t.settings.confirmClearSecond)) return
     await clearAllData()
-    setStatus({ kind: 'ok', msg: 'Data cleared.' })
+    setStatus({ kind: 'ok', msg: t.settings.clearDone })
   }
 
   return (

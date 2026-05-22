@@ -78,6 +78,8 @@ export const ms: Strings = {
     digit: (glyph: string) => `Digit ${glyph}`,
     boardLabel: 'Papan Sudoku',
     samuraiBoardLabel: 'Papan Samurai',
+    rotatePrompt: 'Samurai memerlukan landskap — sila putarkan peranti anda.',
+    rotateIcon: 'Putar peranti ke landskap',
   },
 
   settings: {
@@ -103,6 +105,7 @@ export const ms: Strings = {
     restoreHint: 'Menggantikan semua data semasa dengan kandungan sandaran.',
     clear: 'Padam semua data',
     clearHint: 'Memadam semua permainan, tetapan, dan statistik dari peranti ini.',
+    clearDone: 'Data dipadam.',
     confirmRestore: 'Pemulihan akan MENGGANTIKAN permainan, tetapan, dan statistik semasa anda. Teruskan?',
     confirmClearFirst: 'Padam semua permainan, tetapan, dan statistik anda?',
     confirmClearSecond: 'Anda benar-benar pasti? Tindakan ini tidak boleh dibatalkan.',
