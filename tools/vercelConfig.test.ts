@@ -35,7 +35,9 @@ describe('vercel.json', () => {
   })
 
   it('sends HSTS and nosniff on every response', () => {
-    expect(headerValue((s) => s === '/(.*)', 'Strict-Transport-Security')).toContain('max-age=')
+    const hsts = headerValue((s) => s === '/(.*)', 'Strict-Transport-Security')
+    expect(hsts).toContain('max-age=63072000')
+    expect(hsts).toContain('includeSubDomains')
     expect(headerValue((s) => s === '/(.*)', 'X-Content-Type-Options')).toBe('nosniff')
   })
 
