@@ -6,9 +6,9 @@ import svgr from 'vite-plugin-svgr'
 import { fileURLToPath, URL } from 'node:url'
 import { readFileSync } from 'node:fs'
 
-// single source of truth for the app version
 const pkg = JSON.parse(
   readFileSync(fileURLToPath(new URL('./package.json', import.meta.url)), 'utf8'),
+  // JSON.parse is untyped; narrow to the one field we read so version isn't `any`
 ) as { version: string }
 
 export default defineConfig({
