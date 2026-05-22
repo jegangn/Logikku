@@ -297,6 +297,7 @@ function ToggleRow({
         type="button"
         role="switch"
         aria-checked={value}
+        aria-label={label}
         data-testid={testId}
         onClick={() => onChange(!value)}
         className={`relative h-7 w-12 rounded-full transition-colors ${
@@ -342,7 +343,7 @@ function ActionRow({
       <div className="flex-1">
         <div className="text-sm font-medium">{label}</div>
         {hint && (
-          <div className={`text-xs mt-1 ${destructive ? 'text-[var(--color-conflict)] opacity-70' : 'text-[var(--color-text-muted)]'}`}>
+          <div className={`text-xs mt-1 ${destructive ? 'text-[var(--color-conflict)]' : 'text-[var(--color-text-muted)]'}`}>
             {hint}
           </div>
         )}
