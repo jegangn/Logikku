@@ -8,6 +8,7 @@ import { Stats } from '@/ui/pages/Stats'
 import { useSettingsStore } from '@/state/settingsStore'
 import { useOnboardingStore } from '@/state/onboardingStore'
 import { applyTheme, watchSystemTheme } from '@/theme'
+import { LanguageProvider } from '@/i18n'
 import { UpdatePrompt } from '@/pwa/UpdatePrompt'
 
 export default function App() {
@@ -41,15 +42,17 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/play" element={<Play />} />
-        <Route path="/variant/:kind" element={<VariantDetail />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/stats" element={<Stats />} />
-      </Routes>
-      <UpdatePrompt />
-    </BrowserRouter>
+    <LanguageProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/play" element={<Play />} />
+          <Route path="/variant/:kind" element={<VariantDetail />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/stats" element={<Stats />} />
+        </Routes>
+        <UpdatePrompt />
+      </BrowserRouter>
+    </LanguageProvider>
   )
 }
