@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStatsStore } from '@/state/statsStore'
 import { useT } from '@/i18n'
-import type { Strings } from '@/i18n/en'
+import { formatBand } from './statsFormat'
 import { putStats } from '@/storage/db'
 
 function formatMs(ms: number | null): string {
@@ -11,13 +11,6 @@ function formatMs(ms: number | null): string {
   const m = Math.floor(totalSec / 60)
   const s = totalSec % 60
   return `${m}m ${String(s).padStart(2, '0')}s`
-}
-
-function formatBand(key: string, t: Strings): string {
-  const [variant, difficulty] = key.split(':')
-  const label = t.difficulty[difficulty as keyof typeof t.difficulty] ?? difficulty
-  const variantName = (variant ?? '').charAt(0).toUpperCase() + (variant ?? '').slice(1)
-  return `${variantName} · ${label}`
 }
 
 export function Stats() {
