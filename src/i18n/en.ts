@@ -156,7 +156,7 @@ export const en = {
     'mega-16':         { name: 'Mega 16×16',        description: '16×16 with 4×4 boxes.' },
     samurai:           { name: 'Samurai',           description: 'Five overlapping 9×9 grids.' },
   },
-} as const
+}
 
 export type Strings = typeof en
 export const t = en
