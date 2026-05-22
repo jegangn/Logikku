@@ -1,6 +1,7 @@
 import type { Digit } from '@/engine'
 import type { InputMode } from '@/state/gameStore'
 import { glyphForDigit } from '@/ui/glyph'
+import { useT } from '@/i18n'
 
 export interface InputPadProps {
   readonly mode: InputMode
@@ -20,6 +21,7 @@ export function InputPad({
   onErase,
   onModeChange,
 }: InputPadProps) {
+  const t = useT()
   const digits: Digit[] = []
   for (let d = 1; d <= size; d++) digits.push(d as Digit)
   // 6-digit pad: 4 cols (5 buttons + erase fits 2 rows).
@@ -33,26 +35,28 @@ export function InputPad({
     <div
       data-testid="input-pad"
       className="flex flex-col gap-3 w-full max-w-[min(92vw,640px)]"
-      aria-label="Input pad"
+      aria-label={t.play.inputPad}
     >
-      <div className="flex gap-2" role="tablist" aria-label="Input mode">
+      <div className="flex gap-2" role="tablist" aria-label={t.play.inputMode}>
         <ModeButton
           active={mode === 'value'}
           onClick={() => onModeChange('value')}
+          ariaLabel={t.play.modeValue}
         >
-          Value
+          {t.play.modeValue}
         </ModeButton>
         <ModeButton
           active={mode === 'pencil'}
           onClick={() => onModeChange('pencil')}
+          ariaLabel={t.play.modePencil}
         >
-          Pencil
+          {t.play.modePencil}
         </ModeButton>
       </div>
       <div
         className={`grid ${cols} gap-2`}
         role="group"
-        aria-label="Digit pad"
+        aria-label={t.play.digitPad}
       >
         {digits.map((d) => (
           <DigitButton
@@ -61,6 +65,7 @@ export function InputPad({
             disabled={disabled}
             onClick={() => onDigit(d)}
             largeText={size <= 9}
+            label={t.play.digit(glyphForDigit(d))}
           />
         ))}
         <button
@@ -69,7 +74,7 @@ export function InputPad({
           disabled={disabled}
           onClick={onErase}
           className="min-h-[56px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-2)] disabled:opacity-40 active:scale-[0.97] transition-transform"
-          aria-label="Erase"
+          aria-label={t.play.erase}
         >
           ⌫
         </button>
@@ -83,11 +88,13 @@ function DigitButton({
   disabled,
   onClick,
   largeText = true,
+  label,
 }: {
   digit: Digit
   disabled: boolean | undefined
   onClick: () => void
   largeText?: boolean
+  label: string
 }) {
   const glyph = glyphForDigit(digit)
   return (
@@ -97,7 +104,7 @@ function DigitButton({
       disabled={disabled}
       onClick={onClick}
       className={`min-h-[56px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] ${largeText ? 'text-2xl' : 'text-xl'} font-semibold tabular-nums hover:bg-[var(--color-surface-2)] disabled:opacity-40 active:scale-[0.97] transition-transform`}
-      aria-label={`Digit ${glyph}`}
+      aria-label={label}
     >
       {glyph}
     </button>
@@ -107,10 +114,12 @@ function DigitButton({
 function ModeButton({
   active,
   onClick,
+  ariaLabel,
   children,
 }: {
   active: boolean
   onClick: () => void
+  ariaLabel: string
   children: React.ReactNode
 }) {
   return (
@@ -118,6 +127,7 @@ function ModeButton({
       type="button"
       role="tab"
       aria-selected={active}
+      aria-label={ariaLabel}
       onClick={onClick}
       className={`min-h-[44px] flex-1 rounded-xl border text-sm font-medium transition-colors ${
         active
