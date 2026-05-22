@@ -125,6 +125,13 @@ export const en = {
     confirmReset: 'Reset all stats to zero?',
   },
 
+  privacy: {
+    title: 'Privacy',
+    body: 'Logikku collects no data, sends no data, has no accounts, and has no analytics.',
+    local: 'All your progress is stored only on this device. Nothing is ever uploaded. It is cleared only if you clear your browser data or reset the device.',
+    updated: 'Last updated 23/05/2026',
+  },
+
   pwa: {
     updateAvailable: 'Update available',
     updateHint: 'A newer version of Logikku is ready.',

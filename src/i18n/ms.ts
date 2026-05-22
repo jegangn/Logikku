@@ -127,6 +127,13 @@ export const ms: Strings = {
     confirmReset: 'Set semula semua statistik kepada sifar?',
   },
 
+  privacy: {
+    title: 'Privasi',
+    body: 'Logikku tidak mengumpul data, tidak menghantar data, tiada akaun, dan tiada analitik.',
+    local: 'Semua kemajuan anda disimpan hanya pada peranti ini. Tiada apa-apa dimuat naik. Ia hanya dipadam jika anda memadam data pelayar atau menetapkan semula peranti.',
+    updated: 'Kemas kini terakhir 23/05/2026',
+  },
+
   pwa: {
     updateAvailable: 'Kemas kini tersedia',
     updateHint: 'Versi Logikku yang lebih baharu telah sedia.',
