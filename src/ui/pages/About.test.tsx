@@ -10,7 +10,7 @@ describe('About', () => {
         <About />
       </MemoryRouter>,
     )
-    expect(screen.getByTestId('app-version')).toHaveTextContent('1.0.0')
+    expect(screen.getByTestId('app-version')).toHaveTextContent(__APP_VERSION__)
   })
 
   it('links to the privacy page', () => {
@@ -19,6 +19,15 @@ describe('About', () => {
         <About />
       </MemoryRouter>,
     )
-    expect(screen.getByRole('link', { name: 'Privacy' })).toHaveAttribute('href', '/privacy')
+    expect(screen.getByRole('link', { name: /privacy/i })).toHaveAttribute('href', '/privacy')
+  })
+
+  it('links to settings for backup/restore', () => {
+    render(
+      <MemoryRouter>
+        <About />
+      </MemoryRouter>,
+    )
+    expect(screen.getByRole('link', { name: /back up/i })).toHaveAttribute('href', '/settings')
   })
 })
