@@ -132,6 +132,15 @@ export const en = {
     updated: 'Last updated 23/05/2026',
   },
 
+  about: {
+    title: 'About',
+    tagline: 'Logikku — calm Sudoku, every variant.',
+    version: 'Version',
+    credit: 'Logikku is an offline-first Sudoku app. It works fully offline, keeps your data on your device, and shows no ads.',
+    privacyLink: 'Privacy',
+    backupLink: 'Back up or restore your games',
+  },
+
   pwa: {
     updateAvailable: 'Update available',
     updateHint: 'A newer version of Logikku is ready.',

@@ -134,6 +134,15 @@ export const ms: Strings = {
     updated: 'Kemas kini terakhir 23/05/2026',
   },
 
+  about: {
+    title: 'Perihal',
+    tagline: 'Logikku — Sudoku yang tenang, setiap variasi.',
+    version: 'Versi',
+    credit: 'Logikku ialah aplikasi Sudoku yang mengutamakan luar talian. Ia berfungsi sepenuhnya di luar talian, menyimpan data anda pada peranti anda, dan tidak menunjukkan iklan.',
+    privacyLink: 'Privasi',
+    backupLink: 'Sandar atau pulihkan permainan anda',
+  },
+
   pwa: {
     updateAvailable: 'Kemas kini tersedia',
     updateHint: 'Versi Logikku yang lebih baharu telah sedia.',
