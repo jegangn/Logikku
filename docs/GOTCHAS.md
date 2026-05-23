@@ -313,3 +313,11 @@ parallel cold-transform requests. CI is unaffected (`playwright.config.ts` sets 
 CI). Locally, use `--workers=2` (or 1). Also: to run the dev server on a non-default port you must
 set BOTH `LOGIKKU_E2E_PORT` and `LOGIKKU_E2E_URL` to that port — the `webServer.url` check ignores
 the port flag otherwise and times out waiting on :5173.
+
+## 2026-05-23 — Unit: samurai grade test needs an extended timeout under load
+
+`tools/grade.test.ts` drives a spawned bun subprocess (`grade.ts`) that solves 5 overlapping
+9×9 samurai grids — genuinely heavy. Under a full parallel `bun run test:run` it can exceed the
+5s default and fail with "Test timed out in 5000ms" (passes 6/6 in isolation). Fixed with a
+file-level `vi.setConfig({ testTimeout: 20000, hookTimeout: 20000 })`. If you add more
+subprocess-backed grader tests, keep them in this file so they inherit the bump.

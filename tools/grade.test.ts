@@ -1,8 +1,12 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
 import { spawn, type ChildProcess } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
+
+// Every case here drives a spawned bun subprocess that solves 5 overlapping 9×9
+// samurai grids; under parallel-test load this blows past the 5s default.
+vi.setConfig({ testTimeout: 20000, hookTimeout: 20000 })
 
 const ROOT = resolve(__dirname, '..')
 const SCRIPT = resolve(ROOT, 'tools/grade.ts')
