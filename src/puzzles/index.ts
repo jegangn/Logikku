@@ -31,6 +31,9 @@ for (const [path, loader] of Object.entries(BANK_LOADERS)) {
 }
 
 const validatedBanks = new Map<string, PuzzleBank>()
+// Dedupe concurrent first-loads of the same bank so a bank is fetched and
+// validated at most once even if two callers race before either settles.
+const inFlight = new Map<string, Promise<PuzzleBank>>()
 
 function validateBank(records: unknown, key: BankKey): PuzzleBank {
   if (!Array.isArray(records)) {
@@ -269,13 +272,25 @@ export async function getBank(
   const id = `${variant}:${difficulty}`
   const cached = validatedBanks.get(id)
   if (cached) return cached
+  const pending = inFlight.get(id)
+  if (pending) return pending
   const loader = loaders.get(id)
   if (!loader) {
     throw new Error(`no bank found for ${variant}/${difficulty}`)
   }
-  const bank = validateBank(await loader(), { variant, difficulty })
-  validatedBanks.set(id, bank)
-  return bank
+  // .finally clears the in-flight entry on both success and failure, so a
+  // transient load error can be retried rather than poisoning the cache.
+  const promise = loader()
+    .then((raw) => {
+      const bank = validateBank(raw, { variant, difficulty })
+      validatedBanks.set(id, bank)
+      return bank
+    })
+    .finally(() => {
+      inFlight.delete(id)
+    })
+  inFlight.set(id, promise)
+  return promise
 }
 
 export async function pickPuzzle(
