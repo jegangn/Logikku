@@ -79,7 +79,7 @@ export function Play() {
         const hydrated = await tryHydrate(target)
         if (hydrated) return
       }
-      const next = pickPuzzle(variant, difficulty, Math.floor(Math.random() * 100000))
+      const next = await pickPuzzle(variant, difficulty, Math.floor(Math.random() * 100000))
       const hydratedNew = await tryHydrate(next.id)
       if (!hydratedNew) {
         loadPuzzle({
@@ -126,31 +126,33 @@ export function Play() {
   }, [pause, resume])
 
   const handleNew = useCallback(() => {
-    const next = pickPuzzle(variant, difficulty, Math.floor(Math.random() * 100000))
-    loadPuzzle({
-      id: next.id,
-      variant,
-      difficulty,
-      givens: next.givens,
-      ...(next.regions ? { regions: next.regions } : {}),
-      ...(next.parityMask ? { parityMask: next.parityMask } : {}),
-      ...(next.edges
-        ? { edges: next.edges as ReadonlyArray<EdgeMarkRecord> }
-        : {}),
-      ...(next.thermometers ? { thermometers: next.thermometers } : {}),
-      ...(next.arrows ? { arrows: next.arrows } : {}),
-      ...(next.cages ? { cages: next.cages } : {}),
-      ...(next.littleKillerClues
-        ? { littleKillerClues: next.littleKillerClues }
-        : {}),
-      ...(next.sandwichClues ? { sandwichClues: next.sandwichClues } : {}),
-      ...(next.skyscraperClues
-        ? { skyscraperClues: next.skyscraperClues }
-        : {}),
-      ...(next.paths ? { paths: next.paths } : {}),
-      ...(next.samuraiGivens ? { samuraiGivens: next.samuraiGivens } : {}),
-    })
-    setParams({ variant, difficulty, puzzleId: next.id }, { replace: true })
+    void (async () => {
+      const next = await pickPuzzle(variant, difficulty, Math.floor(Math.random() * 100000))
+      loadPuzzle({
+        id: next.id,
+        variant,
+        difficulty,
+        givens: next.givens,
+        ...(next.regions ? { regions: next.regions } : {}),
+        ...(next.parityMask ? { parityMask: next.parityMask } : {}),
+        ...(next.edges
+          ? { edges: next.edges as ReadonlyArray<EdgeMarkRecord> }
+          : {}),
+        ...(next.thermometers ? { thermometers: next.thermometers } : {}),
+        ...(next.arrows ? { arrows: next.arrows } : {}),
+        ...(next.cages ? { cages: next.cages } : {}),
+        ...(next.littleKillerClues
+          ? { littleKillerClues: next.littleKillerClues }
+          : {}),
+        ...(next.sandwichClues ? { sandwichClues: next.sandwichClues } : {}),
+        ...(next.skyscraperClues
+          ? { skyscraperClues: next.skyscraperClues }
+          : {}),
+        ...(next.paths ? { paths: next.paths } : {}),
+        ...(next.samuraiGivens ? { samuraiGivens: next.samuraiGivens } : {}),
+      })
+      setParams({ variant, difficulty, puzzleId: next.id }, { replace: true })
+    })()
   }, [variant, difficulty, loadPuzzle, setParams])
 
   const moveSelection = useCallback(

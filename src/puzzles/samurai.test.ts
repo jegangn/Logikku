@@ -21,7 +21,7 @@ describe('PuzzleRecord.samuraiGivens (type + validation surface)', () => {
 describe('samurai/easy.json demo bank', () => {
   it('loads via pickPuzzle and has 5 × 81-char samuraiGivens', async () => {
     const { pickPuzzle } = await import('./index')
-    const rec = pickPuzzle('samurai', 'easy', 0)
+    const rec = await pickPuzzle('samurai', 'easy', 0)
     expect(rec.variant).toBe('samurai')
     expect(rec.samuraiGivens?.length).toBe(5)
     for (const s of rec.samuraiGivens!) {
@@ -32,7 +32,7 @@ describe('samurai/easy.json demo bank', () => {
 
   it('passes samuraiConsistencyCheck when loaded into a samurai board', async () => {
     const { pickPuzzle } = await import('./index')
-    const rec = pickPuzzle('samurai', 'easy', 0)
+    const rec = await pickPuzzle('samurai', 'easy', 0)
     expect(() => freshSamuraiBoardFromGivensForTest(rec.samuraiGivens!)).not.toThrow()
   })
 })
