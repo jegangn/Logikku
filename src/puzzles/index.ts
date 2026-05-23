@@ -1,8 +1,7 @@
 import type { Difficulty } from '@/engine/grader/se'
 import type { PuzzleBank, PuzzleRecord } from './types'
 
-const BANKS = import.meta.glob<PuzzleBank>('./*/*.json', {
-  eager: true,
+const BANK_LOADERS = import.meta.glob<PuzzleBank>('./*/*.json', {
   import: 'default',
 })
 
@@ -19,17 +18,19 @@ function parseKey(path: string): BankKey | null {
   return { variant, difficulty }
 }
 
-function bankMap(): ReadonlyMap<string, PuzzleBank> {
-  const out = new Map<string, PuzzleBank>()
-  for (const [path, mod] of Object.entries(BANKS)) {
-    const key = parseKey(path)
-    if (!key) continue
-    out.set(`${key.variant}:${key.difficulty}`, validateBank(mod, key))
-  }
-  return out
+// Lazy loaders keyed by `${variant}:${difficulty}`. The loader functions are NOT
+// invoked at module init, so no bank JSON lands in the entry chunk — each bank is a
+// separate code-split chunk fetched on first use.
+const loaders = new Map<string, () => Promise<PuzzleBank>>()
+const manifest: BankKey[] = []
+for (const [path, loader] of Object.entries(BANK_LOADERS)) {
+  const key = parseKey(path)
+  if (!key) continue
+  loaders.set(`${key.variant}:${key.difficulty}`, loader)
+  manifest.push(key)
 }
 
-const banks = bankMap()
+const validatedBanks = new Map<string, PuzzleBank>()
 
 function validateBank(records: unknown, key: BankKey): PuzzleBank {
   if (!Array.isArray(records)) {
@@ -253,31 +254,36 @@ function assertRecord(r: unknown, key: BankKey): asserts r is PuzzleRecord {
   }
 }
 
-export function getBank(variant: string, difficulty: Difficulty): PuzzleBank {
-  const bank = banks.get(`${variant}:${difficulty}`)
-  if (!bank) {
-    throw new Error(`no bank found for ${variant}/${difficulty}`)
-  }
-  return bank
+export function listBanks(): ReadonlyArray<BankKey> {
+  return manifest
 }
 
 export function hasBank(variant: string, difficulty: Difficulty): boolean {
-  return banks.has(`${variant}:${difficulty}`)
+  return loaders.has(`${variant}:${difficulty}`)
 }
 
-export function listBanks(): ReadonlyArray<BankKey> {
-  return [...banks.keys()].map((k) => {
-    const [variant, difficulty] = k.split(':') as [string, Difficulty]
-    return { variant, difficulty }
-  })
+export async function getBank(
+  variant: string,
+  difficulty: Difficulty,
+): Promise<PuzzleBank> {
+  const id = `${variant}:${difficulty}`
+  const cached = validatedBanks.get(id)
+  if (cached) return cached
+  const loader = loaders.get(id)
+  if (!loader) {
+    throw new Error(`no bank found for ${variant}/${difficulty}`)
+  }
+  const bank = validateBank(await loader(), { variant, difficulty })
+  validatedBanks.set(id, bank)
+  return bank
 }
 
-export function pickPuzzle(
+export async function pickPuzzle(
   variant: string,
   difficulty: Difficulty,
   seed: number,
-): PuzzleRecord {
-  const bank = getBank(variant, difficulty)
+): Promise<PuzzleRecord> {
+  const bank = await getBank(variant, difficulty)
   if (bank.length === 0) {
     throw new Error(`empty bank for ${variant}/${difficulty}`)
   }

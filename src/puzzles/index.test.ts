@@ -11,6 +11,18 @@ describe('puzzles index', () => {
     expect(listBanks().length).toBeGreaterThan(0)
   })
 
+  it('getBank is async (returns a Promise) — banks load lazily', async () => {
+    const result = getBank('classic', 'easy')
+    expect(result).toBeInstanceOf(Promise)
+    await result
+  })
+
+  it('listBanks and hasBank are synchronous (manifest needs no bank data)', () => {
+    expect(listBanks().length).toBeGreaterThan(0)
+    expect(hasBank('classic', 'easy')).toBe(true)
+    expect(hasBank('does-not-exist', 'easy')).toBe(false)
+  })
+
   it('exposes the Classic variant with easy/medium/hard/tough/expert bands populated', () => {
     const present = listBanks().filter((b) => b.variant === 'classic').map((b) => b.difficulty)
     const required = ['easy', 'medium', 'hard', 'tough', 'expert'] as const
@@ -19,9 +31,9 @@ describe('puzzles index', () => {
     }
   })
 
-  it.each(DIFFICULTIES)('classic/%s bank has ≥100 unique puzzles when present', (difficulty) => {
+  it.each(DIFFICULTIES)('classic/%s bank has ≥100 unique puzzles when present', async (difficulty) => {
     if (!hasBank('classic', difficulty)) return
-    const bank = getBank('classic', difficulty)
+    const bank = await getBank('classic', difficulty)
     expect(bank.length).toBeGreaterThanOrEqual(100)
     const ids = new Set(bank.map((p) => p.id))
     expect(ids.size).toBe(bank.length)
@@ -29,9 +41,9 @@ describe('puzzles index', () => {
     expect(givens.size).toBe(bank.length)
   })
 
-  it.each(DIFFICULTIES)('classic/%s records have valid shape', (difficulty) => {
+  it.each(DIFFICULTIES)('classic/%s records have valid shape', async (difficulty) => {
     if (!hasBank('classic', difficulty)) return
-    const bank = getBank('classic', difficulty)
+    const bank = await getBank('classic', difficulty)
     for (const p of bank.slice(0, 5)) {
       expect(p.size).toBe(9)
       expect(p.variant).toBe('classic')
@@ -42,9 +54,9 @@ describe('puzzles index', () => {
     }
   })
 
-  it('sampled puzzles re-grade to their declared difficulty band', () => {
+  it('sampled puzzles re-grade to their declared difficulty band', async () => {
     if (!hasBank('classic', 'easy')) return
-    const bank = getBank('classic', 'easy')
+    const bank = await getBank('classic', 'easy')
     const sample = bank.slice(0, 3)
     for (const record of sample) {
       const constraint = createClassicConstraint({ shape: CLASSIC_9 })
@@ -54,10 +66,10 @@ describe('puzzles index', () => {
     }
   })
 
-  it('pickPuzzle deterministically selects by seed', () => {
+  it('pickPuzzle deterministically selects by seed', async () => {
     if (!hasBank('classic', 'easy')) return
-    const a = pickPuzzle('classic', 'easy', 7)
-    const b = pickPuzzle('classic', 'easy', 7)
+    const a = await pickPuzzle('classic', 'easy', 7)
+    const b = await pickPuzzle('classic', 'easy', 7)
     expect(a).toBe(b)
   })
 })
