@@ -4,7 +4,7 @@
 
 ## Identity
 
-**Logikku** is an offline-first Sudoku PWA supporting 23 variants. Distributed as a web app (Safari "Add to Home Screen" on iPad); App Store wrap via Capacitor deferred to Phase 21. Primary target device: iPad. Primary user persona: non-technical, older. UI must be calm, large-touch, never beep at the user.
+**Logikku** is an offline-first Sudoku PWA supporting 23 variants. Distributed as a web app on Vercel, installable on iPad via Safari "Add to Home Screen". No App Store, no native wrapper — web is the destination, not a stepping stone. Primary target device: iPad. Primary user persona: non-technical, older. UI must be calm, large-touch, never beep at the user.
 
 ## Non-negotiables
 
@@ -31,7 +31,6 @@
 | Package manager | bun |
 | Deploy | Vercel (static) |
 | Generator | Python + Z3 (separate `gen/` directory, not in app bundle) |
-| App Store wrap (Phase 21) | Capacitor → iPadOS |
 
 ## Variant scope (23)
 
@@ -86,7 +85,7 @@ User-facing difficulty labels (per `docs/ARCHITECTURE.md` § Grader):
 
 ## Storage strategy
 
-Saved data lives in IndexedDB (durable on installed PWAs in iOS 16.4+). Cleared only by manual "Clear Safari Data" or device wipe. Mitigation: **manual JSON export/import** in Settings → Backup (Phase 4). Single-file JSON via Files app. When Capacitor wrap lands (Phase 21), iCloud KVS becomes optional.
+Saved data lives in IndexedDB (durable on installed PWAs in iOS 16.4+). Cleared only by manual "Clear Safari Data" or device wipe. Mitigation: **manual JSON export/import** in Settings → Backup (Phase 4). Single-file JSON via Files app.
 
 ## What I do NOT want
 

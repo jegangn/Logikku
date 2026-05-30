@@ -15,7 +15,7 @@ Read-only searches across USPTO TESS (US), EUIPO eSearch Plus (EU), and MyIPO (M
 
 **Verdict: CAUTION-leaning-CLEAR.** No direct Logikku conflicts exist, but `LOGICO` (educational toy brand, EU/global) is phonetically adjacent. A trademark examiner could cite likelihood-of-confusion if Logikku is filed in classes 9/41 covering educational/puzzle software.
 
-**Action: not blocking now.** Before any App Store filing in Phase 21, commission a paid clearance opinion from a Malaysian and EU TM agent (~RM 2,000–4,000 combined).
+**Action: not blocking.** Logikku is web-only (no App Store), so the immediate trademark exposure is low. If the brand grows enough to attract attention (real traffic, revenue, press), commission a paid clearance opinion from a Malaysian and EU TM agent (~RM 2,000–4,000 combined) before formal filing.
 
 ## Domain availability
 
@@ -45,7 +45,7 @@ All six domains checked via authoritative RDAP and Google DNS NXDOMAIN. All avai
 ## Caveats
 
 - All three TM registry UIs are JavaScript-rendered; programmatic searches were not possible. Findings rely on Google-indexed records and adjacent brand searches.
-- "Confidence: medium" across the board reflects this. For a final go/no-go before App Store launch, retain a TM agent in each jurisdiction.
+- "Confidence: medium" across the board reflects this. For a final go/no-go on the brand, retain a TM agent in each jurisdiction.
 - This document is not legal advice.
 
 ## Sources

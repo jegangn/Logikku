@@ -12,7 +12,7 @@ Sudoku, every variant. Offline-first PWA. iPad-first.
 - `vite-plugin-pwa` (Workbox) · PWA install on iPad via Safari "Add to Home Screen"
 - Vitest + @testing-library/react · Playwright (Chromium + iPad device profile)
 - Python + Z3 for offline puzzle generation (separate pipeline)
-- Capacitor → iPadOS App Store deferred to Phase 21
+- Web-only: Vercel-hosted, installable as a PWA. No App Store, no native wrapper.
 
 ## Scripts
 

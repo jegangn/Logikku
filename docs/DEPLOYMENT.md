@@ -81,8 +81,3 @@ File any blocker as a new issue. Ship only if there are no blockers.
 
 Share `https://logikku.com` with the intended user. Confirm the install works on
 the target iPad. Done.
-
-## Phase 21 (later)
-
-App Store delivery via Capacitor → iPadOS. Before any App Store filing, commission
-the paid trademark clearance noted in `docs/NAMING.md`.
