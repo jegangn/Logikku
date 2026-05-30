@@ -8,8 +8,8 @@ repo. What remains needs accounts, money, and a physical iPad.
 
 Per `docs/NAMING.md`:
 
-- Register `logikku.com` and `logikku.app` (≈ USD 24/yr combined). Six-letter
-  `.com` names get sniped — register promptly.
+- Register `logikku.com` (≈ USD 10/yr). Six-letter `.com` names get sniped
+  — register promptly.
 - No DNS records needed yet; Vercel will give you the exact ones in step 3.
 
 ## 2. Import the repo to Vercel
@@ -30,10 +30,7 @@ SPA fallback automatically — no dashboard config needed for those.
 1. In the Vercel project: **Settings → Domains**.
 2. Add `logikku.com` and `www.logikku.com`. Vercel shows the DNS records to add
    at the registrar (an A record / CNAME). Add them; wait for verification.
-3. Add `logikku.app`. Configure it to **redirect (301) to `logikku.com`** — set
-   this in the same Domains screen ("Redirect to" option). This is a Vercel
-   dashboard setting, not `vercel.json`.
-4. Set `logikku.com` as the primary domain so `www` redirects to the apex.
+3. Set `logikku.com` as the primary domain so `www` redirects to the apex.
 
 ## 4. Verify production headers
 

@@ -1,7 +1,7 @@
 # Naming & Brand Clearance — Logikku
 
 **Decision: `Logikku` confirmed.** No alternatives needed.
-**Domain to register: `logikku.com` + `logikku.app`** (~$24/yr combined).
+**Domain to register: `logikku.com`** (~$10/yr). Web-only — no `.app` needed.
 
 ## Trademark check
 
@@ -30,7 +30,7 @@ All six domains checked via authoritative RDAP and Google DNS NXDOMAIN. All avai
 | `getlogikku.com` | available | ~$10 |
 | `playlogikku.com` | available | ~$10 |
 
-**Recommendation: `logikku.com` + `logikku.app`.** `.com` for trust and word-of-mouth recall; `.app` for the canonical install URL (HSTS-preloaded, signals "this is an app"). Skip the rest unless `.com` becomes unavailable. **Six-letter pronounceable `.com` domains get sniped — register fast.**
+**Recommendation: `logikku.com` only.** The `.app` TLD was originally on the shortlist as a canonical install URL for an App Store wrap, but Logikku is now web-only and a single canonical `.com` is simpler (no redirect to maintain, one cert, one OG card). Skip the rest unless `.com` becomes unavailable. **Six-letter pronounceable `.com` domains get sniped — register fast.**
 
 ## App store / web collision
 
