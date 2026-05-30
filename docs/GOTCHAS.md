@@ -321,3 +321,19 @@ the port flag otherwise and times out waiting on :5173.
 5s default and fail with "Test timed out in 5000ms" (passes 6/6 in isolation). Fixed with a
 file-level `vi.setConfig({ testTimeout: 20000, hookTimeout: 20000 })`. If you add more
 subprocess-backed grader tests, keep them in this file so they inherit the bump.
+
+## 2026-05-31 — E2E silently tests the wrong app when port 5173 is hijacked
+
+`playwright.config.ts` sets `reuseExistingServer: !process.env['CI']`, so locally Playwright
+reuses **any** server already listening on `localhost:5173` without checking it's actually
+Logikku. If a sibling project's `vite`/`bun dev` is running there, Playwright happily issues
+all 126 tests against that app — and you get 125 "element(s) not found" failures with no
+obvious cause. Page snapshots in `test-results/*/error-context.md` reveal the wrong app's DOM
+(that's how we caught it: the snapshot showed "JHANAV'S MATH" instead of Logikku).
+
+Fix (immediate): run e2e on a free port: `LOGIKKU_E2E_PORT=4174 LOGIKKU_E2E_URL=http://localhost:4174 bun run e2e`.
+Both env vars must be set together (`webServer.url` ignores the port flag).
+
+Fix (permanent, if it recurs): change `reuseExistingServer` to a function that probes the URL
+and asserts the body contains "Logikku" before reusing — or just set it to `false` so Playwright
+always starts its own Vite and fails loud on port conflict.
