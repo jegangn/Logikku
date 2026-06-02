@@ -6,6 +6,16 @@
 
 **Logikku** is an offline-first Sudoku PWA supporting 23 variants. Distributed as a web app on Vercel, installable on iPad via Safari "Add to Home Screen". No App Store, no native wrapper — web is the destination, not a stepping stone. Primary target device: iPad. Primary user persona: non-technical, older. UI must be calm, large-touch, never beep at the user.
 
+## Hosting
+
+- **GitHub:** https://github.com/jegangn/Logikku (remote `origin`, branch `main`)
+- **Vercel:** https://logikku.vercel.app/ (auto-deploys on push to `main`)
+- **Custom domain:** `logikku.com` to be added in Vercel later (see `docs/DEPLOYMENT.md`)
+
+## Auto-push (mandatory)
+
+After every change in this repo, immediately `git add` → `git commit` → `git push origin main`. No branches, no PRs, no asking. Vercel auto-deploys on push, so pushing IS deploying. Exception: if a commit would obviously break the live site (broken HTML, syntax error, missing asset reference), fix it first, then push the working version. This restates Rule 7 of `C:\dev\CLAUDE.md` for emphasis — it applies here without exception.
+
 ## Non-negotiables
 
 - **No backend, no auth, no Supabase, no telemetry, no analytics, no third-party scripts at runtime.** Zero data collection. The app must work fully offline after first load.
