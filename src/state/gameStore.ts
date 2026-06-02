@@ -141,6 +141,8 @@ export interface GameState {
   completedAt: string | null
   lockedCells: ReadonlySet<string>
   lastShakeKey: number
+  rejectFlashKey: number
+  rejectFlashCell: string | null
   /** Jigsaw: per-cell piece id, length size*size. Populated when variant=jigsaw. */
   jigsawPieceMap: ReadonlyArray<number> | null
   /** Even-Odd: parity mask string, length size*size. Populated when variant=even-odd. */
@@ -198,6 +200,7 @@ export interface GameState {
   resume: () => void
   canUndo: () => boolean
   canRedo: () => boolean
+  flashRejectCell: (coord: Coord) => void
 }
 
 function snapshot(cell: { value: Digit | null; candidates: Set<Digit> }): CellSnapshot {
@@ -515,6 +518,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   completedAt: null,
   lockedCells: new Set(),
   lastShakeKey: 0,
+  rejectFlashKey: 0,
+  rejectFlashCell: null,
   jigsawPieceMap: null,
   parityMask: null,
   edges: null,
@@ -566,6 +571,8 @@ export const useGameStore = create<GameState>((set, get) => ({
         completedAt: null,
         lockedCells: new Set(),
         lastShakeKey: 0,
+        rejectFlashKey: 0,
+        rejectFlashCell: null,
         jigsawPieceMap: null,
         parityMask: null,
         edges: null,
@@ -624,6 +631,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       completedAt: null,
       lockedCells: new Set(),
       lastShakeKey: 0,
+      rejectFlashKey: 0,
+      rejectFlashCell: null,
       jigsawPieceMap: pieceMapFromRegions(regions, shape.size),
       parityMask: parityMask ?? null,
       edges: edges ?? null,
@@ -672,6 +681,8 @@ export const useGameStore = create<GameState>((set, get) => ({
         completedAt: saved.completedAt,
         lockedCells: new Set(),
         lastShakeKey: 0,
+        rejectFlashKey: 0,
+        rejectFlashCell: null,
         jigsawPieceMap: null,
         parityMask: null,
         edges: null,
@@ -756,6 +767,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       completedAt: saved.completedAt,
       lockedCells: new Set(),
       lastShakeKey: 0,
+      rejectFlashKey: 0,
+      rejectFlashCell: null,
       jigsawPieceMap: pieceMapFromRegions(regions, shape.size),
       parityMask: parityMask ?? null,
       edges: edges ?? null,
@@ -1043,6 +1056,11 @@ export const useGameStore = create<GameState>((set, get) => ({
   canRedo: () => {
     const { history, historyIndex } = get()
     return historyIndex < history.length - 1
+  },
+
+  flashRejectCell: (coord: Coord) => {
+    const key = `${coord.r},${coord.c}`
+    set({ rejectFlashCell: key, rejectFlashKey: get().rejectFlashKey + 1 })
   },
 }))
 

@@ -1,7 +1,13 @@
+import { createPortal } from 'react-dom'
 import type { Digit } from '@/engine'
 import type { InputMode } from '@/state/gameStore'
 import { glyphForDigit } from '@/ui/glyph'
 import { useT } from '@/i18n'
+import {
+  useDigitDrag,
+  type DigitDragBinding,
+  type DragDropTarget,
+} from '@/ui/hooks/useDigitDrag'
 
 export interface InputPadProps {
   readonly mode: InputMode
@@ -11,6 +17,10 @@ export interface InputPadProps {
   readonly onDigit: (digit: Digit) => void
   readonly onErase: () => void
   readonly onModeChange: (mode: InputMode) => void
+  /** Optional: enables drag-from-pad-to-board. Called on pointerup after a real drag. */
+  readonly onDigitDrop?: (digit: Digit, target: DragDropTarget | null) => void
+  /** Optional: notified whenever the cell under the dragged ghost changes. */
+  readonly onDragHoverChange?: (cellKey: string | null) => void
 }
 
 export function InputPad({
@@ -20,6 +30,8 @@ export function InputPad({
   onDigit,
   onErase,
   onModeChange,
+  onDigitDrop,
+  onDragHoverChange,
 }: InputPadProps) {
   const t = useT()
   const digits: Digit[] = []
@@ -31,6 +43,15 @@ export function InputPad({
     size === 6 ? 'grid-cols-4'
     : size === 16 ? 'grid-cols-4'
     : 'grid-cols-5'
+
+  const dragEnabled = onDigitDrop !== undefined && !disabled
+  const drag = useDigitDrag({
+    onDrop: (digit, target) => {
+      if (onDigitDrop) onDigitDrop(digit, target)
+    },
+    ...(onDragHoverChange ? { onHoverCellChange: onDragHoverChange } : {}),
+  })
+
   return (
     <div
       data-testid="input-pad"
@@ -66,6 +87,7 @@ export function InputPad({
             onClick={() => onDigit(d)}
             largeText={size <= 9}
             label={t.play.digit(glyphForDigit(d))}
+            dragBinding={dragEnabled ? drag.bind(d) : null}
           />
         ))}
         <button
@@ -79,6 +101,19 @@ export function InputPad({
           ⌫
         </button>
       </div>
+      {dragEnabled && drag.activeDigit !== null && typeof document !== 'undefined'
+        ? createPortal(
+            <div
+              ref={drag.ghostRef}
+              data-testid="digit-drag-ghost"
+              aria-hidden="true"
+              className="digit-drag-ghost"
+            >
+              {glyphForDigit(drag.activeDigit)}
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   )
 }
@@ -89,12 +124,14 @@ function DigitButton({
   onClick,
   largeText = true,
   label,
+  dragBinding,
 }: {
   digit: Digit
   disabled: boolean | undefined
   onClick: () => void
   largeText?: boolean
   label: string
+  dragBinding: DigitDragBinding | null
 }) {
   const glyph = glyphForDigit(digit)
   return (
@@ -105,6 +142,7 @@ function DigitButton({
       onClick={onClick}
       className={`min-h-[56px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] ${largeText ? 'text-2xl' : 'text-xl'} font-semibold tabular-nums hover:bg-[var(--color-surface-2)] disabled:opacity-40 active:scale-[0.97] transition-transform`}
       aria-label={label}
+      {...(dragBinding ?? {})}
     >
       {glyph}
     </button>

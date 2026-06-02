@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Board } from '@/ui/board/Board'
 import { SamuraiBoardView } from '@/ui/board/SamuraiBoardView'
@@ -9,7 +9,7 @@ import { Toolbar } from '@/ui/panels/Toolbar'
 import { selectGrid, useGameStore } from '@/state/gameStore'
 import { flushSave, tryHydrate, wireGamePersistence } from '@/state/persistence'
 import { pickPuzzle } from '@/puzzles'
-import type { Difficulty } from '@/engine'
+import type { Coord, Difficulty, Digit } from '@/engine'
 import { digitFromGlyph } from '@/ui/glyph'
 import type { EdgeMarkRecord } from '@/state/gameStore'
 import type { OutsideClueDisplay } from '@/ui/board/overlays/OutsideClueOverlay'
@@ -35,6 +35,8 @@ export function Play() {
   const completedAt = useGameStore((s) => s.completedAt)
   const lockedCells = useGameStore((s) => s.lockedCells)
   const shakeKey = useGameStore((s) => s.lastShakeKey)
+  const rejectFlashCell = useGameStore((s) => s.rejectFlashCell)
+  const rejectFlashKey = useGameStore((s) => s.rejectFlashKey)
   const jigsawPieceMap = useGameStore((s) => s.jigsawPieceMap)
   const parityMask = useGameStore((s) => s.parityMask)
   const edges = useGameStore((s) => s.edges)
@@ -57,6 +59,25 @@ export function Play() {
   const redo = useGameStore((s) => s.redo)
   const pause = useGameStore((s) => s.pause)
   const resume = useGameStore((s) => s.resume)
+  const flashRejectCell = useGameStore((s) => s.flashRejectCell)
+
+  const [dragHoverCell, setDragHoverCell] = useState<string | null>(null)
+
+  const handleDigitDrop = useCallback(
+    (
+      digit: Digit,
+      target: { coord: Coord; locked: boolean; given: boolean } | null,
+    ) => {
+      if (!target) return
+      if (target.given || target.locked) {
+        flashRejectCell(target.coord)
+        return
+      }
+      select(target.coord)
+      input(digit)
+    },
+    [select, input, flashRejectCell],
+  )
 
   const hydrationRunRef = useRef<string | null>(null)
 
@@ -294,6 +315,9 @@ export function Play() {
           {...(cages ? { cages } : {})}
           {...(outsideClues ? { outsideClues } : {})}
           {...(variantPaths ? { paths: variantPaths } : {})}
+          dragHoverCell={dragHoverCell}
+          rejectFlashCell={rejectFlashCell}
+          rejectFlashKey={rejectFlashKey}
           onSelect={select}
         />
       )}
@@ -304,6 +328,8 @@ export function Play() {
         onDigit={input}
         onErase={erase}
         onModeChange={setMode}
+        onDigitDrop={handleDigitDrop}
+        onDragHoverChange={setDragHoverCell}
       />
       {completedAt !== null && (
         <p

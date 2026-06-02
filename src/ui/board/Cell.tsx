@@ -51,6 +51,8 @@ function CellImpl(props: CellProps) {
     <g
       key={`${coord.r}-${coord.c}-${locked ? shakeKey : 'free'}`}
       data-testid={`cell-${coord.r}-${coord.c}`}
+      data-cell-r={coord.r}
+      data-cell-c={coord.c}
       data-selected={selected ? 'true' : 'false'}
       data-conflict={conflict ? 'true' : 'false'}
       data-given={given ? 'true' : 'false'}

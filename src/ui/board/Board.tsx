@@ -33,6 +33,12 @@ export interface BoardProps {
   readonly outsideClues?: ReadonlyArray<OutsideClueDisplay>
   /** Palindrome / Renban / German Whispers: paths through cells. */
   readonly paths?: ReadonlyArray<VariantPath>
+  /** "r,c" of the cell currently under a drag pointer. */
+  readonly dragHoverCell?: string | null
+  /** "r,c" of the cell that should one-shot flash red (drag-drop rejected). */
+  readonly rejectFlashCell?: string | null
+  /** Monotonic counter so the same target can flash on consecutive rejects. */
+  readonly rejectFlashKey?: number
   readonly onSelect: (coord: Coord) => void
 }
 
@@ -52,6 +58,9 @@ export function Board({
   cages,
   outsideClues,
   paths,
+  dragHoverCell,
+  rejectFlashCell,
+  rejectFlashKey = 0,
   onSelect,
 }: BoardProps) {
   const t = useT()
@@ -89,6 +98,9 @@ export function Board({
         {...(lockedCells !== undefined ? { lockedCells } : {})}
         shakeKey={shakeKey}
         suppressBoxLines={variant === 'jigsaw'}
+        {...(dragHoverCell !== undefined ? { dragHoverCell } : {})}
+        {...(rejectFlashCell !== undefined ? { rejectFlashCell } : {})}
+        rejectFlashKey={rejectFlashKey}
         onSelect={onSelect}
       />
       <OverlayLayer

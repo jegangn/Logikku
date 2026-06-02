@@ -14,6 +14,12 @@ export interface BoardCellsLayerProps {
   readonly shakeKey?: number
   readonly suppressBoxLines?: boolean
   readonly withIndices?: boolean
+  /** "r,c" of cell that should one-shot flash red (drag-drop rejected). */
+  readonly rejectFlashCell?: string | null
+  /** Monotonic counter so the same target can flash again on consecutive rejects. */
+  readonly rejectFlashKey?: number
+  /** "r,c" of the cell currently under a drag pointer (highlight as drop target). */
+  readonly dragHoverCell?: string | null
   readonly onSelect: (coord: Coord) => void
 }
 
@@ -28,6 +34,9 @@ export function BoardCellsLayer({
   shakeKey = 0,
   suppressBoxLines = false,
   withIndices = true,
+  rejectFlashCell,
+  rejectFlashKey = 0,
+  dragHoverCell,
   onSelect,
 }: BoardCellsLayerProps) {
   const size = grid.shape.size
@@ -77,6 +86,9 @@ export function BoardCellsLayer({
     return out
   }, [grid, cellSize, selectedCoord, selectedValue, peerSet, conflictSet, lockedCells, shakeKey, withIndices, onSelect])
 
+  const hoverRect = dragHoverCell ? parseKey(dragHoverCell) : null
+  const flashRect = rejectFlashCell ? parseKey(rejectFlashCell) : null
+
   return (
     <g>
       {rows}
@@ -86,8 +98,45 @@ export function BoardCellsLayer({
         shape={grid.shape}
         suppressBoxLines={suppressBoxLines}
       />
+      {hoverRect && (
+        <rect
+          data-testid="drag-hover"
+          x={hoverRect.c * cellSize}
+          y={hoverRect.r * cellSize}
+          width={cellSize}
+          height={cellSize}
+          fill="var(--color-accent-soft)"
+          stroke="var(--color-accent)"
+          strokeWidth={2}
+          pointerEvents="none"
+        />
+      )}
+      {flashRect && (
+        <rect
+          key={`reject-${rejectFlashKey}`}
+          data-testid="reject-flash"
+          data-reject="true"
+          x={flashRect.c * cellSize}
+          y={flashRect.r * cellSize}
+          width={cellSize}
+          height={cellSize}
+          fill="var(--color-conflict-soft)"
+          stroke="var(--color-conflict)"
+          strokeWidth={2}
+          pointerEvents="none"
+        />
+      )}
     </g>
   )
+}
+
+function parseKey(key: string): { r: number; c: number } | null {
+  const m = /^(\d+),(\d+)$/.exec(key)
+  if (!m) return null
+  const rs = m[1]
+  const cs = m[2]
+  if (rs === undefined || cs === undefined) return null
+  return { r: Number(rs), c: Number(cs) }
 }
 
 function GridLines({
