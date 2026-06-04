@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { getSettings, putSettings, type SavedSettings } from '@/storage/db'
 import type { Language } from '@/i18n/lang'
+import type { SoundTheme } from '@/audio/themes'
 
 export type Theme = 'light' | 'dark' | 'system'
 
@@ -11,6 +12,9 @@ export interface SettingsState {
   readonly highlightConflicts: boolean
   readonly highlightPeers: boolean
   readonly pencilAutoClean: boolean
+  readonly soundEnabled: boolean
+  readonly soundTheme: SoundTheme
+  readonly soundVolume: number
   readonly loaded: boolean
   loadFromDb: () => Promise<void>
   set: <K extends Exclude<keyof SettingsState, 'loaded' | 'loadFromDb' | 'set'>>(
@@ -26,6 +30,9 @@ const DEFAULTS: Omit<SettingsState, 'loaded' | 'loadFromDb' | 'set'> = {
   highlightConflicts: true,
   highlightPeers: true,
   pencilAutoClean: false,
+  soundEnabled: true,
+  soundTheme: 'marimba',
+  soundVolume: 70,
 }
 
 export const useSettingsStore = create<SettingsState>((setState, get) => ({
@@ -42,6 +49,9 @@ export const useSettingsStore = create<SettingsState>((setState, get) => ({
         highlightConflicts: saved.highlightConflicts ?? DEFAULTS.highlightConflicts,
         highlightPeers: saved.highlightPeers ?? DEFAULTS.highlightPeers,
         pencilAutoClean: saved.pencilAutoClean ?? DEFAULTS.pencilAutoClean,
+        soundEnabled: saved.soundEnabled ?? DEFAULTS.soundEnabled,
+        soundTheme: saved.soundTheme ?? DEFAULTS.soundTheme,
+        soundVolume: saved.soundVolume ?? DEFAULTS.soundVolume,
         loaded: true,
       })
     } else {
@@ -59,6 +69,9 @@ export const useSettingsStore = create<SettingsState>((setState, get) => ({
       highlightConflicts: s.highlightConflicts,
       highlightPeers: s.highlightPeers,
       pencilAutoClean: s.pencilAutoClean,
+      soundEnabled: s.soundEnabled,
+      soundTheme: s.soundTheme,
+      soundVolume: s.soundVolume,
     }
     await putSettings(next)
   },

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { useSettingsStore } from './settingsStore'
-import { _resetDbForTests } from '@/storage/db'
+import { _resetDbForTests, getSettings } from '@/storage/db'
 
 beforeEach(async () => {
   await _resetDbForTests()
@@ -14,6 +14,9 @@ beforeEach(async () => {
     highlightConflicts: true,
     highlightPeers: true,
     pencilAutoClean: false,
+    soundEnabled: true,
+    soundTheme: 'marimba',
+    soundVolume: 70,
     loaded: false,
   })
 })
@@ -47,5 +50,31 @@ describe('settingsStore', () => {
     useSettingsStore.setState({ strictMode: false, loaded: false })
     await useSettingsStore.getState().loadFromDb()
     expect(useSettingsStore.getState().strictMode).toBe(false)
+  })
+})
+
+describe('settingsStore sound fields', () => {
+  it('defaults: sound on, marimba, volume 70', () => {
+    const s = useSettingsStore.getState()
+    expect(s.soundEnabled).toBe(true)
+    expect(s.soundTheme).toBe('marimba')
+    expect(s.soundVolume).toBe(70)
+  })
+
+  it('set persists sound fields to IndexedDB', async () => {
+    await useSettingsStore.getState().set('soundTheme', 'chime')
+    await useSettingsStore.getState().set('soundVolume', 40)
+    await useSettingsStore.getState().set('soundEnabled', false)
+    const saved = await getSettings()
+    expect(saved?.soundTheme).toBe('chime')
+    expect(saved?.soundVolume).toBe(40)
+    expect(saved?.soundEnabled).toBe(false)
+  })
+
+  it('loadFromDb restores sound fields', async () => {
+    await useSettingsStore.getState().set('soundTheme', 'click')
+    useSettingsStore.setState({ soundTheme: 'marimba', loaded: false })
+    await useSettingsStore.getState().loadFromDb()
+    expect(useSettingsStore.getState().soundTheme).toBe('click')
   })
 })

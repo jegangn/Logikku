@@ -106,6 +106,9 @@ export interface SavedSettings {
   readonly highlightConflicts?: boolean
   readonly highlightPeers?: boolean
   readonly pencilAutoClean?: boolean
+  readonly soundEnabled?: boolean
+  readonly soundTheme?: 'marimba' | 'click' | 'chime'
+  readonly soundVolume?: number
 }
 
 export interface BandKey {
