@@ -87,12 +87,14 @@ export function InputPad({
             onClick={() => onDigit(d)}
             largeText={size <= 9}
             label={t.play.digit(glyphForDigit(d))}
+            pencil={mode === 'pencil'}
             dragBinding={dragEnabled ? drag.bind(d) : null}
           />
         ))}
         <button
           type="button"
           data-testid="erase-btn"
+          data-sound="erase"
           disabled={disabled}
           onClick={onErase}
           className="min-h-[56px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-2)] disabled:opacity-40 active:scale-[0.97] transition-transform"
@@ -124,6 +126,7 @@ function DigitButton({
   onClick,
   largeText = true,
   label,
+  pencil,
   dragBinding,
 }: {
   digit: Digit
@@ -131,6 +134,7 @@ function DigitButton({
   onClick: () => void
   largeText?: boolean
   label: string
+  pencil: boolean
   dragBinding: DigitDragBinding | null
 }) {
   const glyph = glyphForDigit(digit)
@@ -138,6 +142,8 @@ function DigitButton({
     <button
       type="button"
       data-testid={`digit-${digit}`}
+      data-sound={pencil ? 'pencil' : 'place'}
+      data-digit={digit}
       disabled={disabled}
       onClick={onClick}
       className={`min-h-[56px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] ${largeText ? 'text-2xl' : 'text-xl'} font-semibold tabular-nums hover:bg-[var(--color-surface-2)] disabled:opacity-40 active:scale-[0.97] transition-transform`}

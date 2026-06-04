@@ -53,6 +53,7 @@ function CellImpl(props: CellProps) {
       data-testid={`cell-${coord.r}-${coord.c}`}
       data-cell-r={coord.r}
       data-cell-c={coord.c}
+      data-sound="select"
       data-selected={selected ? 'true' : 'false'}
       data-conflict={conflict ? 'true' : 'false'}
       data-given={given ? 'true' : 'false'}
