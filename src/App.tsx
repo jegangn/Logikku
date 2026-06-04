@@ -12,6 +12,7 @@ import { useOnboardingStore } from '@/state/onboardingStore'
 import { applyTheme, watchSystemTheme } from '@/theme'
 import { LanguageProvider } from '@/i18n'
 import { UpdatePrompt } from '@/pwa/UpdatePrompt'
+import { SoundController } from '@/audio/SoundController'
 
 export default function App() {
   const theme = useSettingsStore((s) => s.theme)
@@ -56,6 +57,7 @@ export default function App() {
           <Route path="/about" element={<About />} />
         </Routes>
         <UpdatePrompt />
+        <SoundController />
       </BrowserRouter>
     </LanguageProvider>
   )
