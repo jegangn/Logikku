@@ -16,6 +16,7 @@ import type { OutsideClueDisplay } from '@/ui/board/overlays/OutsideClueOverlay'
 import type { VariantPath } from '@/ui/board/overlays/PathOverlay'
 import { useT } from '@/i18n'
 import { isVariantKind } from '@/ui/variantCatalog'
+import { playSound } from '@/audio/sound'
 
 export function Play() {
   const t = useT()
@@ -228,32 +229,36 @@ export function Play() {
       if (ev.target instanceof HTMLInputElement) return
       const mod = ev.metaKey || ev.ctrlKey
       if (mod && (ev.key === 'z' || ev.key === 'Z')) {
+        playSound('tap', {})
         if (ev.shiftKey) redo()
         else undo()
         ev.preventDefault()
         return
       }
       if (mod && (ev.key === 'y' || ev.key === 'Y')) {
+        playSound('tap', {})
         redo()
         ev.preventDefault()
         return
       }
       const maybeDigit = digitFromGlyph(ev.key)
       if (maybeDigit !== null && maybeDigit <= gridSize) {
+        playSound(mode === 'pencil' ? 'pencil' : 'place', { digit: maybeDigit })
         input(maybeDigit)
         ev.preventDefault()
         return
       }
       if (ev.key === 'Backspace' || ev.key === 'Delete' || ev.key === '0') {
+        playSound('erase', {})
         erase()
         ev.preventDefault()
         return
       }
-      if (ev.key === 'ArrowUp') moveSelection(-1, 0)
-      else if (ev.key === 'ArrowDown') moveSelection(1, 0)
-      else if (ev.key === 'ArrowLeft') moveSelection(0, -1)
-      else if (ev.key === 'ArrowRight') moveSelection(0, 1)
-      else if (ev.key === 'p' || ev.key === 'P') setMode(mode === 'pencil' ? 'value' : 'pencil')
+      if (ev.key === 'ArrowUp') { playSound('select', {}); moveSelection(-1, 0) }
+      else if (ev.key === 'ArrowDown') { playSound('select', {}); moveSelection(1, 0) }
+      else if (ev.key === 'ArrowLeft') { playSound('select', {}); moveSelection(0, -1) }
+      else if (ev.key === 'ArrowRight') { playSound('select', {}); moveSelection(0, 1) }
+      else if (ev.key === 'p' || ev.key === 'P') { playSound('tap', {}); setMode(mode === 'pencil' ? 'value' : 'pencil') }
       else return
       ev.preventDefault()
     }
