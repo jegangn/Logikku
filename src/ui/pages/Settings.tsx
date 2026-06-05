@@ -11,6 +11,8 @@ import {
   restoreBackup,
 } from '@/storage/backup'
 import { useOnboardingStore } from '@/state/onboardingStore'
+import { playSound } from '@/audio/sound'
+import type { SoundTheme } from '@/audio/themes'
 import { useT } from '@/i18n'
 
 export function Settings() {
@@ -32,6 +34,14 @@ export function Settings() {
   const highlightConflicts = useSettingsStore((s) => s.highlightConflicts)
   const highlightPeers = useSettingsStore((s) => s.highlightPeers)
   const pencilAutoClean = useSettingsStore((s) => s.pencilAutoClean)
+  const soundEnabled = useSettingsStore((s) => s.soundEnabled)
+  const soundTheme = useSettingsStore((s) => s.soundTheme)
+  const soundVolume = useSettingsStore((s) => s.soundVolume)
+  const SOUND_THEMES: ReadonlyArray<{ value: SoundTheme; label: string }> = [
+    { value: 'marimba', label: t.settings.soundThemeMarimba },
+    { value: 'click', label: t.settings.soundThemeClick },
+    { value: 'chime', label: t.settings.soundThemeChime },
+  ]
   const setSetting = useSettingsStore((s) => s.set)
   const fileInput = useRef<HTMLInputElement>(null)
   const [status, setStatus] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null)
@@ -181,6 +191,72 @@ export function Settings() {
             }}
             testId="toggle-pencilAutoClean"
           />
+        </section>
+
+        <section className="mt-10 space-y-4" data-sound="off">
+          <Label>{t.settings.soundSection}</Label>
+          <ToggleRow
+            label={t.settings.soundEnabled}
+            hint={t.settings.soundEnabledHint}
+            value={soundEnabled}
+            onChange={(v) => {
+              void setSetting('soundEnabled', v)
+              if (v) playSound('tap', {})
+            }}
+            testId="toggle-soundEnabled"
+          />
+          {soundEnabled && (
+            <>
+              <div>
+                <Label>{t.settings.soundTheme}</Label>
+                <div
+                  className="mt-2 grid grid-cols-3 gap-2"
+                  role="tablist"
+                  aria-label={t.settings.soundTheme}
+                >
+                  {SOUND_THEMES.map(({ value, label }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      role="tab"
+                      aria-selected={soundTheme === value}
+                      data-testid={`soundTheme-${value}`}
+                      onClick={() => {
+                        void setSetting('soundTheme', value)
+                        playSound('place', { digit: 1 })
+                      }}
+                      className={`min-h-[44px] rounded-xl border text-sm font-medium transition-colors ${
+                        soundTheme === value
+                          ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-accent-strong)]'
+                          : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3">
+                <label htmlFor="sound-volume" className="text-sm font-medium">
+                  {t.settings.soundVolume}
+                </label>
+                <input
+                  id="sound-volume"
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={soundVolume}
+                  data-testid="sound-volume"
+                  onChange={(e) => {
+                    void setSetting('soundVolume', Number(e.target.value))
+                  }}
+                  onPointerUp={() => playSound('tap', {})}
+                  className="mt-3 w-full accent-[var(--color-accent)]"
+                />
+              </div>
+            </>
+          )}
         </section>
 
         <section className="mt-10">

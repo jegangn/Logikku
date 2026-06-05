@@ -15,3 +15,18 @@ describe('Settings footer', () => {
     expect(screen.getByRole('link', { name: 'About' })).toHaveAttribute('href', '/about')
   })
 })
+
+describe('Settings sound section', () => {
+  it('renders the sound toggle, theme picker, and volume slider', () => {
+    render(
+      <MemoryRouter>
+        <Settings />
+      </MemoryRouter>,
+    )
+    expect(screen.getByTestId('toggle-soundEnabled')).toBeInTheDocument()
+    expect(screen.getByTestId('soundTheme-marimba')).toBeInTheDocument()
+    expect(screen.getByTestId('soundTheme-click')).toBeInTheDocument()
+    expect(screen.getByTestId('soundTheme-chime')).toBeInTheDocument()
+    expect(screen.getByTestId('sound-volume')).toBeInTheDocument()
+  })
+})
