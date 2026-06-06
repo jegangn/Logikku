@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import { Toolbar } from './Toolbar'
 
 function setup(overrides: Partial<React.ComponentProps<typeof Toolbar>> = {}) {
@@ -13,7 +14,11 @@ function setup(overrides: Partial<React.ComponentProps<typeof Toolbar>> = {}) {
     onRedo: vi.fn(),
     ...overrides,
   }
-  render(<Toolbar {...props} />)
+  render(
+    <MemoryRouter>
+      <Toolbar {...props} />
+    </MemoryRouter>,
+  )
   return props
 }
 
@@ -21,6 +26,11 @@ describe('Toolbar', () => {
   it('shows the puzzle label', () => {
     setup()
     expect(screen.getByText('Classic · Easy')).toBeInTheDocument()
+  })
+
+  it('renders a back button to Home', () => {
+    setup()
+    expect(screen.getByTestId('back-home')).toBeInTheDocument()
   })
 
   it('fires onNew on New button', async () => {

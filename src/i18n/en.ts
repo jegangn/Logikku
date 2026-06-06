@@ -43,7 +43,6 @@ export const en = {
   },
 
   variant: {
-    backToHome: 'Home',
     rules: 'Rules',
     pickDifficulty: 'Pick difficulty',
     stats: 'Stats',
@@ -68,7 +67,7 @@ export const en = {
     erase: 'Erase',
     modeValue: 'Value',
     modePencil: 'Pencil',
-    back: '← Back',
+    back: 'Back',
     newPuzzle: 'New puzzle',
     inputPad: 'Input pad',
     inputMode: 'Input mode',

@@ -53,11 +53,10 @@ Behavior:
 - **`to` provided** → `navigate(to)` unconditionally. (Game passes `to="/"`.)
 - **`to` omitted** → history-back with a guard:
   ```ts
-  const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0
-  if (idx > 0) navigate(-1)
+  if (location.key !== 'default') navigate(-1)
   else navigate('/')
   ```
-  React Router stores an incrementing `idx` in `history.state`. `idx > 0` means there is a prior in-app entry to return to; `0` (fresh PWA deep-link / first entry) falls back to Home so the user never backs out of the app.
+  React Router assigns `location.key === 'default'` only to the very first entry. A non-default key means there is a prior in-app entry to return to; `'default'` (fresh PWA deep-link / first entry) falls back to Home so the user never backs out of the app. (Chosen over reading `window.history.state.idx` because it is router-native — works identically with `BrowserRouter` and `MemoryRouter`, so it's directly unit-testable.)
 
 The component supplies its own chevron icon, so the label text must **not** also contain an arrow (see i18n change).
 

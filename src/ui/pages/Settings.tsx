@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useSettingsStore, type Theme } from '@/state/settingsStore'
 import type { Language } from '@/i18n/lang'
 import {
@@ -14,6 +14,7 @@ import { useOnboardingStore } from '@/state/onboardingStore'
 import { playSound } from '@/audio/sound'
 import type { SoundTheme } from '@/audio/themes'
 import { useT } from '@/i18n'
+import { BackButton } from '@/ui/components/BackButton'
 
 export function Settings() {
   const t = useT()
@@ -28,7 +29,6 @@ export function Settings() {
     { value: 'ms', label: t.settings.languageMalay },
     { value: 'system', label: t.settings.languageSystem },
   ]
-  const navigate = useNavigate()
   const theme = useSettingsStore((s) => s.theme)
   const strictMode = useSettingsStore((s) => s.strictMode)
   const highlightConflicts = useSettingsStore((s) => s.highlightConflicts)
@@ -95,13 +95,7 @@ export function Settings() {
   return (
     <main className="min-h-dvh flex flex-col items-center px-6 py-8">
       <div className="w-full max-w-md">
-        <button
-          type="button"
-          onClick={() => navigate('/')}
-          className="mb-6 text-sm text-[var(--color-text-faint)] hover:text-[var(--color-text-muted)]"
-        >
-          {t.play.back}
-        </button>
+        <BackButton className="mb-6" />
         <h1 className="text-3xl font-semibold tracking-tight">
           {t.settings.title}
         </h1>

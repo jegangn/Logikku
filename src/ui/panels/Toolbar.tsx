@@ -1,4 +1,5 @@
 import { useT } from '@/i18n'
+import { BackButton } from '@/ui/components/BackButton'
 
 export interface ToolbarProps {
   readonly puzzleLabel: string
@@ -23,11 +24,14 @@ export function Toolbar({
       data-testid="toolbar"
       className="flex items-center justify-between gap-3 w-full max-w-[min(92vw,640px)] pb-2"
     >
-      <div className="flex items-baseline gap-3">
-        <h1 className="text-xl font-semibold tracking-tight">{t.appName}</h1>
-        <span className="text-sm text-[var(--color-text-muted)]">
-          {puzzleLabel}
-        </span>
+      <div className="flex items-center gap-2 min-w-0">
+        <BackButton to="/" testId="back-home" />
+        <div className="flex items-baseline gap-3 min-w-0">
+          <h1 className="text-xl font-semibold tracking-tight">{t.appName}</h1>
+          <span className="text-sm text-[var(--color-text-muted)] truncate">
+            {puzzleLabel}
+          </span>
+        </div>
       </div>
       <div className="flex items-center gap-2">
         <IconButton

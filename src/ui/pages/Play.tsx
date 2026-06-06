@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { Board } from '@/ui/board/Board'
 import { SamuraiBoardView } from '@/ui/board/SamuraiBoardView'
 import { RotateDevicePrompt } from '@/ui/board/RotateDevicePrompt'
@@ -21,7 +21,6 @@ import { playSound } from '@/audio/sound'
 export function Play() {
   const t = useT()
   const [params, setParams] = useSearchParams()
-  const navigate = useNavigate()
   const variant = params.get('variant') ?? 'classic'
   const difficulty = (params.get('difficulty') as Difficulty | null) ?? 'easy'
   const puzzleIdParam = params.get('puzzleId')
@@ -344,14 +343,6 @@ export function Play() {
           {t.play.solved}
         </p>
       )}
-      <button
-        type="button"
-        onClick={() => navigate('/')}
-        className="mt-2 text-sm text-[var(--color-text-faint)] hover:text-[var(--color-text-muted)]"
-        data-testid="back-home"
-      >
-        {t.play.back}
-      </button>
       <span data-testid="puzzle-id" className="sr-only">
         {puzzleId}
       </span>

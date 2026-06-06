@@ -4,6 +4,7 @@ import { DifficultyPicker } from '@/ui/components/DifficultyPicker'
 import { Markdown } from '@/ui/components/markdown'
 import { Onboarding } from '@/ui/components/Onboarding'
 import { VariantThumbnail } from '@/ui/components/VariantThumbnail'
+import { BackButton } from '@/ui/components/BackButton'
 import {
   getVariant,
   isVariantKind,
@@ -69,13 +70,7 @@ export function VariantDetail() {
   return (
     <main className="min-h-dvh px-6 py-8">
       <div className="mx-auto w-full max-w-2xl">
-        <button
-          type="button"
-          onClick={() => navigate('/')}
-          className="mb-4 text-sm text-[var(--color-text-faint)] hover:text-[var(--color-text-muted)]"
-        >
-          ← {t.variant.backToHome}
-        </button>
+        <BackButton className="mb-4" />
 
         <header className="flex items-start gap-4">
           <VariantThumbnail kind={variantKind} className="size-20 shrink-0" />

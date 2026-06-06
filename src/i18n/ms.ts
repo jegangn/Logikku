@@ -45,7 +45,6 @@ export const ms: Strings = {
   },
 
   variant: {
-    backToHome: 'Laman Utama',
     rules: 'Peraturan',
     pickDifficulty: 'Pilih tahap kesukaran',
     stats: 'Statistik',
@@ -70,7 +69,7 @@ export const ms: Strings = {
     erase: 'Padam',
     modeValue: 'Nilai',
     modePencil: 'Pensel',
-    back: '← Kembali',
+    back: 'Kembali',
     newPuzzle: 'Teka-teki baharu',
     inputPad: 'Pad input',
     inputMode: 'Mod input',

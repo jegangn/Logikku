@@ -1,20 +1,14 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useT } from '@/i18n'
+import { BackButton } from '@/ui/components/BackButton'
 
 export function About() {
   const t = useT()
-  const navigate = useNavigate()
 
   return (
     <main className="min-h-dvh flex flex-col items-center px-6 py-8">
       <div className="w-full max-w-md">
-        <button
-          type="button"
-          onClick={() => navigate('/')}
-          className="mb-6 text-sm text-[var(--color-text-faint)] hover:text-[var(--color-text-muted)]"
-        >
-          {t.play.back}
-        </button>
+        <BackButton className="mb-6" />
         <h1 className="text-3xl font-semibold tracking-tight">{t.about.title}</h1>
         <p className="mt-4 text-[var(--color-text-muted)]">{t.about.tagline}</p>
         <p data-testid="app-version" className="mt-2 text-sm text-[var(--color-text-faint)]">
