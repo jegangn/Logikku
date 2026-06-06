@@ -63,6 +63,9 @@ export const ms: Strings = {
   play: {
     loading: 'Memuatkan…',
     solved: 'Selesai!',
+    yourTime: 'Masa anda',
+    nextPuzzle: 'Teka-teki seterusnya',
+    backToMenu: 'Kembali ke menu',
     new: 'Baharu',
     undo: 'Buat asal',
     redo: 'Buat semula',

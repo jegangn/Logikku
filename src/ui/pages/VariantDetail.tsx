@@ -68,7 +68,7 @@ export function VariantDetail() {
   }
 
   return (
-    <main className="min-h-dvh px-6 py-8">
+    <main className="min-h-dvh pad-page">
       <div className="mx-auto w-full max-w-2xl">
         <BackButton className="mb-4" />
 

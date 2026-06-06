@@ -66,7 +66,7 @@ export function Home() {
     : ''
 
   return (
-    <main className="min-h-dvh px-6 py-8">
+    <main className="min-h-dvh pad-page">
       <div className="mx-auto w-full max-w-5xl">
         <h1 className="text-4xl font-semibold tracking-tight">{t.appName}</h1>
         <p className="mt-1 text-[var(--color-text-muted)]">{t.tagline}</p>
@@ -75,7 +75,7 @@ export function Home() {
           <Link
             to={`/play?variant=${continueGame.variant}&difficulty=${continueGame.difficulty}&puzzleId=${continueGame.id}`}
             data-testid="continue-card"
-            className="mt-6 block rounded-xl border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-5 py-4 hover:bg-[var(--color-accent-soft)]"
+            className="mt-6 block rounded-xl border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-5 py-4 hover:border-[var(--color-accent-strong)] active:scale-[0.99] transition-transform"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -84,7 +84,9 @@ export function Home() {
                 </div>
                 <div className="mt-1 text-base font-medium">{continueLabel}</div>
               </div>
-              <span className="text-[var(--color-accent-strong)]">→</span>
+              <span className="text-[var(--color-accent-strong)]" aria-hidden="true">
+                <ChevronRightIcon />
+              </span>
             </div>
           </Link>
         )}
@@ -133,10 +135,22 @@ export function Home() {
 
         <InstallBanner />
 
-        <nav className="mt-10 flex items-center justify-center gap-6 text-sm text-[var(--color-text-muted)]">
-          <Link to="/stats" data-testid="link-stats" className="hover:text-[var(--color-text)]">{t.home.stats}</Link>
+        <nav className="mt-10 flex items-center justify-center gap-4 text-sm text-[var(--color-text-muted)]">
+          <Link
+            to="/stats"
+            data-testid="link-stats"
+            className="inline-flex min-h-[44px] items-center rounded-lg px-3 hover:text-[var(--color-text)]"
+          >
+            {t.home.stats}
+          </Link>
           <span className="text-[var(--color-text-faint)]">·</span>
-          <Link to="/settings" data-testid="link-settings" className="hover:text-[var(--color-text)]">{t.home.settings}</Link>
+          <Link
+            to="/settings"
+            data-testid="link-settings"
+            className="inline-flex min-h-[44px] items-center rounded-lg px-3 hover:text-[var(--color-text)]"
+          >
+            {t.home.settings}
+          </Link>
         </nav>
       </div>
     </main>
@@ -164,7 +178,7 @@ function FilterRow({ label, chips }: { label: string; chips: ReadonlyArray<ChipP
           data-testid={c.testId}
           aria-pressed={c.active}
           onClick={c.onClick}
-          className={`min-h-[36px] rounded-full border px-3 text-sm transition-colors ${
+          className={`min-h-[44px] rounded-full border px-4 text-sm transition-colors ${
             c.active
               ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-accent-strong)]'
               : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
@@ -174,6 +188,20 @@ function FilterRow({ label, chips }: { label: string; chips: ReadonlyArray<ChipP
         </button>
       ))}
     </div>
+  )
+}
+
+function ChevronRightIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M9 6L15 12L9 18"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   )
 }
 

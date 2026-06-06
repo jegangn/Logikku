@@ -61,6 +61,9 @@ export const en = {
   play: {
     loading: 'Loading…',
     solved: 'Solved!',
+    yourTime: 'Your time',
+    nextPuzzle: 'Next puzzle',
+    backToMenu: 'Back to menu',
     new: 'New',
     undo: 'Undo',
     redo: 'Redo',

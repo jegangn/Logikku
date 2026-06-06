@@ -33,7 +33,7 @@ export function Stats() {
   }
 
   return (
-    <main className="min-h-dvh flex flex-col items-center px-6 py-8">
+    <main className="min-h-dvh flex flex-col items-center pad-page">
       <div className="w-full max-w-md">
         <BackButton className="mb-6" />
         <h1 className="text-3xl font-semibold tracking-tight">

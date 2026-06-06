@@ -97,10 +97,10 @@ export function InputPad({
           data-sound="erase"
           disabled={disabled}
           onClick={onErase}
-          className="min-h-[56px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-2)] disabled:opacity-40 active:scale-[0.97] transition-transform"
+          className="min-h-[56px] flex items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-2)] disabled:opacity-40 active:scale-[0.97] transition-transform"
           aria-label={t.play.erase}
         >
-          ⌫
+          <BackspaceIcon />
         </button>
       </div>
       {dragEnabled && drag.activeDigit !== null && typeof document !== 'undefined'
@@ -152,6 +152,25 @@ function DigitButton({
     >
       {glyph}
     </button>
+  )
+}
+
+function BackspaceIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M21 5H8.5a1 1 0 0 0-.78.375l-4.4 5.5a1 1 0 0 0 0 1.25l4.4 5.5a1 1 0 0 0 .78.375H21a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 9.5l5 5M17 9.5l-5 5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
   )
 }
 

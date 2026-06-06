@@ -93,7 +93,7 @@ export function Settings() {
   }
 
   return (
-    <main className="min-h-dvh flex flex-col items-center px-6 py-8">
+    <main className="min-h-dvh flex flex-col items-center pad-page">
       <div className="w-full max-w-md">
         <BackButton className="mb-6" />
         <h1 className="text-3xl font-semibold tracking-tight">
@@ -322,17 +322,26 @@ export function Settings() {
           )}
         </section>
 
-        <p className="mt-10 flex justify-center gap-4 text-center text-xs text-[var(--color-text-faint)]">
-          <Link to="/stats" className="hover:text-[var(--color-text-muted)]">
+        <nav className="mt-10 flex justify-center gap-2 text-sm text-[var(--color-text-faint)]">
+          <Link
+            to="/stats"
+            className="inline-flex min-h-[44px] items-center rounded-lg px-3 hover:text-[var(--color-text-muted)]"
+          >
             {t.home.stats}
           </Link>
-          <Link to="/privacy" className="hover:text-[var(--color-text-muted)]">
+          <Link
+            to="/privacy"
+            className="inline-flex min-h-[44px] items-center rounded-lg px-3 hover:text-[var(--color-text-muted)]"
+          >
             {t.privacy.title}
           </Link>
-          <Link to="/about" className="hover:text-[var(--color-text-muted)]">
+          <Link
+            to="/about"
+            className="inline-flex min-h-[44px] items-center rounded-lg px-3 hover:text-[var(--color-text-muted)]"
+          >
             {t.about.title}
           </Link>
-        </p>
+        </nav>
       </div>
     </main>
   )
@@ -424,7 +433,23 @@ function ActionRow({
           </div>
         )}
       </div>
-      <span className="text-[var(--color-text-faint)]">→</span>
+      <span className="text-[var(--color-text-faint)]" aria-hidden="true">
+        <ChevronRightIcon />
+      </span>
     </button>
+  )
+}
+
+function ChevronRightIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M9 6L15 12L9 18"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   )
 }

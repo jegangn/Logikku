@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Board } from '@/ui/board/Board'
 import { SamuraiBoardView } from '@/ui/board/SamuraiBoardView'
 import { RotateDevicePrompt } from '@/ui/board/RotateDevicePrompt'
@@ -20,6 +20,7 @@ import { playSound } from '@/audio/sound'
 
 export function Play() {
   const t = useT()
+  const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const variant = params.get('variant') ?? 'classic'
   const difficulty = (params.get('difficulty') as Difficulty | null) ?? 'easy'
@@ -33,6 +34,9 @@ export function Play() {
   const historyIndex = useGameStore((s) => s.historyIndex)
   const historyLen = useGameStore((s) => s.history.length)
   const completedAt = useGameStore((s) => s.completedAt)
+  const elapsedMs = useGameStore((s) => s.elapsedMs)
+  const resumeAt = useGameStore((s) => s.resumeAt)
+  const paused = useGameStore((s) => s.paused)
   const lockedCells = useGameStore((s) => s.lockedCells)
   const shakeKey = useGameStore((s) => s.lastShakeKey)
   const rejectFlashCell = useGameStore((s) => s.rejectFlashCell)
@@ -265,6 +269,13 @@ export function Play() {
     return () => window.removeEventListener('keydown', onKey)
   }, [input, erase, moveSelection, setMode, mode, undo, redo, gridSize])
 
+  const solveMs =
+    completedAt === null
+      ? 0
+      : paused || resumeAt === null
+        ? elapsedMs
+        : elapsedMs + (Date.parse(completedAt) - resumeAt)
+
   if (!grid && boardState?.kind !== 'samurai') {
     return (
       <main className="min-h-dvh flex items-center justify-center">
@@ -278,8 +289,8 @@ export function Play() {
       data-noselect="true"
       className={
         variant === 'samurai'
-          ? 'min-h-dvh flex flex-col items-center px-3 py-4 gap-4 lg:flex-row lg:items-start lg:justify-center'
-          : 'min-h-dvh flex flex-col items-center px-3 py-4 gap-4'
+          ? 'min-h-dvh flex flex-col items-center pad-board gap-4 lg:flex-row lg:items-start lg:justify-center'
+          : 'min-h-dvh flex flex-col items-center pad-board gap-4'
       }
     >
       <Toolbar
@@ -336,12 +347,38 @@ export function Play() {
         onDragHoverChange={setDragHoverCell}
       />
       {completedAt !== null && (
-        <p
+        <div
           data-testid="completed-banner"
-          className="text-[var(--color-accent-strong)] font-medium"
+          role="status"
+          aria-live="polite"
+          className="w-full max-w-[min(92vw,640px)] rounded-2xl border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-6 py-5 text-center"
         >
-          {t.play.solved}
-        </p>
+          <div className="text-2xl font-semibold text-[var(--color-accent-strong)]">
+            {t.play.solved}
+          </div>
+          <div className="mt-1 text-sm text-[var(--color-text-muted)]">
+            {t.play.yourTime} ·{' '}
+            <span className="tabular-nums">{formatMs(solveMs)}</span>
+          </div>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <button
+              type="button"
+              data-testid="next-puzzle-btn"
+              onClick={handleNew}
+              className="min-h-[52px] rounded-xl bg-[var(--color-accent)] px-6 text-base font-semibold text-white active:scale-[0.98] transition-transform"
+            >
+              {t.play.nextPuzzle}
+            </button>
+            <button
+              type="button"
+              data-testid="back-to-menu-btn"
+              onClick={() => navigate('/')}
+              className="min-h-[52px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 text-base font-medium hover:bg-[var(--color-surface-2)] active:scale-[0.98] transition-transform"
+            >
+              {t.play.backToMenu}
+            </button>
+          </div>
+        </div>
       )}
       <span data-testid="puzzle-id" className="sr-only">
         {puzzleId}
@@ -352,4 +389,11 @@ export function Play() {
 
 function clamp(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, n))
+}
+
+function formatMs(ms: number): string {
+  const totalSec = Math.max(0, Math.floor(ms / 1000))
+  const m = Math.floor(totalSec / 60)
+  const s = totalSec % 60
+  return `${m}m ${String(s).padStart(2, '0')}s`
 }

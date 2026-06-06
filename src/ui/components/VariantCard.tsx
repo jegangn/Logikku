@@ -15,7 +15,7 @@ export function VariantCard({ kind, disabled = false }: VariantCardProps) {
     <>
       <VariantThumbnail kind={kind} className="size-16" />
       <div className="mt-2 text-base font-medium text-center">{meta.name}</div>
-      <div className="mt-1 text-xs text-center text-[var(--color-text-muted)] leading-snug">
+      <div className="mt-1 text-[13px] text-center text-[var(--color-text-muted)] leading-snug">
         {meta.description}
       </div>
     </>
@@ -32,7 +32,7 @@ export function VariantCard({ kind, disabled = false }: VariantCardProps) {
         className={`${sharedClasses} opacity-60 cursor-not-allowed`}
       >
         {inner}
-        <div className="mt-1 text-[10px] uppercase tracking-wider text-[var(--color-text-faint)]">
+        <div className="mt-1 text-[11px] uppercase tracking-wider text-[var(--color-text-faint)]">
           {t.home.comingSoon}
         </div>
       </div>
