@@ -48,7 +48,7 @@ export function InputPad({
     : 'grid-cols-5 wide:grid-cols-3'
 
   const dragEnabled = onDigitDrop !== undefined && !disabled
-  const drag = useDigitDrag({
+  const { bind, ghostRef, activeDigit } = useDigitDrag({
     onDrop: (digit, target) => {
       if (onDigitDrop) onDigitDrop(digit, target)
     },
@@ -91,7 +91,7 @@ export function InputPad({
             largeText={size <= 9}
             label={t.play.digit(glyphForDigit(d))}
             pencil={mode === 'pencil'}
-            dragBinding={dragEnabled ? drag.bind(d) : null}
+            dragBinding={dragEnabled ? bind(d) : null}
           />
         ))}
         <button
@@ -106,15 +106,15 @@ export function InputPad({
           <BackspaceIcon />
         </button>
       </div>
-      {dragEnabled && drag.activeDigit !== null && typeof document !== 'undefined'
+      {dragEnabled && activeDigit !== null && typeof document !== 'undefined'
         ? createPortal(
             <div
-              ref={drag.ghostRef}
+              ref={ghostRef}
               data-testid="digit-drag-ghost"
               aria-hidden="true"
               className="digit-drag-ghost"
             >
-              {glyphForDigit(drag.activeDigit)}
+              {glyphForDigit(activeDigit)}
             </div>,
             document.body,
           )
