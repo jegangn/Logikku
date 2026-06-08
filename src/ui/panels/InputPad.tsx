@@ -39,10 +39,13 @@ export function InputPad({
   // 6-digit pad: 4 cols (5 buttons + erase fits 2 rows).
   // 9-digit pad: 5 cols (9 buttons + erase across 2 rows).
   // 16-digit pad: 4 cols (4×4 digits + erase on a 5th row).
+  // Portrait keeps a wide, short pad (few rows) so it never falls below the
+  // board fold. In iPad-class landscape (`wide:`) the pad becomes a narrow, tall
+  // 3-col column beside the board (calculator-style, large touch).
   const cols =
-    size === 6 ? 'grid-cols-4'
-    : size === 16 ? 'grid-cols-4'
-    : 'grid-cols-5'
+    size === 16 ? 'grid-cols-4'
+    : size === 6 ? 'grid-cols-4 wide:grid-cols-3'
+    : 'grid-cols-5 wide:grid-cols-3'
 
   const dragEnabled = onDigitDrop !== undefined && !disabled
   const drag = useDigitDrag({
@@ -55,10 +58,10 @@ export function InputPad({
   return (
     <div
       data-testid="input-pad"
-      className="flex flex-col gap-3 w-full max-w-[min(92vw,640px)]"
+      className="flex flex-col gap-3 w-full max-w-[var(--play-board-max)] wide:max-w-[22rem]"
       aria-label={t.play.inputPad}
     >
-      <div className="flex gap-2" role="tablist" aria-label={t.play.inputMode}>
+      <div className="flex gap-2 sm:gap-3" role="tablist" aria-label={t.play.inputMode}>
         <ModeButton
           active={mode === 'value'}
           onClick={() => onModeChange('value')}
@@ -75,7 +78,7 @@ export function InputPad({
         </ModeButton>
       </div>
       <div
-        className={`grid ${cols} gap-2`}
+        className={`grid ${cols} gap-2 sm:gap-3`}
         role="group"
         aria-label={t.play.digitPad}
       >
@@ -97,7 +100,7 @@ export function InputPad({
           data-sound="erase"
           disabled={disabled}
           onClick={onErase}
-          className="min-h-[56px] flex items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-2)] disabled:opacity-40 active:scale-[0.97] transition-transform"
+          className="min-h-[var(--control-h)] sm:min-h-[var(--control-h-lg)] w-full flex items-center justify-center rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] hover:border-[var(--color-border-strong)] disabled:opacity-40 active:scale-[0.96] transition-[transform,background-color,border-color,color] duration-150"
           aria-label={t.play.erase}
         >
           <BackspaceIcon />
@@ -146,7 +149,7 @@ function DigitButton({
       data-digit={digit}
       disabled={disabled}
       onClick={onClick}
-      className={`min-h-[56px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] ${largeText ? 'text-2xl' : 'text-xl'} font-semibold tabular-nums hover:bg-[var(--color-surface-2)] disabled:opacity-40 active:scale-[0.97] transition-transform`}
+      className={`min-h-[var(--control-h)] sm:min-h-[var(--control-h-lg)] w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] ${largeText ? 'text-3xl sm:text-4xl' : 'text-xl sm:text-2xl'} font-semibold tabular-nums hover:bg-[var(--color-surface-2)] hover:border-[var(--color-border-strong)] disabled:opacity-40 active:scale-[0.96] transition-[transform,background-color,border-color] duration-150`}
       aria-label={label}
       {...(dragBinding ?? {})}
     >
@@ -157,7 +160,7 @@ function DigitButton({
 
 function BackspaceIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path
         d="M21 5H8.5a1 1 0 0 0-.78.375l-4.4 5.5a1 1 0 0 0 0 1.25l4.4 5.5a1 1 0 0 0 .78.375H21a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1Z"
         stroke="currentColor"
@@ -192,10 +195,10 @@ function ModeButton({
       aria-selected={active}
       aria-label={ariaLabel}
       onClick={onClick}
-      className={`min-h-[44px] flex-1 rounded-xl border text-sm font-medium transition-colors ${
+      className={`min-h-[48px] sm:min-h-[52px] flex-1 rounded-2xl border-2 text-base font-semibold tracking-tight transition-colors duration-150 ${
         active
           ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-accent-strong)]'
-          : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+          : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-border-strong)]'
       }`}
     >
       {children}

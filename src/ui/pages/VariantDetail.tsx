@@ -76,23 +76,23 @@ export function VariantDetail() {
           <VariantThumbnail kind={variantKind} className="size-20 shrink-0" />
           <div>
             <h1 className="text-3xl font-semibold tracking-tight">{catalogEntry.name}</h1>
-            <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+            <p className="mt-1 text-[15px] leading-relaxed text-[var(--color-text-muted)]">
               {catalogEntry.description}
             </p>
           </div>
         </header>
 
         <section className="mt-8">
-          <h2 className="text-sm uppercase tracking-wider text-[var(--color-text-faint)]">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-faint)]">
             {t.variant.rules}
           </h2>
-          <div className="mt-2 text-sm leading-relaxed">
+          <div className="mt-3 text-[15px] leading-relaxed">
             <Markdown source={rulesBody} />
           </div>
         </section>
 
         <section className="mt-8">
-          <h2 className="text-sm uppercase tracking-wider text-[var(--color-text-faint)]">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-faint)]">
             {t.variant.pickDifficulty}
           </h2>
           <div className="mt-3">
@@ -102,10 +102,10 @@ export function VariantDetail() {
 
         {played > 0 && (
           <section className="mt-8" data-testid="variant-stats">
-            <h2 className="text-sm uppercase tracking-wider text-[var(--color-text-faint)]">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-faint)]">
               {t.variant.stats}
             </h2>
-            <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+            <p className="mt-3 text-[15px] text-[var(--color-text-muted)] tabular-nums">
               {t.variant.statsPlayed(played)}
               {bestMs !== null && ` · ${t.variant.statsBestTime(formatMs(bestMs))}`}
             </p>

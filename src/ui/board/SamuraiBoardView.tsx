@@ -108,7 +108,7 @@ export function SamuraiBoardView({
       aria-label={t.play.samuraiBoardLabel}
       data-testid="samurai-board"
       viewBox={`0 0 ${SIDE_PX} ${SIDE_PX}`}
-      className="w-full max-w-[min(92vh,720px)] aspect-square select-none"
+      className="w-full max-w-[min(92vh,720px)] wide:max-w-[min(80vh,720px)] aspect-square select-none"
     >
       <rect x={0} y={0} width={SIDE_PX} height={SIDE_PX} fill="var(--color-surface)" />
       {PAINT_ORDER.map((gridIdx) => {

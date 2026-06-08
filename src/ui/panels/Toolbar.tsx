@@ -22,15 +22,17 @@ export function Toolbar({
   return (
     <header
       data-testid="toolbar"
-      className="flex items-center justify-between gap-3 w-full max-w-[min(92vw,640px)] pb-2"
+      className="flex items-center justify-between gap-3 w-full max-w-[var(--play-board-max)] wide:max-w-none pb-2"
     >
       <div className="flex items-center gap-2 min-w-0">
         <BackButton to="/" testId="back-home" />
-        <div className="flex items-baseline gap-3 min-w-0">
-          <h1 className="text-xl font-semibold tracking-tight">{t.appName}</h1>
-          <span className="text-sm text-[var(--color-text-muted)] truncate">
+        <div className="flex flex-col min-w-0">
+          <h1
+            data-testid="puzzle-title"
+            className="text-xl sm:text-2xl font-semibold tracking-tight text-[var(--color-text)] truncate leading-tight"
+          >
             {puzzleLabel}
-          </span>
+          </h1>
         </div>
       </div>
       <div className="flex items-center gap-2">
@@ -54,7 +56,7 @@ export function Toolbar({
           type="button"
           data-testid="new-btn"
           onClick={onNew}
-          className="min-h-[44px] px-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm font-medium hover:bg-[var(--color-surface-2)] active:scale-[0.97] transition-transform"
+          className="min-h-[44px] sm:min-h-[var(--control-h)] px-4 sm:px-5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-sm sm:text-base font-semibold hover:bg-[var(--color-surface-2)] hover:border-[var(--color-border-strong)] active:scale-[0.97] transition-[transform,background-color,border-color] duration-150"
           aria-label={t.play.newPuzzle}
         >
           {t.play.new}
@@ -84,7 +86,7 @@ function IconButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className="h-11 w-11 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] flex items-center justify-center text-[var(--color-text-muted)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)] disabled:opacity-30 disabled:cursor-not-allowed active:scale-[0.95] transition-transform"
+      className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] flex items-center justify-center text-[var(--color-text-muted)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)] hover:border-[var(--color-border-strong)] disabled:opacity-30 disabled:cursor-not-allowed active:scale-[0.95] transition-[transform,background-color,border-color,color] duration-150"
     >
       {children}
     </button>
@@ -93,7 +95,7 @@ function IconButton({
 
 function UndoIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path
         d="M9 14L4 9L9 4"
         stroke="currentColor"
@@ -114,7 +116,7 @@ function UndoIcon() {
 
 function RedoIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path
         d="M15 14L20 9L15 4"
         stroke="currentColor"

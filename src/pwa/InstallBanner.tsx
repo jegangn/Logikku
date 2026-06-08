@@ -38,10 +38,25 @@ export function InstallBanner() {
     <div
       role="status"
       data-testid="install-banner"
-      className="mt-6 rounded-xl border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-4 py-3 flex items-start gap-3"
+      className="rounded-2xl border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-5 py-4 flex items-start gap-3"
     >
-      <span aria-hidden className="text-[var(--color-accent-strong)] text-xl leading-none">⤴</span>
-      <p className="flex-1 text-sm text-[var(--color-text)]">
+      <svg
+        aria-hidden="true"
+        className="mt-0.5 shrink-0 text-[var(--color-accent-strong)]"
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 16V4" />
+        <path d="M8 8l4-4 4 4" />
+        <path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
+      </svg>
+      <p className="flex-1 text-[15px] leading-snug text-[var(--color-text)]">
         {t.pwa.installPrompt}
       </p>
       <button
@@ -55,7 +70,7 @@ export function InstallBanner() {
           }
           setVisible(false)
         }}
-        className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+        className="min-h-[44px] -my-1 px-2 inline-flex items-center text-[15px] font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
       >
         {t.pwa.installDismiss}
       </button>

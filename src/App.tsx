@@ -38,8 +38,17 @@ export default function App() {
 
   if (!loaded) {
     return (
-      <main className="min-h-dvh flex items-center justify-center">
-        <p className="text-[var(--color-text-muted)]">…</p>
+      <main className="min-h-dvh flex items-center justify-center pad-page">
+        <div role="status" aria-live="polite" className="flex flex-col items-center gap-4">
+          <div
+            aria-hidden="true"
+            className="grid grid-cols-3 grid-rows-3 gap-[3px] size-24 rounded-lg border border-[var(--color-board-frame)] p-[2px]"
+          >
+            {Array.from({ length: 9 }).map((_, i) => (
+              <div key={i} className="skeleton" />
+            ))}
+          </div>
+        </div>
       </main>
     )
   }

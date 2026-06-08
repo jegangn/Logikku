@@ -278,8 +278,27 @@ export function Play() {
 
   if (!grid && boardState?.kind !== 'samurai') {
     return (
-      <main className="min-h-dvh flex items-center justify-center">
-        <p className="text-[var(--color-text-muted)]">{t.play.loading}</p>
+      <main className="min-h-dvh flex flex-col items-center justify-center gap-6 pad-board">
+        <div
+          data-testid="play-loading"
+          role="status"
+          aria-live="polite"
+          className="flex flex-col items-center gap-6"
+        >
+          <div
+            aria-hidden="true"
+            className="grid grid-cols-3 grid-rows-3 gap-[3px] size-40 rounded-lg border border-[var(--color-board-frame)] p-[3px]"
+          >
+            {Array.from({ length: 9 }).map((_, i) => (
+              <div
+                key={i}
+                className="skeleton"
+                style={{ animationDelay: `${((i % 3) + Math.floor(i / 3)) * 90}ms` }}
+              />
+            ))}
+          </div>
+          <p className="text-[15px] text-[var(--color-text-muted)]">{t.play.loading}</p>
+        </div>
       </main>
     )
   }
@@ -287,11 +306,7 @@ export function Play() {
   return (
     <main
       data-noselect="true"
-      className={
-        variant === 'samurai'
-          ? 'min-h-dvh flex flex-col items-center pad-board gap-4 lg:flex-row lg:items-start lg:justify-center'
-          : 'min-h-dvh flex flex-col items-center pad-board gap-4'
-      }
+      className="min-h-dvh flex flex-col items-center justify-start pad-board gap-4 wide:flex-row wide:flex-wrap wide:items-start wide:justify-center wide:gap-6"
     >
       <Toolbar
         puzzleLabel={`${isVariantKind(variant) ? t.catalog[variant].name : variant} · ${t.difficulty[difficulty]}`}
@@ -301,85 +316,102 @@ export function Play() {
         onUndo={undo}
         onRedo={redo}
       />
-      {boardState?.kind === 'samurai' ? (
-        isPortrait ? (
-          <RotateDevicePrompt />
+
+      <div
+        data-testid="play-board-col"
+        className="flex w-full justify-center wide:w-auto wide:flex-1 wide:justify-end wide:self-start"
+      >
+        {boardState?.kind === 'samurai' ? (
+          isPortrait ? (
+            <RotateDevicePrompt />
+          ) : (
+            <SamuraiBoardView
+              board={boardState.board}
+              selected={
+                selectedRaw && 'gridIdx' in selectedRaw ? selectedRaw : null
+              }
+              lockedCells={lockedCells}
+              shakeKey={shakeKey}
+              onSelect={(target) => select(target)}
+            />
+          )
         ) : (
-          <SamuraiBoardView
-            board={boardState.board}
-            selected={
-              selectedRaw && 'gridIdx' in selectedRaw ? selectedRaw : null
-            }
+          <Board
+            grid={grid!}
+            selected={selected}
+            variant={variant}
             lockedCells={lockedCells}
             shakeKey={shakeKey}
-            onSelect={(target) => select(target)}
+            {...(jigsawPieceMap ? { jigsawPieceMap } : {})}
+            {...(parityMask ? { parityMask } : {})}
+            {...(edges ? { edges } : {})}
+            {...(thermometers ? { thermometers } : {})}
+            {...(arrows ? { arrows } : {})}
+            {...(cages ? { cages } : {})}
+            {...(outsideClues ? { outsideClues } : {})}
+            {...(variantPaths ? { paths: variantPaths } : {})}
+            dragHoverCell={dragHoverCell}
+            rejectFlashCell={rejectFlashCell}
+            rejectFlashKey={rejectFlashKey}
+            onSelect={select}
           />
-        )
-      ) : (
-        <Board
-          grid={grid!}
-          selected={selected}
-          variant={variant}
-          lockedCells={lockedCells}
-          shakeKey={shakeKey}
-          {...(jigsawPieceMap ? { jigsawPieceMap } : {})}
-          {...(parityMask ? { parityMask } : {})}
-          {...(edges ? { edges } : {})}
-          {...(thermometers ? { thermometers } : {})}
-          {...(arrows ? { arrows } : {})}
-          {...(cages ? { cages } : {})}
-          {...(outsideClues ? { outsideClues } : {})}
-          {...(variantPaths ? { paths: variantPaths } : {})}
-          dragHoverCell={dragHoverCell}
-          rejectFlashCell={rejectFlashCell}
-          rejectFlashKey={rejectFlashKey}
-          onSelect={select}
+        )}
+      </div>
+
+      <div
+        data-testid="play-controls-col"
+        className="flex w-full flex-col items-center gap-4 wide:w-[var(--play-controls-w)] wide:max-w-[var(--play-controls-w)] wide:self-start"
+      >
+        <InputPad
+          mode={mode}
+          size={grid?.shape.size ?? 9}
+          disabled={completedAt !== null}
+          onDigit={input}
+          onErase={erase}
+          onModeChange={setMode}
+          onDigitDrop={handleDigitDrop}
+          onDragHoverChange={setDragHoverCell}
         />
-      )}
-      <InputPad
-        mode={mode}
-        size={grid?.shape.size ?? 9}
-        disabled={completedAt !== null}
-        onDigit={input}
-        onErase={erase}
-        onModeChange={setMode}
-        onDigitDrop={handleDigitDrop}
-        onDragHoverChange={setDragHoverCell}
-      />
-      {completedAt !== null && (
-        <div
-          data-testid="completed-banner"
-          role="status"
-          aria-live="polite"
-          className="w-full max-w-[min(92vw,640px)] rounded-2xl border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-6 py-5 text-center"
-        >
-          <div className="text-2xl font-semibold text-[var(--color-accent-strong)]">
-            {t.play.solved}
+        {completedAt !== null && (
+          <div
+            data-testid="completed-banner"
+            role="status"
+            aria-live="polite"
+            className="w-full max-w-[var(--play-board-max)] wide:max-w-full rounded-2xl border border-[var(--color-success)] bg-[var(--color-success-soft)] px-6 py-6 text-center"
+          >
+            <div className="text-[28px] font-semibold text-[var(--color-success)]">
+              {t.play.solved}
+            </div>
+            <div className="mt-2 text-[15px] text-[var(--color-text-muted)]">
+              {t.play.yourTime} ·{' '}
+              <span className="tabular-nums font-medium text-[var(--color-text)]">
+                {formatMs(solveMs)}
+              </span>
+            </div>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <button
+                type="button"
+                data-testid="next-puzzle-btn"
+                onClick={handleNew}
+                className="min-h-[52px] rounded-2xl bg-[var(--color-accent-button)] px-6 text-base font-semibold text-white active:scale-[0.98] transition-transform"
+              >
+                {t.play.nextPuzzle}
+              </button>
+              <button
+                type="button"
+                data-testid="back-to-menu-btn"
+                onClick={() => navigate('/')}
+                className="min-h-[52px] rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 text-base font-medium hover:bg-[var(--color-surface-2)] hover:border-[var(--color-border-strong)] active:scale-[0.98] transition-transform"
+              >
+                {t.play.backToMenu}
+              </button>
+            </div>
           </div>
-          <div className="mt-1 text-sm text-[var(--color-text-muted)]">
-            {t.play.yourTime} ·{' '}
-            <span className="tabular-nums">{formatMs(solveMs)}</span>
-          </div>
-          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
-            <button
-              type="button"
-              data-testid="next-puzzle-btn"
-              onClick={handleNew}
-              className="min-h-[52px] rounded-xl bg-[var(--color-accent)] px-6 text-base font-semibold text-white active:scale-[0.98] transition-transform"
-            >
-              {t.play.nextPuzzle}
-            </button>
-            <button
-              type="button"
-              data-testid="back-to-menu-btn"
-              onClick={() => navigate('/')}
-              className="min-h-[52px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 text-base font-medium hover:bg-[var(--color-surface-2)] active:scale-[0.98] transition-transform"
-            >
-              {t.play.backToMenu}
-            </button>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
+
+      <div className="hidden portrait:block w-full flex-1" aria-hidden="true" />
+
       <span data-testid="puzzle-id" className="sr-only">
         {puzzleId}
       </span>

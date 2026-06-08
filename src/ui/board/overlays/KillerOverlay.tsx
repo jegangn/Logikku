@@ -80,14 +80,16 @@ export function KillerOverlay({
     colorIndex.set(cage.id, pick % 6)
   }
 
-  // 6-colour pastel palette (low alpha; layered below the cell text).
+  // 6-colour pastel palette (theme-aware tokens; layered below the cell text).
+  // Dark/light alphas are tuned per theme in index.css so cages stay legible
+  // on the near-black board without overpowering the light board.
   const PALETTE = [
-    'rgba(56, 189, 248, 0.10)', // sky
-    'rgba(168, 85, 247, 0.10)', // violet
-    'rgba(34, 197, 94, 0.10)', // green
-    'rgba(250, 204, 21, 0.12)', // amber
-    'rgba(244, 114, 182, 0.10)', // pink
-    'rgba(20, 184, 166, 0.10)', // teal
+    'var(--cage-1)',
+    'var(--cage-2)',
+    'var(--cage-3)',
+    'var(--cage-4)',
+    'var(--cage-5)',
+    'var(--cage-6)',
   ]
 
   // Per-cage anchor cell (topmost row, then leftmost column).
@@ -202,10 +204,10 @@ export function KillerOverlay({
       <text
         key={`sum-${cage.id}`}
         x={a.c * cellSize + inset + 2}
-        y={a.r * cellSize + inset + 10}
-        fontSize={11}
-        fontWeight={600}
-        fill="var(--color-text-muted)"
+        y={a.r * cellSize + inset + 11}
+        fontSize={13}
+        fontWeight={700}
+        fill="var(--color-text)"
         pointerEvents="none"
       >
         {cage.sum}

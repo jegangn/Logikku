@@ -85,7 +85,7 @@ export function Board({
       aria-colcount={size}
       data-testid="board"
       viewBox={`${-margin} ${-margin} ${boardPx + margin * 2} ${boardPx + margin * 2}`}
-      className="w-full max-w-[min(92vw,640px)] aspect-square select-none"
+      className="w-full max-w-[var(--play-board-max)] wide:max-w-[var(--play-board-max-wide)] aspect-square select-none"
     >
       <rect x={0} y={0} width={boardPx} height={boardPx} fill="var(--color-surface)" />
       <BoardCellsLayer

@@ -39,13 +39,15 @@ function CellImpl(props: CellProps) {
 
   const x = coord.c * cellSize
   const y = coord.r * cellSize
-  const fillColor = selected
-    ? 'var(--color-accent-soft)'
-    : sameValueHighlight
-      ? 'rgba(139, 108, 243, 0.10)'
-      : peerHighlight
-        ? 'rgba(255, 255, 255, 0.03)'
-        : 'transparent'
+  const fillColor = conflict
+    ? 'transparent'
+    : selected
+      ? 'var(--color-selection)'
+      : sameValueHighlight
+        ? 'var(--color-same-value)'
+        : peerHighlight
+          ? 'var(--color-peer)'
+          : 'transparent'
 
   return (
     <g
@@ -66,6 +68,19 @@ function CellImpl(props: CellProps) {
       style={{ cursor: 'pointer' }}
     >
       <rect x={x} y={y} width={cellSize} height={cellSize} fill={fillColor} />
+      {selected && (
+        <rect
+          x={x + 3}
+          y={y + 3}
+          width={cellSize - 6}
+          height={cellSize - 6}
+          fill="none"
+          stroke="var(--color-accent-strong)"
+          strokeWidth={3}
+          pointerEvents="none"
+          data-testid={`cell-selected-ring-${coord.r}-${coord.c}`}
+        />
+      )}
       {value !== null ? (
         <text
           x={x + cellSize / 2}
@@ -73,7 +88,7 @@ function CellImpl(props: CellProps) {
           textAnchor="middle"
           dominantBaseline="central"
           fontSize={cellSize * 0.56}
-          fontWeight={given ? 600 : 500}
+          fontWeight={given ? 700 : 500}
           fill={
             conflict
               ? 'var(--color-conflict)'
@@ -101,7 +116,7 @@ function CellImpl(props: CellProps) {
           height={cellSize - 4}
           fill="none"
           stroke="var(--color-conflict)"
-          strokeWidth={1.5}
+          strokeWidth={2.5}
           pointerEvents="none"
         />
       )}

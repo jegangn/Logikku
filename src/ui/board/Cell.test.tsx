@@ -56,7 +56,7 @@ describe('Cell', () => {
     expect(screen.queryByText('2')).toBeNull()
   })
 
-  it('uses given styling weight 600 when given', () => {
+  it('uses given styling weight 700 when given', () => {
     renderInSvg(
       <Cell
         coord={{ r: 0, c: 0 }}
@@ -75,7 +75,7 @@ describe('Cell', () => {
       />,
     )
     const text = screen.getByText('9')
-    expect(text.getAttribute('font-weight')).toBe('600')
+    expect(text.getAttribute('font-weight')).toBe('700')
   })
 
   it('exposes aria-label describing the cell', () => {

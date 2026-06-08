@@ -106,8 +106,8 @@ export function BoardCellsLayer({
           width={cellSize}
           height={cellSize}
           fill="var(--color-accent-soft)"
-          stroke="var(--color-accent)"
-          strokeWidth={2}
+          stroke="var(--color-accent-strong)"
+          strokeWidth={3}
           pointerEvents="none"
         />
       )}
@@ -122,7 +122,7 @@ export function BoardCellsLayer({
           height={cellSize}
           fill="var(--color-conflict-soft)"
           stroke="var(--color-conflict)"
-          strokeWidth={2}
+          strokeWidth={3}
           pointerEvents="none"
         />
       )}
@@ -150,14 +150,21 @@ function GridLines({
   shape: Grid['shape']
   suppressBoxLines: boolean
 }) {
-  const lines: React.ReactElement[] = []
+  const inner: React.ReactElement[] = []
+  const box: React.ReactElement[] = []
+  const frame: React.ReactElement[] = []
   const total = size * cellSize
+
   for (let i = 0; i <= size; i++) {
-    const heavy = !suppressBoxLines && i % shape.boxCols === 0
     const isEdge = i === 0 || i === size
-    const stroke = heavy || isEdge ? 'var(--color-border-strong)' : 'var(--color-border)'
-    const w = heavy || isEdge ? 2.5 : 1
-    lines.push(
+    const isBox = !suppressBoxLines && !isEdge && i % shape.boxCols === 0
+    const stroke = isEdge
+      ? 'var(--color-board-frame)'
+      : isBox
+        ? 'var(--color-grid-box)'
+        : 'var(--color-grid-line)'
+    const w = isEdge ? 4 : isBox ? 2.5 : 1
+    const el = (
       <line
         key={`v-${i}`}
         x1={i * cellSize}
@@ -166,15 +173,21 @@ function GridLines({
         y2={total}
         stroke={stroke}
         strokeWidth={w}
-      />,
+        strokeLinecap="square"
+      />
     )
+    ;(isEdge ? frame : isBox ? box : inner).push(el)
   }
   for (let i = 0; i <= size; i++) {
-    const heavy = !suppressBoxLines && i % shape.boxRows === 0
     const isEdge = i === 0 || i === size
-    const stroke = heavy || isEdge ? 'var(--color-border-strong)' : 'var(--color-border)'
-    const w = heavy || isEdge ? 2.5 : 1
-    lines.push(
+    const isBox = !suppressBoxLines && !isEdge && i % shape.boxRows === 0
+    const stroke = isEdge
+      ? 'var(--color-board-frame)'
+      : isBox
+        ? 'var(--color-grid-box)'
+        : 'var(--color-grid-line)'
+    const w = isEdge ? 4 : isBox ? 2.5 : 1
+    const el = (
       <line
         key={`h-${i}`}
         x1={0}
@@ -183,8 +196,10 @@ function GridLines({
         y2={i * cellSize}
         stroke={stroke}
         strokeWidth={w}
-      />,
+        strokeLinecap="square"
+      />
     )
+    ;(isEdge ? frame : isBox ? box : inner).push(el)
   }
-  return <g pointerEvents="none">{lines}</g>
+  return <g pointerEvents="none">{[...inner, ...box, ...frame]}</g>
 }

@@ -114,10 +114,10 @@ export function Settings() {
                   onClick={() => {
                     void setSetting('theme', value)
                   }}
-                  className={`min-h-[44px] rounded-xl border text-sm font-medium transition-colors ${
+                  className={`min-h-[48px] rounded-2xl border-2 text-base font-semibold transition-colors duration-150 ${
                     theme === value
                       ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-accent-strong)]'
-                      : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+                      : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-border-strong)]'
                   }`}
                 >
                   {label}
@@ -139,10 +139,10 @@ export function Settings() {
                   onClick={() => {
                     void setSetting('language', value)
                   }}
-                  className={`min-h-[44px] rounded-xl border text-sm font-medium transition-colors ${
+                  className={`min-h-[48px] rounded-2xl border-2 text-base font-semibold transition-colors duration-150 ${
                     language === value
                       ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-accent-strong)]'
-                      : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+                      : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-border-strong)]'
                   }`}
                 >
                   {label}
@@ -187,7 +187,7 @@ export function Settings() {
           />
         </section>
 
-        <section className="mt-10 space-y-4" data-sound="off">
+        <section className="mt-12 space-y-4" data-sound="off">
           <Label>{t.settings.soundSection}</Label>
           <ToggleRow
             label={t.settings.soundEnabled}
@@ -219,10 +219,10 @@ export function Settings() {
                         void setSetting('soundTheme', value)
                         playSound('place', { digit: 1 })
                       }}
-                      className={`min-h-[44px] rounded-xl border text-sm font-medium transition-colors ${
+                      className={`min-h-[48px] rounded-2xl border-2 text-base font-semibold transition-colors duration-150 ${
                         soundTheme === value
                           ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-accent-strong)]'
-                          : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+                          : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-border-strong)]'
                       }`}
                     >
                       {label}
@@ -230,8 +230,8 @@ export function Settings() {
                   ))}
                 </div>
               </div>
-              <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3">
-                <label htmlFor="sound-volume" className="text-sm font-medium">
+              <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4">
+                <label htmlFor="sound-volume" className="text-base font-medium">
                   {t.settings.soundVolume}
                 </label>
                 <input
@@ -246,14 +246,14 @@ export function Settings() {
                     void setSetting('soundVolume', Number(e.target.value))
                   }}
                   onPointerUp={() => playSound('tap', {})}
-                  className="mt-3 w-full accent-[var(--color-accent)]"
+                  className="input-volume mt-4 w-full"
                 />
               </div>
             </>
           )}
         </section>
 
-        <section className="mt-10">
+        <section className="mt-12">
           <Label>{t.settings.dataSection}</Label>
           <div className="mt-2 space-y-2">
             <ActionRow
@@ -322,22 +322,22 @@ export function Settings() {
           )}
         </section>
 
-        <nav className="mt-10 flex justify-center gap-2 text-sm text-[var(--color-text-faint)]">
+        <nav className="mt-12 flex justify-center gap-2 text-base text-[var(--color-text-faint)]">
           <Link
             to="/stats"
-            className="inline-flex min-h-[44px] items-center rounded-lg px-3 hover:text-[var(--color-text-muted)]"
+            className="inline-flex min-h-[48px] items-center rounded-xl px-4 hover:text-[var(--color-text-muted)]"
           >
             {t.home.stats}
           </Link>
           <Link
             to="/privacy"
-            className="inline-flex min-h-[44px] items-center rounded-lg px-3 hover:text-[var(--color-text-muted)]"
+            className="inline-flex min-h-[48px] items-center rounded-xl px-4 hover:text-[var(--color-text-muted)]"
           >
             {t.privacy.title}
           </Link>
           <Link
             to="/about"
-            className="inline-flex min-h-[44px] items-center rounded-lg px-3 hover:text-[var(--color-text-muted)]"
+            className="inline-flex min-h-[48px] items-center rounded-xl px-4 hover:text-[var(--color-text-muted)]"
           >
             {t.about.title}
           </Link>
@@ -349,7 +349,7 @@ export function Settings() {
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-sm uppercase tracking-wider text-[var(--color-text-faint)]">
+    <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-faint)]">
       {children}
     </h2>
   )
@@ -369,11 +369,11 @@ function ToggleRow({
   testId: string
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3">
+    <div className="flex items-center justify-between gap-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3.5">
       <div className="flex-1">
-        <div className="text-sm font-medium">{label}</div>
+        <div className="text-base font-medium">{label}</div>
         {hint && (
-          <div className="text-xs text-[var(--color-text-muted)] mt-1">
+          <div className="text-sm text-[var(--color-text-muted)] mt-1">
             {hint}
           </div>
         )}
@@ -385,15 +385,15 @@ function ToggleRow({
         aria-label={label}
         data-testid={testId}
         onClick={() => onChange(!value)}
-        className={`relative h-7 w-12 rounded-full transition-colors ${
+        className={`relative h-8 w-14 shrink-0 rounded-full transition-colors duration-150 before:absolute before:-inset-x-1.5 before:-inset-y-2.5 before:content-[''] ${
           value
             ? 'bg-[var(--color-accent)]'
             : 'bg-[var(--color-border-strong)]'
         }`}
       >
         <span
-          className={`absolute top-0.5 h-6 w-6 rounded-full bg-white transition-transform ${
-            value ? 'translate-x-5' : 'translate-x-0.5'
+          className={`absolute top-1 h-6 w-6 rounded-full bg-[var(--switch-on)] shadow-sm transition-transform duration-150 ${
+            value ? 'translate-x-6' : 'translate-x-1'
           }`}
         />
       </button>
@@ -419,16 +419,16 @@ function ActionRow({
       type="button"
       data-testid={testId}
       onClick={onClick}
-      className={`flex w-full items-center justify-between gap-4 rounded-xl border bg-[var(--color-surface)] px-4 py-3 text-left hover:bg-[var(--color-surface-2)] active:scale-[0.99] transition-transform ${
+      className={`flex w-full items-center justify-between gap-4 rounded-2xl border bg-[var(--color-surface)] px-4 py-3.5 text-left hover:bg-[var(--color-surface-2)] active:scale-[0.99] transition-transform ${
         destructive
-          ? 'border-[var(--color-conflict-soft)] text-[var(--color-conflict)]'
+          ? 'border-[var(--color-conflict)] text-[var(--color-conflict)]'
           : 'border-[var(--color-border)]'
       }`}
     >
       <div className="flex-1">
-        <div className="text-sm font-medium">{label}</div>
+        <div className="text-base font-medium">{label}</div>
         {hint && (
-          <div className={`text-xs mt-1 ${destructive ? 'text-[var(--color-conflict)]' : 'text-[var(--color-text-muted)]'}`}>
+          <div className={`text-sm mt-1 ${destructive ? 'text-[var(--color-conflict)]' : 'text-[var(--color-text-muted)]'}`}>
             {hint}
           </div>
         )}

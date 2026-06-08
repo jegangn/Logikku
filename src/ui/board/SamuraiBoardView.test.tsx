@@ -102,7 +102,7 @@ describe('SamuraiBoardView', () => {
       .getByTestId('samurai-subgrid-1')
       .querySelector('[data-testid="cell-7-5"]')
     const rect = nwPeerSample?.querySelector('rect')
-    expect(rect?.getAttribute('fill')).toBe('rgba(255, 255, 255, 0.03)')
+    expect(rect?.getAttribute('fill')).toBe('var(--color-peer)')
   })
 
   it('omits aria-colindex on samurai cells (documented exception)', () => {

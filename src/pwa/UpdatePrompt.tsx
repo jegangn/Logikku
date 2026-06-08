@@ -36,7 +36,7 @@ export function UpdatePrompt() {
             type="button"
             onClick={() => void update()}
             data-testid="update-refresh"
-            className="px-3 py-2 rounded-lg text-sm font-medium bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-strong)]"
+            className="px-3 py-2 rounded-lg text-sm font-medium bg-[var(--color-accent-button)] text-white hover:brightness-95 transition"
           >
             {t.pwa.refresh}
           </button>

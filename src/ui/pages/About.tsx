@@ -9,17 +9,19 @@ export function About() {
     <main className="min-h-dvh flex flex-col items-center pad-page">
       <div className="w-full max-w-md">
         <BackButton className="mb-6" />
-        <h1 className="text-3xl font-semibold tracking-tight">{t.about.title}</h1>
-        <p className="mt-4 text-[var(--color-text-muted)]">{t.about.tagline}</p>
-        <p data-testid="app-version" className="mt-2 text-sm text-[var(--color-text-faint)]">
-          {t.about.version} {__APP_VERSION__}
-        </p>
-        <p className="mt-6 text-[var(--color-text-muted)] leading-relaxed">{t.about.credit}</p>
-        <div className="mt-8 flex flex-col gap-2 text-sm">
-          <Link to="/privacy" className="text-[var(--color-accent-strong)] hover:underline">
+        <header className="space-y-2">
+          <h1 className="text-3xl font-semibold tracking-tight">{t.about.title}</h1>
+          <p className="text-[17px] text-[var(--color-text-muted)]">{t.about.tagline}</p>
+          <p data-testid="app-version" className="text-[15px] tabular-nums text-[var(--color-text-faint)]">
+            {t.about.version} {__APP_VERSION__}
+          </p>
+        </header>
+        <p className="mt-8 text-[15px] text-[var(--color-text-muted)] leading-relaxed">{t.about.credit}</p>
+        <div className="mt-8 flex flex-col gap-1 text-[15px]">
+          <Link to="/privacy" className="inline-flex min-h-[44px] items-center text-[var(--color-accent-strong)] hover:underline">
             {t.about.privacyLink}
           </Link>
-          <Link to="/settings" className="text-[var(--color-accent-strong)] hover:underline">
+          <Link to="/settings" className="inline-flex min-h-[44px] items-center text-[var(--color-accent-strong)] hover:underline">
             {t.about.backupLink}
           </Link>
         </div>

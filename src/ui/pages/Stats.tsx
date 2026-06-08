@@ -34,29 +34,31 @@ export function Stats() {
 
   return (
     <main className="min-h-dvh flex flex-col items-center pad-page">
-      <div className="w-full max-w-md">
-        <BackButton className="mb-6" />
-        <h1 className="text-3xl font-semibold tracking-tight">
-          {t.stats.title}
-        </h1>
+      <div className="w-full max-w-md space-y-8">
+        <header>
+          <BackButton className="mb-6" />
+          <h1 className="text-3xl font-semibold tracking-tight">
+            {t.stats.title}
+          </h1>
+        </header>
 
         {loaded && total === 0 && (
           <p
             data-testid="stats-empty"
-            className="mt-8 text-sm text-[var(--color-text-muted)]"
+            className="text-[15px] leading-relaxed text-[var(--color-text-muted)]"
           >
             {t.stats.noData}
           </p>
         )}
 
         {total > 0 && (
-          <table className="mt-8 w-full text-sm" data-testid="stats-table">
+          <table className="w-full text-[15px]" data-testid="stats-table">
             <thead>
-              <tr className="text-left text-[var(--color-text-faint)] text-xs uppercase tracking-wider">
-                <th className="pb-2 font-medium">{t.stats.headerBand}</th>
-                <th className="pb-2 font-medium text-right">{t.stats.headerCompleted}</th>
-                <th className="pb-2 font-medium text-right">{t.stats.headerBest}</th>
-                <th className="pb-2 font-medium text-right">{t.stats.headerAverage}</th>
+              <tr className="text-left text-[var(--color-text-faint)] text-xs font-semibold uppercase tracking-wider">
+                <th className="pb-3 font-semibold">{t.stats.headerBand}</th>
+                <th className="pb-3 font-semibold text-right">{t.stats.headerCompleted}</th>
+                <th className="pb-3 font-semibold text-right">{t.stats.headerBest}</th>
+                <th className="pb-3 font-semibold text-right">{t.stats.headerAverage}</th>
               </tr>
             </thead>
             <tbody>
@@ -83,7 +85,7 @@ export function Stats() {
             onClick={() => {
               void reset()
             }}
-            className="mt-8 min-h-[44px] w-full rounded-xl border border-[var(--color-conflict-soft)] text-[var(--color-conflict)] text-sm font-medium hover:bg-[var(--color-conflict-soft)] active:scale-[0.99] transition-transform"
+            className="min-h-[48px] w-full rounded-xl border border-[var(--color-conflict)] text-[var(--color-conflict)] text-[15px] font-medium hover:bg-[var(--color-conflict-soft)] active:scale-[0.99] transition-transform"
           >
             {t.stats.reset}
           </button>

@@ -104,8 +104,12 @@ describe('BoardCellsLayer', () => {
         />
       </svg>,
     )
-    const heavyLines = container.querySelectorAll('line[stroke-width="2.5"]')
-    expect(heavyLines.length).toBe(4)
+    // No tier-2 box separators remain (they collapse to thin cell lines)...
+    const boxLines = container.querySelectorAll('line[stroke="var(--color-grid-box)"]')
+    expect(boxLines.length).toBe(0)
+    // ...but the outer frame (4 edges) is always drawn.
+    const frameLines = container.querySelectorAll('line[stroke="var(--color-board-frame)"]')
+    expect(frameLines.length).toBe(4)
   })
 
 })
