@@ -101,7 +101,6 @@ export interface SavedSamuraiPayload {
 
 export interface SavedSettings {
   readonly key: 'v1'
-  readonly theme?: 'light' | 'dark' | 'system'
   readonly language?: 'en' | 'ms' | 'system'
   readonly highlightConflicts?: boolean
   readonly highlightPeers?: boolean

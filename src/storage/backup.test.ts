@@ -48,7 +48,7 @@ beforeEach(async () => {
 describe('storage/backup', () => {
   it('builds a backup with current games, settings, stats, onboarding', async () => {
     await putGame(game('a'))
-    await putSettings({ key: 'v1', theme: 'light' })
+    await putSettings({ key: 'v1', language: 'en' })
     await putStats({
       key: 'v1',
       byBand: { 'classic:easy': { completed: 2, bestTimeMs: 1000, totalTimeMs: 3000 } },
@@ -57,7 +57,7 @@ describe('storage/backup', () => {
     const backup = await buildBackup()
     expect(backup.version).toBe(2)
     expect(backup.games).toHaveLength(1)
-    expect(backup.settings?.theme).toBe('light')
+    expect(backup.settings?.language).toBe('en')
     expect(backup.stats?.byBand['classic:easy']?.completed).toBe(2)
     expect(backup.onboarding?.kinds).toEqual(['killer', 'samurai'])
   })
@@ -94,7 +94,7 @@ describe('storage/backup', () => {
 
   it('restoreBackup replaces all data including onboarding', async () => {
     await putGame(game('old'))
-    await putSettings({ key: 'v1', theme: 'light' })
+    await putSettings({ key: 'v1', language: 'ms' })
     await putOnboarding({ key: 'v1', kinds: ['killer'] })
     const backup = await buildBackup()
 
@@ -105,7 +105,7 @@ describe('storage/backup', () => {
     const games = await listGames()
     expect(games.map((g) => g.id).sort()).toEqual(['old'])
     const settings = await getSettings()
-    expect(settings?.theme).toBe('light')
+    expect(settings?.language).toBe('ms')
     const onboarding = await getOnboarding()
     expect(onboarding.kinds).toEqual(['killer'])
   })
@@ -115,7 +115,7 @@ describe('storage/backup', () => {
       version: 1,
       exportedAt: new Date().toISOString(),
       games: [game('legacy')],
-      settings: { key: 'v1', theme: 'dark' },
+      settings: { key: 'v1', language: 'en' },
       stats: null,
     })
     const parsed = parseBackup(legacy)
@@ -126,7 +126,7 @@ describe('storage/backup', () => {
 
   it('clearAllData wipes games, settings, stats, onboarding', async () => {
     await putGame(game('a'))
-    await putSettings({ key: 'v1', theme: 'light' })
+    await putSettings({ key: 'v1', language: 'en' })
     await putStats({ key: 'v1', byBand: { 'classic:easy': { completed: 1, bestTimeMs: 100, totalTimeMs: 100 } } })
     await putOnboarding({ key: 'v1', kinds: ['killer'] })
     await clearAllData()

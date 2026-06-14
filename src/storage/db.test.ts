@@ -72,9 +72,9 @@ describe('storage/db', () => {
   })
 
   it('settings round-trip', async () => {
-    await putSettings({ key: 'v1', theme: 'dark' })
+    await putSettings({ key: 'v1', language: 'en' })
     const s = await getSettings()
-    expect(s?.theme).toBe('dark')
+    expect(s?.language).toBe('en')
   })
 
   it('stats default to empty when not yet stored', async () => {

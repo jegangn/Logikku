@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useSettingsStore, type Theme } from '@/state/settingsStore'
+import { useSettingsStore } from '@/state/settingsStore'
 import type { Language } from '@/i18n/lang'
 import {
   buildBackup,
@@ -18,18 +18,12 @@ import { BackButton } from '@/ui/components/BackButton'
 
 export function Settings() {
   const t = useT()
-  const THEMES: ReadonlyArray<{ value: Theme; label: string }> = [
-    { value: 'light', label: t.settings.themeLight },
-    { value: 'dark', label: t.settings.themeDark },
-    { value: 'system', label: t.settings.themeSystem },
-  ]
   const language = useSettingsStore((s) => s.language)
   const LANGUAGES: ReadonlyArray<{ value: Language; label: string }> = [
     { value: 'en', label: t.settings.languageEnglish },
     { value: 'ms', label: t.settings.languageMalay },
     { value: 'system', label: t.settings.languageSystem },
   ]
-  const theme = useSettingsStore((s) => s.theme)
   const strictMode = useSettingsStore((s) => s.strictMode)
   const highlightConflicts = useSettingsStore((s) => s.highlightConflicts)
   const highlightPeers = useSettingsStore((s) => s.highlightPeers)
@@ -101,31 +95,6 @@ export function Settings() {
         </h1>
 
         <section className="mt-8 space-y-4">
-          <div>
-            <Label>{t.settings.theme}</Label>
-            <div className="mt-2 grid grid-cols-3 gap-2" role="tablist" aria-label={t.settings.theme}>
-              {THEMES.map(({ value, label }) => (
-                <button
-                  key={value}
-                  type="button"
-                  role="tab"
-                  aria-selected={theme === value}
-                  data-testid={`theme-${value}`}
-                  onClick={() => {
-                    void setSetting('theme', value)
-                  }}
-                  className={`min-h-[48px] rounded-2xl border-2 text-base font-semibold transition-colors duration-150 ${
-                    theme === value
-                      ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-accent-strong)]'
-                      : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-border-strong)]'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-
           <div>
             <Label>{t.settings.language}</Label>
             <div className="mt-2 grid grid-cols-3 gap-2" role="tablist" aria-label={t.settings.language}>

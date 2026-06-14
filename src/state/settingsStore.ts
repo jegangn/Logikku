@@ -3,10 +3,7 @@ import { getSettings, putSettings, type SavedSettings } from '@/storage/db'
 import type { Language } from '@/i18n/lang'
 import type { SoundTheme } from '@/audio/themes'
 
-export type Theme = 'light' | 'dark' | 'system'
-
 export interface SettingsState {
-  readonly theme: Theme
   readonly language: Language
   readonly strictMode: boolean
   readonly highlightConflicts: boolean
@@ -24,7 +21,6 @@ export interface SettingsState {
 }
 
 const DEFAULTS: Omit<SettingsState, 'loaded' | 'loadFromDb' | 'set'> = {
-  theme: 'system',
   language: 'system',
   strictMode: false,
   highlightConflicts: true,
@@ -43,7 +39,6 @@ export const useSettingsStore = create<SettingsState>((setState, get) => ({
     const saved = await getSettings()
     if (saved) {
       setState({
-        theme: saved.theme ?? DEFAULTS.theme,
         language: saved.language ?? DEFAULTS.language,
         strictMode: false,
         highlightConflicts: saved.highlightConflicts ?? DEFAULTS.highlightConflicts,
@@ -64,7 +59,6 @@ export const useSettingsStore = create<SettingsState>((setState, get) => ({
     const s = get()
     const next: SavedSettings = {
       key: 'v1',
-      theme: s.theme,
       language: s.language,
       highlightConflicts: s.highlightConflicts,
       highlightPeers: s.highlightPeers,

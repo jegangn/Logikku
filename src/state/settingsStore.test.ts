@@ -9,7 +9,6 @@ beforeEach(async () => {
     req.onsuccess = req.onerror = req.onblocked = () => resolve()
   })
   useSettingsStore.setState({
-    theme: 'system',
     strictMode: false,
     highlightConflicts: true,
     highlightPeers: true,
@@ -22,25 +21,21 @@ beforeEach(async () => {
 })
 
 describe('settingsStore', () => {
-  it('defaults to system theme, strict off, highlights on', () => {
+  it('defaults: strict off, highlights on', () => {
     const s = useSettingsStore.getState()
-    expect(s.theme).toBe('system')
     expect(s.strictMode).toBe(false)
     expect(s.highlightConflicts).toBe(true)
     expect(s.highlightPeers).toBe(true)
   })
 
   it('set persists and round-trips via loadFromDb', async () => {
-    await useSettingsStore.getState().set('theme', 'light')
     await useSettingsStore.getState().set('pencilAutoClean', true)
     useSettingsStore.setState({
-      theme: 'system',
       pencilAutoClean: false,
       loaded: false,
     })
     await useSettingsStore.getState().loadFromDb()
     const s = useSettingsStore.getState()
-    expect(s.theme).toBe('light')
     expect(s.pencilAutoClean).toBe(true)
     expect(s.loaded).toBe(true)
   })

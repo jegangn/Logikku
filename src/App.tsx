@@ -9,13 +9,12 @@ import { Privacy } from '@/ui/pages/Privacy'
 import { About } from '@/ui/pages/About'
 import { useSettingsStore } from '@/state/settingsStore'
 import { useOnboardingStore } from '@/state/onboardingStore'
-import { applyTheme, watchSystemTheme } from '@/theme'
+import { applyTheme } from '@/theme'
 import { LanguageProvider } from '@/i18n'
 import { UpdatePrompt } from '@/pwa/UpdatePrompt'
 import { SoundController } from '@/audio/SoundController'
 
 export default function App() {
-  const theme = useSettingsStore((s) => s.theme)
   const loadSettings = useSettingsStore((s) => s.loadFromDb)
   const loaded = useSettingsStore((s) => s.loaded)
   const loadOnboarding = useOnboardingStore((s) => s.loadFromDb)
@@ -29,12 +28,8 @@ export default function App() {
   }, [loadOnboarding])
 
   useEffect(() => {
-    applyTheme(theme)
-    if (theme === 'system') {
-      return watchSystemTheme(() => applyTheme('system'))
-    }
-    return
-  }, [theme])
+    applyTheme()
+  }, [])
 
   if (!loaded) {
     return (
