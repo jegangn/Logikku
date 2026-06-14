@@ -187,6 +187,18 @@ export function recomputeCandidates(grid: Grid): void {
   }
 }
 
+export function countPlaced(grid: Grid): Map<Digit, number> {
+  const counts = new Map<Digit, number>()
+  for (let n = 1; n <= grid.shape.size; n++) counts.set(n as Digit, 0)
+  for (let r = 0; r < grid.shape.size; r++) {
+    for (let c = 0; c < grid.shape.size; c++) {
+      const v = cellAt(grid, { r, c }).value
+      if (v !== null) counts.set(v, (counts.get(v) ?? 0) + 1)
+    }
+  }
+  return counts
+}
+
 export function applyEliminations(grid: Grid, e: Eliminations): void {
   for (const removal of e.removals) {
     cellAt(grid, removal.coord).candidates.delete(removal.digit)

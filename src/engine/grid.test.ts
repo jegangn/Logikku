@@ -9,10 +9,12 @@ import {
   cloneGrid,
   setValue,
   applyEliminations,
+  countPlaced,
   CLASSIC_9,
   CLASSIC_6,
   CLASSIC_16,
 } from './grid'
+import type { Digit } from './grid'
 
 const EASY_PUZZLE =
   '530070000600195000098000060800060003400803001700020006060000280000419005000080079'
@@ -233,5 +235,22 @@ describe('peersOf at N=16', () => {
     const set = new Set(peers.map((p) => `${p.r},${p.c}`))
     expect(set.size).toBe(39)
     expect(set.has('0,0')).toBe(false)
+  })
+})
+
+describe('countPlaced', () => {
+  it('counts each placed digit and zero-fills the rest', () => {
+    const grid = parsePuzzle(EASY_PUZZLE, CLASSIC_9)
+    const counts = countPlaced(grid)
+    for (let n = 1; n <= 9; n++) expect(counts.has(n as Digit)).toBe(true)
+    const placed = [...EASY_PUZZLE].filter((ch) => ch !== '0' && ch !== '.').length
+    const total = [...counts.values()].reduce((a, b) => a + b, 0)
+    expect(total).toBe(placed)
+  })
+
+  it('reports a full board as 9 of each digit', () => {
+    const solved = '534678912672195348198342567859761423426853791713924856961537284287419635345286179'
+    const counts = countPlaced(parsePuzzle(solved, CLASSIC_9))
+    for (let n = 1; n <= 9; n++) expect(counts.get(n as Digit)).toBe(9)
   })
 })

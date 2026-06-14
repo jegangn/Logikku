@@ -15,6 +15,7 @@ export {
   applyEliminations,
   coordKey,
   recomputeCandidates,
+  countPlaced,
 } from './grid'
 export { ConstraintRegistry, ALL_CONSTRAINT_KINDS } from './registry'
 export { createClassicConstraint } from './constraints/classic'
