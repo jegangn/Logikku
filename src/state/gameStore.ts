@@ -104,7 +104,7 @@ function recomputeProgress(
   return { mistakeCells, completedDigits }
 }
 
-function givensOnlyGrid(grid: Grid, givens: string): Grid {
+function blankNonGivens(grid: Grid, givens: string): Grid {
   const g = cloneGrid(grid)
   const size = g.shape.size
   for (let r = 0; r < size; r++) {
@@ -117,6 +117,13 @@ function givensOnlyGrid(grid: Grid, givens: string): Grid {
       }
     }
   }
+  return g
+}
+
+// Candidates are repopulated only for the solver; the display board keeps empty
+// cells blank (no auto pencil marks), matching a fresh loadPuzzle.
+function givensOnlyGrid(grid: Grid, givens: string): Grid {
+  const g = blankNonGivens(grid, givens)
   recomputeCandidates(g)
   return g
 }
@@ -1130,8 +1137,9 @@ export const useGameStore = create<GameState>((set, get) => ({
     const state = get()
     const board = state.board
     if (!board || board.kind !== 'grid') return
-    const fresh: GameBoard = { kind: 'grid', grid: givensOnlyGrid(board.grid, state.givens) }
-    const solution = state.solution ?? solveBoard(fresh)
+    const fresh: GameBoard = { kind: 'grid', grid: blankNonGivens(board.grid, state.givens) }
+    const solution =
+      state.solution ?? solveBoard({ kind: 'grid', grid: givensOnlyGrid(board.grid, state.givens) })
     const progress = recomputeProgress(fresh, solution)
     set({
       board: fresh,
