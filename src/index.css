@@ -6,43 +6,41 @@
 @custom-variant wide (@media (orientation: landscape) and (min-height: 600px));
 
 @theme {
-  --color-bg: #0a0c12;
-  --color-surface: #10131c;
-  --color-surface-2: #1b1f2c;
-  --color-surface-3: #1f2433;
-  --color-border: #252b3d;
-  --color-border-strong: #3a4258;
-  --color-grid-line: #2b3142;
-  --color-grid-box: #5a6485;
-  --color-board-frame: #7b86a8;
-  --color-text: #e6e8f0;
-  --color-text-muted: #a7adc0;
-  --color-text-faint: #8b91a6;
-  --color-accent: #9579f5;
-  --color-accent-soft: rgba(149, 121, 245, 0.20);
-  --color-accent-strong: #b59bff;
-  /* Solid fill for white-text CTAs: darker than --color-accent so white text
-     clears WCAG AA (white on #6a4fd0 = 5.77:1; on #9579f5 was only 3.32:1). */
-  --color-accent-button: #6a4fd0;
-  --color-conflict: #e8607d;
-  --color-conflict-soft: rgba(232, 96, 125, 0.18);
-  --color-given: #f2f3f8;
-  --color-entered: #b59bff;
-  --color-peer: rgba(149, 121, 245, 0.10);
-  --color-same-value: rgba(149, 121, 245, 0.16);
-  --color-selection: rgba(149, 121, 245, 0.24);
-  --color-success: #5fd0a4;
-  --color-success-soft: rgba(95, 208, 164, 0.14);
+  --color-bg: #efe7d6;
+  --color-surface: #fcf8f0;
+  --color-surface-2: #f3ebda;
+  --color-surface-3: #eae0cc;
+  --color-border: #e2d6bc;
+  --color-border-strong: #c8b690;
+  --color-grid-line: #e2d4b8;
+  --color-grid-box: #b59a73;
+  --color-board-frame: #a98e63;
+  --color-text: #463526;
+  --color-text-muted: #8a6a4a;
+  --color-text-faint: #a98e63;
+  --color-accent: #9c6233;
+  --color-accent-soft: rgba(156, 98, 51, 0.14);
+  --color-accent-strong: #7a4d26;
+  --color-accent-button: #875327;
+  --color-conflict: #c0533c;
+  --color-conflict-soft: rgba(192, 83, 60, 0.14);
+  --color-given: #463526;
+  --color-entered: #a8703c;
+  --color-peer: rgba(180, 150, 110, 0.18);
+  --color-same-value: rgba(156, 98, 51, 0.16);
+  --color-selection: rgba(246, 170, 90, 0.42);
+  --color-success: #5e7d33;
+  --color-success-soft: rgba(94, 125, 51, 0.14);
+  --color-done: #c7b79a;
   --switch-on: #ffffff;
 
-  /* Killer cage tints — theme-aware so pastels stay legible on the near-black
-     dark board (higher alpha) without overpowering the warm-white light board. */
-  --cage-1: rgba(56, 189, 248, 0.18);
-  --cage-2: rgba(168, 85, 247, 0.20);
-  --cage-3: rgba(52, 211, 153, 0.18);
-  --cage-4: rgba(250, 204, 21, 0.18);
-  --cage-5: rgba(244, 114, 182, 0.18);
-  --cage-6: rgba(45, 212, 191, 0.18);
+  /* Killer cage tints */
+  --cage-1: rgba(56, 189, 248, 0.12);
+  --cage-2: rgba(168, 85, 247, 0.12);
+  --cage-3: rgba(34, 197, 94, 0.12);
+  --cage-4: rgba(250, 204, 21, 0.16);
+  --cage-5: rgba(244, 114, 182, 0.12);
+  --cage-6: rgba(20, 184, 166, 0.12);
 
   --font-sans: -apple-system, BlinkMacSystemFont, ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
@@ -55,42 +53,6 @@
   --play-board-max: min(92vw, 640px);
   --play-board-max-wide: min(72vh, 640px);
   --play-controls-w: clamp(280px, 34vw, 360px);
-}
-
-html[data-theme="light"] {
-  --color-bg: #f7f5f0;
-  --color-surface: #ffffff;
-  --color-surface-2: #f1efe8;
-  --color-surface-3: #ece9e1;
-  --color-border: #e4e1d8;
-  --color-border-strong: #b8b3a6;
-  --color-grid-line: #cbc7bc;
-  --color-grid-box: #8d8676;
-  --color-board-frame: #5f594c;
-  --color-text: #1d1c22;
-  --color-text-muted: #56535f;
-  --color-text-faint: #6b6873;
-  --color-accent: #5d3fc9;
-  --color-accent-soft: rgba(93, 63, 201, 0.12);
-  --color-accent-strong: #4326b0;
-  --color-accent-button: #5d3fc9;
-  --color-conflict: #b8325c;
-  --color-conflict-soft: rgba(184, 50, 92, 0.12);
-  --color-given: #1d1c22;
-  --color-entered: #5d3fc9;
-  --color-peer: rgba(106, 75, 217, 0.07);
-  --color-same-value: rgba(106, 75, 217, 0.16);
-  --color-selection: rgba(106, 75, 217, 0.20);
-  --color-success: #1f9d6b;
-  --color-success-soft: rgba(31, 157, 107, 0.10);
-  --switch-on: #ffffff;
-  --cage-1: rgba(56, 189, 248, 0.12);
-  --cage-2: rgba(168, 85, 247, 0.12);
-  --cage-3: rgba(34, 197, 94, 0.12);
-  --cage-4: rgba(250, 204, 21, 0.16);
-  --cage-5: rgba(244, 114, 182, 0.12);
-  --cage-6: rgba(20, 184, 166, 0.12);
-  color-scheme: light;
 }
 
 /* Page padding that adds the device safe-area insets to the design padding,
@@ -134,7 +96,7 @@ html[data-theme="light"] {
     height: 100%;
   }
   html {
-    color-scheme: dark;
+    color-scheme: light;
   }
   body {
     margin: 0;
