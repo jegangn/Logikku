@@ -92,10 +92,6 @@ export const ms: Strings = {
 
   settings: {
     title: 'Tetapan',
-    theme: 'Tema',
-    themeLight: 'Cerah',
-    themeDark: 'Gelap',
-    themeSystem: 'Sistem',
     language: 'Bahasa',
     languageEnglish: 'English',
     languageMalay: 'Bahasa Malaysia',

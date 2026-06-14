@@ -90,10 +90,6 @@ export const en = {
 
   settings: {
     title: 'Settings',
-    theme: 'Theme',
-    themeLight: 'Light',
-    themeDark: 'Dark',
-    themeSystem: 'System',
     language: 'Language',
     languageEnglish: 'English',
     languageMalay: 'Bahasa Malaysia',

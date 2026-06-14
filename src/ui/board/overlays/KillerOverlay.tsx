@@ -80,9 +80,8 @@ export function KillerOverlay({
     colorIndex.set(cage.id, pick % 6)
   }
 
-  // 6-colour pastel palette (theme-aware tokens; layered below the cell text).
-  // Dark/light alphas are tuned per theme in index.css so cages stay legible
-  // on the near-black board without overpowering the light board.
+  // 6-colour pastel palette (tokens layered below the cell text). Cage alphas
+  // are tuned in index.css to stay legible on the cream board.
   const PALETTE = [
     'var(--cage-1)',
     'var(--cage-2)',

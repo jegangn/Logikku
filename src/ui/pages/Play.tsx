@@ -387,7 +387,7 @@ export function Play() {
         <InputPad
           mode={mode}
           size={grid?.shape.size ?? 9}
-          disabled={completedAt !== null}
+          disabled={completedAt !== null || outOfTries}
           onDigit={input}
           onErase={erase}
           onModeChange={setMode}

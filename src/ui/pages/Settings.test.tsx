@@ -17,7 +17,7 @@ describe('Settings footer', () => {
 })
 
 describe('Settings sound section', () => {
-  it('renders the sound toggle, theme picker, and volume slider', () => {
+  it('renders the sound toggle, sound theme picker, and volume slider', () => {
     render(
       <MemoryRouter>
         <Settings />
