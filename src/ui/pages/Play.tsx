@@ -6,6 +6,7 @@ import { RotateDevicePrompt } from '@/ui/board/RotateDevicePrompt'
 import { useIsPortraitOrientation } from '@/ui/hooks/useIsPortraitOrientation'
 import { InputPad } from '@/ui/panels/InputPad'
 import { Toolbar } from '@/ui/panels/Toolbar'
+import { StatusRow } from '@/ui/panels/StatusRow'
 import { selectGrid, useGameStore } from '@/state/gameStore'
 import { flushSave, tryHydrate, wireGamePersistence } from '@/state/persistence'
 import { pickPuzzle } from '@/puzzles'
@@ -34,6 +35,7 @@ export function Play() {
   const historyIndex = useGameStore((s) => s.historyIndex)
   const historyLen = useGameStore((s) => s.history.length)
   const completedAt = useGameStore((s) => s.completedAt)
+  const outOfTries = useGameStore((s) => s.outOfTries)
   const elapsedMs = useGameStore((s) => s.elapsedMs)
   const resumeAt = useGameStore((s) => s.resumeAt)
   const paused = useGameStore((s) => s.paused)
@@ -317,9 +319,11 @@ export function Play() {
         onRedo={redo}
       />
 
+      <StatusRow difficultyLabel={t.difficulty[difficulty]} />
+
       <div
         data-testid="play-board-col"
-        className="flex w-full justify-center wide:w-auto wide:flex-1 wide:justify-end wide:self-start"
+        className="relative flex w-full justify-center wide:w-auto wide:flex-1 wide:justify-end wide:self-start"
       >
         {boardState?.kind === 'samurai' ? (
           isPortrait ? (
@@ -355,6 +359,19 @@ export function Play() {
             rejectFlashKey={rejectFlashKey}
             onSelect={select}
           />
+        )}
+        {paused && completedAt === null && !outOfTries && (
+          <button
+            type="button"
+            data-testid="paused-cover"
+            data-sound="tap"
+            onClick={() => resume()}
+            aria-label={t.play.resume}
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 rounded-2xl bg-[var(--color-bg)]/90 backdrop-blur-sm"
+          >
+            <span className="text-[var(--color-text)] text-lg">{t.play.pause}</span>
+            <span className="rounded-xl bg-[var(--color-accent-button)] px-5 py-2 text-white">{t.play.resume}</span>
+          </button>
         )}
       </div>
 
