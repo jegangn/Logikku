@@ -6,6 +6,7 @@ import {
   backtrackingSolve,
   cellAt,
   cloneGrid,
+  coordKey,
   createAntiKingConstraint,
   createAntiKnightConstraint,
   createArrowConstraint,
@@ -70,6 +71,54 @@ export type GameBoard =
 function gridOf(board: GameBoard | null): Grid | null {
   if (board === null) return null
   return board.kind === 'grid' ? board.grid : null
+}
+
+function recomputeProgress(
+  board: GameBoard | null,
+  solution: GameBoard | null,
+): { mistakeCells: Set<string>; completedDigits: Set<Digit> } {
+  const mistakeCells = new Set<string>()
+  const completedDigits = new Set<Digit>()
+  const g = gridOf(board)
+  const sg = solution && solution.kind === 'grid' ? solution.grid : null
+  if (!g || !sg) return { mistakeCells, completedDigits }
+  const size = g.shape.size
+  const placed = new Map<Digit, number>()
+  const wrong = new Map<Digit, number>()
+  for (let n = 1; n <= size; n++) { placed.set(n as Digit, 0); wrong.set(n as Digit, 0) }
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      const v = cellAt(g, { r, c }).value
+      if (v === null) continue
+      placed.set(v, (placed.get(v) ?? 0) + 1)
+      if (v !== cellAt(sg, { r, c }).value) {
+        mistakeCells.add(coordKey({ r, c }))
+        wrong.set(v, (wrong.get(v) ?? 0) + 1)
+      }
+    }
+  }
+  for (let n = 1; n <= size; n++) {
+    const d = n as Digit
+    if (placed.get(d) === size && (wrong.get(d) ?? 0) === 0) completedDigits.add(d)
+  }
+  return { mistakeCells, completedDigits }
+}
+
+function givensOnlyGrid(grid: Grid, givens: string): Grid {
+  const g = cloneGrid(grid)
+  const size = g.shape.size
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      const ch = givens[r * size + c]
+      if (ch === undefined || ch === '0' || ch === '.') {
+        const cell = cellAt(g, { r, c })
+        cell.value = null
+        cell.candidates = new Set()
+      }
+    }
+  }
+  recomputeCandidates(g)
+  return g
 }
 
 function solveBoard(board: GameBoard): GameBoard | null {
@@ -156,6 +205,12 @@ export interface EdgeMarkRecord {
 export interface GameState {
   board: GameBoard | null
   solution: GameBoard | null
+  mistakes: number
+  readonly maxMistakes: number
+  mistakeCells: ReadonlySet<string>
+  completedDigits: ReadonlySet<Digit>
+  outOfTries: boolean
+  mistakeFlashKey: number
   puzzleId: string | null
   variant: string
   difficulty: Difficulty
@@ -534,6 +589,12 @@ function revertEntry(grid: Grid, entry: HistoryEntry): void {
 export const useGameStore = create<GameState>((set, get) => ({
   board: null,
   solution: null,
+  mistakes: 0,
+  maxMistakes: 3,
+  mistakeCells: new Set(),
+  completedDigits: new Set(),
+  outOfTries: false,
+  mistakeFlashKey: 0,
   puzzleId: null,
   variant: 'classic',
   difficulty: 'easy',
@@ -590,6 +651,11 @@ export const useGameStore = create<GameState>((set, get) => ({
       set({
         board: gameBoard,
         solution,
+        mistakes: 0,
+        mistakeCells: new Set(),
+        completedDigits: new Set(),
+        outOfTries: false,
+        mistakeFlashKey: 0,
         puzzleId: id,
         variant,
         difficulty,
@@ -648,14 +714,20 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (skyscraperClues !== undefined) opts.skyscraperClues = skyscraperClues
     if (paths !== undefined) opts.paths = paths
     const shape = shapeForVariant(variant)
-    const gameBoard: GameBoard = {
+    const grid = freshGridFromGivens(givens, variant, opts)
+    const gameBoard: GameBoard = { kind: 'grid', grid }
+    const solution = solveBoard({
       kind: 'grid',
-      grid: freshGridFromGivens(givens, variant, opts),
-    }
-    const solution = solveBoard(gameBoard)
+      grid: givensOnlyGrid(grid, givens),
+    })
     set({
       board: gameBoard,
       solution,
+      mistakes: 0,
+      mistakeCells: new Set(),
+      completedDigits: new Set(),
+      outOfTries: false,
+      mistakeFlashKey: 0,
       puzzleId: id,
       variant,
       difficulty,
@@ -708,6 +780,12 @@ export const useGameStore = create<GameState>((set, get) => ({
       set({
         board: gameBoard,
         solution: solveBoard(gameBoard),
+        mistakes: saved.mistakes ?? 0,
+        maxMistakes: 3,
+        mistakeCells: new Set(),
+        completedDigits: new Set(),
+        outOfTries: (saved.mistakes ?? 0) >= 3,
+        mistakeFlashKey: 0,
         puzzleId: saved.id,
         variant: saved.variant,
         difficulty: saved.difficulty,
@@ -793,9 +871,20 @@ export const useGameStore = create<GameState>((set, get) => ({
     const history: HistoryEntry[] = saved.history.map(savedHistoryToEntry)
     const shape = shapeForVariant(saved.variant)
     const gameBoard: GameBoard = { kind: 'grid', grid }
+    const solution = solveBoard({
+      kind: 'grid',
+      grid: givensOnlyGrid(grid, saved.givens),
+    })
+    const progress = recomputeProgress(gameBoard, solution)
     set({
       board: gameBoard,
-      solution: solveBoard(gameBoard),
+      solution,
+      mistakes: saved.mistakes ?? 0,
+      maxMistakes: 3,
+      mistakeCells: progress.mistakeCells,
+      completedDigits: progress.completedDigits,
+      outOfTries: (saved.mistakes ?? 0) >= 3,
+      mistakeFlashKey: 0,
       puzzleId: saved.id,
       variant: saved.variant,
       difficulty: saved.difficulty,
@@ -836,6 +925,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   input: (digit) => {
     const state = get()
+    if (state.outOfTries) return
     const { selected, mode } = state
     if (!state.board || !selected || state.completedAt) return
     if (state.board.kind === 'grid') {
@@ -876,13 +966,30 @@ export const useGameStore = create<GameState>((set, get) => ({
         }
       }
       const after = snapshot(nextCell)
+      const nextBoard: GameBoard = { kind: 'grid', grid: next }
+      const sol = get().solution
+      const correct = solutionDigitAt(sol, selected)
+      let mistakes = get().mistakes
+      let mistakeFlashKey = get().mistakeFlashKey
+      if (correct !== null && digit !== correct) {
+        mistakes += 1
+        mistakeFlashKey += 1
+      }
+      const progress = recomputeProgress(nextBoard, sol)
+      const outOfTries = mistakes >= get().maxMistakes
       pushAndApply(state, next, {
         kind: 'value',
         coord: selected,
         targetBefore: before,
         targetAfter: after,
         peerRemovals,
-      }, set)
+      }, set, {
+        mistakes,
+        mistakeFlashKey,
+        mistakeCells: progress.mistakeCells,
+        completedDigits: progress.completedDigits,
+        outOfTries,
+      })
 
       const strict = useSettingsStore.getState().strictMode
       if (strict && cellConflicts(next, selected)) {
@@ -940,6 +1047,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   erase: () => {
     const state = get()
+    if (state.outOfTries) return
     const { selected } = state
     if (!state.board || !selected || state.completedAt) return
     if (state.board.kind === 'grid') {
@@ -956,13 +1064,18 @@ export const useGameStore = create<GameState>((set, get) => ({
       nextCell.value = null
       nextCell.candidates = new Set()
       const after = snapshot(nextCell)
+      const nextBoard: GameBoard = { kind: 'grid', grid: next }
+      const progress = recomputeProgress(nextBoard, get().solution)
       pushAndApply(state, next, {
         kind: 'erase',
         coord: selected,
         targetBefore: before,
         targetAfter: after,
         peerRemovals: [],
-      }, set)
+      }, set, {
+        mistakeCells: progress.mistakeCells,
+        completedDigits: progress.completedDigits,
+      })
       return
     }
     if (state.board.kind === 'samurai') {
@@ -1021,7 +1134,15 @@ export const useGameStore = create<GameState>((set, get) => ({
       if (state.lockedCells.has(`${entry.coord.r},${entry.coord.c}`)) return
       const next = cloneGrid(grid)
       revertEntry(next, entry)
-      set({ board: { kind: 'grid', grid: next }, historyIndex: state.historyIndex - 1, completedAt: null })
+      const nextBoard: GameBoard = { kind: 'grid', grid: next }
+      const progress = recomputeProgress(nextBoard, state.solution)
+      set({
+        board: nextBoard,
+        historyIndex: state.historyIndex - 1,
+        completedAt: null,
+        mistakeCells: progress.mistakeCells,
+        completedDigits: progress.completedDigits,
+      })
       return
     }
     if (state.board.kind === 'samurai' && 'prevByLocation' in entry) {
@@ -1050,10 +1171,14 @@ export const useGameStore = create<GameState>((set, get) => ({
       const next = cloneGrid(grid)
       applyEntry(next, entry)
       const completed = isComplete(next) ? new Date().toISOString() : null
+      const nextBoard: GameBoard = { kind: 'grid', grid: next }
+      const progress = recomputeProgress(nextBoard, state.solution)
       set({
-        board: { kind: 'grid', grid: next },
+        board: nextBoard,
         historyIndex: historyIndex + 1,
         completedAt: completed,
+        mistakeCells: progress.mistakeCells,
+        completedDigits: progress.completedDigits,
       })
       return
     }
@@ -1153,6 +1278,7 @@ function pushAndApply(
   next: Grid,
   entry: HistoryEntry,
   set: SetFn,
+  extra?: Partial<GameState>,
 ): void {
   const pushed = pushEntry(state.history, state.historyIndex, entry)
   const complete = isComplete(next)
@@ -1161,6 +1287,7 @@ function pushAndApply(
     history: pushed.history,
     historyIndex: pushed.historyIndex,
     completedAt: complete ? new Date().toISOString() : null,
+    ...extra,
   })
 }
 
@@ -1239,6 +1366,7 @@ export function serializeGameForSave(state: GameState): SavedGame | null {
       startedAt: state.startedAt,
       lastPlayedAt: new Date().toISOString(),
       completedAt: state.completedAt,
+      mistakes: state.mistakes,
       ...(regions ? { regions } : {}),
       ...(state.parityMask ? { parityMask: state.parityMask } : {}),
       ...(state.edges ? { edges: state.edges } : {}),

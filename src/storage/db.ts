@@ -31,6 +31,7 @@ export interface SavedGame {
   readonly startedAt: string
   readonly lastPlayedAt: string
   readonly completedAt: string | null
+  readonly mistakes?: number
   /** Jigsaw: per-piece flat coords. Carried so hydration rebuilds the constraint. */
   readonly regions?: ReadonlyArray<ReadonlyArray<number>>
   /** Even-Odd: parity mask string. */

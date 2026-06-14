@@ -1,5 +1,7 @@
 import { memo } from 'react'
 import type { Coord, Digit } from '@/engine'
+import { coordKey } from '@/engine'
+import { useGameStore } from '@/state/gameStore'
 import { glyphForDigit } from '@/ui/glyph'
 
 export interface CellProps {
@@ -37,9 +39,11 @@ function CellImpl(props: CellProps) {
     onSelect,
   } = props
 
+  const mistake = useGameStore((s) => s.mistakeCells.has(coordKey(coord)))
+
   const x = coord.c * cellSize
   const y = coord.r * cellSize
-  const fillColor = conflict
+  const fillColor = conflict || mistake
     ? 'transparent'
     : selected
       ? 'var(--color-selection)'
@@ -90,7 +94,7 @@ function CellImpl(props: CellProps) {
           fontSize={cellSize * 0.56}
           fontWeight={given ? 700 : 500}
           fill={
-            conflict
+            conflict || mistake
               ? 'var(--color-conflict)'
               : given
                 ? 'var(--color-given)'
@@ -108,7 +112,7 @@ function CellImpl(props: CellProps) {
           candidates={candidates}
         />
       )}
-      {conflict && value !== null && (
+      {(conflict || mistake) && value !== null && (
         <rect
           x={x + 2}
           y={y + 2}
