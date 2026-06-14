@@ -5,13 +5,17 @@ export function useElapsedTime(): number {
   const elapsedMs = useGameStore((s) => s.elapsedMs)
   const resumeAt = useGameStore((s) => s.resumeAt)
   const paused = useGameStore((s) => s.paused)
-  const [, tick] = useState(0)
+  const [now, setNow] = useState(elapsedMs)
   useEffect(() => {
+    function update() {
+      setNow(paused || resumeAt === null ? elapsedMs : elapsedMs + (Date.now() - resumeAt))
+    }
+    update()
     if (paused) return
-    const id = setInterval(() => tick((n) => n + 1), 500)
+    const id = setInterval(update, 500)
     return () => clearInterval(id)
-  }, [paused])
-  return paused || resumeAt === null ? elapsedMs : elapsedMs + (Date.now() - resumeAt)
+  }, [paused, elapsedMs, resumeAt])
+  return now
 }
 
 export function formatClock(ms: number): string {
