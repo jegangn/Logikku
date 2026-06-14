@@ -12,6 +12,8 @@ const SOUND_EVENTS: ReadonlySet<string> = new Set<SoundEvent>([
   'tap',
   'reject',
   'win',
+  'mistake',
+  'digitDone',
 ])
 
 export function SoundController() {
@@ -40,11 +42,15 @@ export function SoundController() {
   const prevReject = useRef(0)
   const prevShake = useRef(0)
   const prevCompleted = useRef<string | null>(null)
+  const prevMistakeFlash = useRef(0)
+  const prevDone = useRef(0)
 
   useEffect(() => {
     prevReject.current = useGameStore.getState().rejectFlashKey
     prevShake.current = useGameStore.getState().lastShakeKey
     prevCompleted.current = useGameStore.getState().completedAt
+    prevMistakeFlash.current = useGameStore.getState().mistakeFlashKey
+    prevDone.current = useGameStore.getState().completedDigits.size
     return useGameStore.subscribe((s) => {
       if (s.rejectFlashKey !== prevReject.current) {
         prevReject.current = s.rejectFlashKey
@@ -58,6 +64,16 @@ export function SoundController() {
         const wasNull = prevCompleted.current === null
         prevCompleted.current = s.completedAt
         if (wasNull && s.completedAt !== null) playSound('win', {})
+      }
+      if (s.mistakeFlashKey !== prevMistakeFlash.current) {
+        prevMistakeFlash.current = s.mistakeFlashKey
+        playSound('mistake', {})
+      }
+      if (s.completedDigits.size > prevDone.current) {
+        prevDone.current = s.completedDigits.size
+        if (s.completedAt === null) playSound('digitDone', {})
+      } else {
+        prevDone.current = s.completedDigits.size
       }
     })
   }, [])

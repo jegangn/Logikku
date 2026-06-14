@@ -8,6 +8,8 @@ export type SoundEvent =
   | 'tap'
   | 'reject'
   | 'win'
+  | 'mistake'
+  | 'digitDone'
 
 export interface Tone {
   readonly wave: OscillatorType
@@ -55,6 +57,19 @@ const marimba: Record<SoundEvent, SoundSpec> = {
       { wave: 'triangle', freq: 1047, dur: 0.4, offset: 0.36, gain: 0.65 },
     ],
   },
+  mistake: {
+    tones: [
+      { wave: 'sine', freq: 311, dur: 0.18, attack: 0.004, gain: 0.5 },
+      { wave: 'sine', freq: 247, dur: 0.22, offset: 0.08, attack: 0.004, gain: 0.45 },
+    ],
+  },
+  digitDone: {
+    tones: [
+      { wave: 'triangle', freq: 784, dur: 0.16, offset: 0.0, gain: 0.6 },
+      { wave: 'triangle', freq: 988, dur: 0.16, offset: 0.09, gain: 0.6 },
+      { wave: 'triangle', freq: 1319, dur: 0.3, offset: 0.18, gain: 0.6 },
+    ],
+  },
 }
 
 const click: Record<SoundEvent, SoundSpec> = {
@@ -75,6 +90,18 @@ const click: Record<SoundEvent, SoundSpec> = {
       { wave: 'square', freq: 660, dur: 0.06, offset: 0.0, gain: 0.4 },
       { wave: 'square', freq: 880, dur: 0.06, offset: 0.08, gain: 0.4 },
       { wave: 'square', freq: 1320, dur: 0.1, offset: 0.16, gain: 0.4 },
+    ],
+  },
+  mistake: {
+    tones: [
+      { wave: 'sine', freq: 300, dur: 0.16, gain: 0.4 },
+      { wave: 'sine', freq: 240, dur: 0.2, offset: 0.07, gain: 0.36 },
+    ],
+  },
+  digitDone: {
+    tones: [
+      { wave: 'sine', freq: 880, dur: 0.12, gain: 0.4 },
+      { wave: 'sine', freq: 1320, dur: 0.2, offset: 0.1, gain: 0.4 },
     ],
   },
 }
@@ -102,6 +129,19 @@ const chime: Record<SoundEvent, SoundSpec> = {
       { wave: 'sine', freq: 880, dur: 0.3, offset: 0.14, gain: 0.6 },
       { wave: 'sine', freq: 1100, dur: 0.5, offset: 0.28, gain: 0.6 },
       { wave: 'sine', freq: 2200, dur: 0.5, offset: 0.28, gain: 0.14 },
+    ],
+  },
+  mistake: {
+    tones: [
+      { wave: 'sine', freq: 330, dur: 0.2, gain: 0.45, detune: -20 },
+      { wave: 'sine', freq: 262, dur: 0.26, offset: 0.08, gain: 0.4 },
+    ],
+  },
+  digitDone: {
+    tones: [
+      { wave: 'sine', freq: 880, dur: 0.18, gain: 0.6 },
+      { wave: 'sine', freq: 1175, dur: 0.18, offset: 0.1, gain: 0.55 },
+      { wave: 'sine', freq: 1568, dur: 0.34, offset: 0.2, gain: 0.5 },
     ],
   },
 }
