@@ -279,6 +279,7 @@ export interface GameState {
   setMode: (mode: InputMode) => void
   input: (digit: Digit) => void
   erase: () => void
+  restart: () => void
   undo: () => void
   redo: () => void
   pause: () => void
@@ -1125,8 +1126,36 @@ export const useGameStore = create<GameState>((set, get) => ({
     assertNever(state.board)
   },
 
+  restart: () => {
+    const state = get()
+    const board = state.board
+    if (!board || board.kind !== 'grid') return
+    const fresh: GameBoard = { kind: 'grid', grid: givensOnlyGrid(board.grid, state.givens) }
+    const solution = state.solution ?? solveBoard(fresh)
+    const progress = recomputeProgress(fresh, solution)
+    set({
+      board: fresh,
+      solution,
+      selected: null,
+      history: [],
+      historyIndex: -1,
+      mistakes: 0,
+      mistakeCells: progress.mistakeCells,
+      completedDigits: progress.completedDigits,
+      outOfTries: false,
+      mistakeFlashKey: 0,
+      completedAt: null,
+      elapsedMs: 0,
+      resumeAt: Date.now(),
+      paused: false,
+      startedAt: new Date().toISOString(),
+      lockedCells: new Set(),
+    })
+  },
+
   undo: () => {
     const state = get()
+    if (get().outOfTries) return
     if (!state.board || state.historyIndex < 0) return
     const entry = state.history[state.historyIndex]!
     if (state.board.kind === 'grid' && !('prevByLocation' in entry)) {
@@ -1163,6 +1192,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   redo: () => {
     const state = get()
+    if (get().outOfTries) return
     const { board, history, historyIndex } = state
     if (!board || historyIndex >= history.length - 1) return
     const entry = history[historyIndex + 1]!

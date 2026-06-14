@@ -5,6 +5,7 @@ import { SamuraiBoardView } from '@/ui/board/SamuraiBoardView'
 import { RotateDevicePrompt } from '@/ui/board/RotateDevicePrompt'
 import { useIsPortraitOrientation } from '@/ui/hooks/useIsPortraitOrientation'
 import { InputPad } from '@/ui/panels/InputPad'
+import { OutOfTries } from '@/ui/panels/OutOfTries'
 import { Toolbar } from '@/ui/panels/Toolbar'
 import { StatusRow } from '@/ui/panels/StatusRow'
 import { selectGrid, useGameStore } from '@/state/gameStore'
@@ -61,6 +62,7 @@ export function Play() {
   const setMode = useGameStore((s) => s.setMode)
   const input = useGameStore((s) => s.input)
   const erase = useGameStore((s) => s.erase)
+  const restart = useGameStore((s) => s.restart)
   const undo = useGameStore((s) => s.undo)
   const redo = useGameStore((s) => s.redo)
   const pause = useGameStore((s) => s.pause)
@@ -372,6 +374,9 @@ export function Play() {
             <span className="text-[var(--color-text)] text-lg">{t.play.pause}</span>
             <span className="rounded-xl bg-[var(--color-accent-button)] px-5 py-2 text-white">{t.play.resume}</span>
           </button>
+        )}
+        {outOfTries && completedAt === null && (
+          <OutOfTries onRetry={restart} onNew={handleNew} />
         )}
       </div>
 

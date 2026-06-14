@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useGameStore, serializeGameForSave } from './gameStore'
+import { useGameStore, serializeGameForSave, selectGrid } from './gameStore'
+import { cellAt } from '@/engine'
 
 const GIVENS = '530070000600195000098000060800060003400803001700020006060000280000419005000080079'
 // canonical puzzle; solution row 0 = 5 3 4 6 7 8 9 1 2 → (0,2)=4 (0,3)=6 (0,5)=8 (all ≠ 9)
@@ -55,6 +56,26 @@ describe('mistakes', () => {
     useGameStore.getState().input(9)
     const s = useGameStore.getState()
     expect(s.mistakes).toBe(3) // unchanged — input was blocked
+  })
+
+  it('restart replays the same puzzle from givens and clears wrong entries', () => {
+    for (const cell of [{ r: 0, c: 2 }, { r: 0, c: 3 }, { r: 0, c: 5 }]) {
+      useGameStore.getState().select(cell)
+      useGameStore.getState().input(9) // each wrong → strike
+    }
+    expect(useGameStore.getState().outOfTries).toBe(true)
+
+    useGameStore.getState().restart()
+
+    const s = useGameStore.getState()
+    expect(s.mistakes).toBe(0)
+    expect(s.outOfTries).toBe(false)
+    expect(s.mistakeCells.size).toBe(0)
+    expect(s.historyIndex).toBe(-1)
+    expect(s.history.length).toBe(0)
+    // a previously-wrong, non-given cell is now empty (back to givens)
+    const grid = selectGrid(s)!
+    expect(cellAt(grid, { r: 0, c: 2 }).value).toBeNull()
   })
 })
 
