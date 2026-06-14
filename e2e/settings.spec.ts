@@ -1,14 +1,12 @@
 import { test, expect } from '@playwright/test'
 
-test('settings page toggles theme between light and dark', async ({ page }) => {
+test('app is always light with no theme toggle', async ({ page }) => {
   await page.goto('/settings')
   await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
 
-  await page.getByTestId('theme-light').click()
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
-
-  await page.getByTestId('theme-dark').click()
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await expect(page.getByTestId('theme-light')).toHaveCount(0)
+  await expect(page.getByTestId('theme-dark')).toHaveCount(0)
 })
 
 test('backup downloads a JSON file', async ({ page }) => {
