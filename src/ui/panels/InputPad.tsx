@@ -1,6 +1,8 @@
 import { createPortal } from 'react-dom'
+import { countPlaced } from '@/engine'
 import type { Digit } from '@/engine'
 import type { InputMode } from '@/state/gameStore'
+import { useGameStore } from '@/state/gameStore'
 import { glyphForDigit } from '@/ui/glyph'
 import { useT } from '@/i18n'
 import {
@@ -34,6 +36,12 @@ export function InputPad({
   onDragHoverChange,
 }: InputPadProps) {
   const t = useT()
+  const board = useGameStore((s) => s.board)
+  const completedDigits = useGameStore((s) => s.completedDigits)
+
+  const grid = board && board.kind === 'grid' ? board.grid : null
+  const placed = grid ? countPlaced(grid) : null
+
   const digits: Digit[] = []
   for (let d = 1; d <= size; d++) digits.push(d as Digit)
   // 6-digit pad: 4 cols (5 buttons + erase fits 2 rows).
@@ -82,18 +90,24 @@ export function InputPad({
         role="group"
         aria-label={t.play.digitPad}
       >
-        {digits.map((d) => (
-          <DigitButton
-            key={d}
-            digit={d}
-            disabled={disabled}
-            onClick={() => onDigit(d)}
-            largeText={size <= 9}
-            label={t.play.digit(glyphForDigit(d))}
-            pencil={mode === 'pencil'}
-            dragBinding={dragEnabled ? bind(d) : null}
-          />
-        ))}
+        {digits.map((d) => {
+          const done = completedDigits.has(d)
+          const remaining = placed !== null ? Math.max(0, size - (placed.get(d) ?? 0)) : null
+          return (
+            <DigitButton
+              key={d}
+              digit={d}
+              disabled={disabled || done}
+              onClick={() => onDigit(d)}
+              largeText={size <= 9}
+              label={done ? t.play.digit(glyphForDigit(d)) + ' complete' : t.play.digit(glyphForDigit(d))}
+              pencil={mode === 'pencil'}
+              dragBinding={dragEnabled && !done ? bind(d) : null}
+              remaining={remaining}
+              done={done}
+            />
+          )
+        })}
         <button
           type="button"
           data-testid="erase-btn"
@@ -131,6 +145,8 @@ function DigitButton({
   label,
   pencil,
   dragBinding,
+  remaining,
+  done,
 }: {
   digit: Digit
   disabled: boolean | undefined
@@ -139,6 +155,8 @@ function DigitButton({
   label: string
   pencil: boolean
   dragBinding: DigitDragBinding | null
+  remaining: number | null
+  done: boolean
 }) {
   const glyph = glyphForDigit(digit)
   return (
@@ -149,12 +167,38 @@ function DigitButton({
       data-digit={digit}
       disabled={disabled}
       onClick={onClick}
-      className={`min-h-[var(--control-h)] sm:min-h-[var(--control-h-lg)] w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] ${largeText ? 'text-3xl sm:text-4xl' : 'text-xl sm:text-2xl'} font-semibold tabular-nums hover:bg-[var(--color-surface-2)] hover:border-[var(--color-border-strong)] disabled:opacity-40 active:scale-[0.96] transition-[transform,background-color,border-color] duration-150`}
+      className={`min-h-[var(--control-h)] sm:min-h-[var(--control-h-lg)] w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] ${done ? 'text-[var(--color-done)]' : 'text-[var(--color-text)]'} ${largeText ? 'text-3xl sm:text-4xl' : 'text-xl sm:text-2xl'} font-semibold tabular-nums hover:bg-[var(--color-surface-2)] hover:border-[var(--color-border-strong)] disabled:opacity-40 active:scale-[0.96] transition-[transform,background-color,border-color] duration-150 flex flex-col items-center justify-center gap-0.5 py-1`}
       aria-label={label}
       {...(dragBinding ?? {})}
     >
-      {glyph}
+      <span>{glyph}</span>
+      {remaining !== null && (
+        done
+          ? <CheckIcon />
+          : <span style={{ fontSize: '11px', lineHeight: 1, color: 'var(--color-text-faint)' }}>{remaining}</span>
+      )}
     </button>
+  )
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 12 12"
+      fill="none"
+      aria-hidden="true"
+      style={{ color: 'var(--color-done)' }}
+    >
+      <path
+        d="M2 6l3 3 5-5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   )
 }
 
