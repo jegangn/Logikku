@@ -82,6 +82,12 @@ export const ms: Strings = {
     samuraiBoardLabel: 'Papan Samurai',
     rotatePrompt: 'Samurai memerlukan landskap — sila putarkan peranti anda.',
     rotateIcon: 'Putar peranti ke landskap',
+    mistakes: 'Kesilapan',
+    notes: 'Nota',
+    pause: 'Jeda',
+    resume: 'Sambung',
+    outOfTries: 'Habis percubaan kali ini. Mahu cuba lagi?',
+    tryAgain: 'Cuba semula teka-teki ini',
   },
 
   settings: {

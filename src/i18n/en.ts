@@ -80,6 +80,12 @@ export const en = {
     samuraiBoardLabel: 'Samurai board',
     rotatePrompt: 'Samurai needs landscape — please rotate your device.',
     rotateIcon: 'Rotate device to landscape',
+    mistakes: 'Mistakes',
+    notes: 'Notes',
+    pause: 'Pause',
+    resume: 'Resume',
+    outOfTries: 'Out of tries this time. Want to try again?',
+    tryAgain: 'Try this puzzle again',
   },
 
   settings: {
