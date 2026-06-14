@@ -3,6 +3,7 @@ import {
   CLASSIC_6,
   CLASSIC_9,
   CLASSIC_16,
+  backtrackingSolve,
   cellAt,
   cloneGrid,
   createAntiKingConstraint,
@@ -45,6 +46,7 @@ import {
   type PalindromePath,
   type RenbanPath,
   createSamuraiBoard,
+  samuraiBacktrackingSolve,
   samuraiConsistencyCheck,
   samuraiCellAt,
   samuraiSharedLocations,
@@ -68,6 +70,33 @@ export type GameBoard =
 function gridOf(board: GameBoard | null): Grid | null {
   if (board === null) return null
   return board.kind === 'grid' ? board.grid : null
+}
+
+function solveBoard(board: GameBoard): GameBoard | null {
+  try {
+    if (board.kind === 'grid') {
+      const solved = backtrackingSolve(board.grid, { maxSolutions: 1 }).solutions[0]
+      return solved ? { kind: 'grid', grid: solved } : null
+    }
+    const solved = samuraiBacktrackingSolve(board.board, { maxSolutions: 1 }).solvedBoard
+    return solved ? { kind: 'samurai', board: solved } : null
+  } catch {
+    return null
+  }
+}
+
+export function solutionDigitAt(
+  solution: GameBoard | null,
+  sel: Coord | { readonly gridIdx: number; readonly coord: Coord },
+): Digit | null {
+  if (!solution) return null
+  if (solution.kind === 'grid' && !('gridIdx' in sel)) {
+    return cellAt(solution.grid, sel).value
+  }
+  if (solution.kind === 'samurai' && 'gridIdx' in sel) {
+    return samuraiCellAt(solution.board, sel.gridIdx, sel.coord).value
+  }
+  return null
 }
 
 export function assertNever(x: never): never {
@@ -126,6 +155,7 @@ export interface EdgeMarkRecord {
 
 export interface GameState {
   board: GameBoard | null
+  solution: GameBoard | null
   puzzleId: string | null
   variant: string
   difficulty: Difficulty
@@ -503,6 +533,7 @@ function revertEntry(grid: Grid, entry: HistoryEntry): void {
 
 export const useGameStore = create<GameState>((set, get) => ({
   board: null,
+  solution: null,
   puzzleId: null,
   variant: 'classic',
   difficulty: 'easy',
@@ -554,8 +585,11 @@ export const useGameStore = create<GameState>((set, get) => ({
         throw new Error('samurai variant requires samuraiGivens')
       }
       const board = freshSamuraiBoardFromGivens(samuraiGivens)
+      const gameBoard: GameBoard = { kind: 'samurai', board }
+      const solution = solveBoard(gameBoard)
       set({
-        board: { kind: 'samurai', board },
+        board: gameBoard,
+        solution,
         puzzleId: id,
         variant,
         difficulty,
@@ -614,8 +648,14 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (skyscraperClues !== undefined) opts.skyscraperClues = skyscraperClues
     if (paths !== undefined) opts.paths = paths
     const shape = shapeForVariant(variant)
+    const gameBoard: GameBoard = {
+      kind: 'grid',
+      grid: freshGridFromGivens(givens, variant, opts),
+    }
+    const solution = solveBoard(gameBoard)
     set({
-      board: { kind: 'grid', grid: freshGridFromGivens(givens, variant, opts) },
+      board: gameBoard,
+      solution,
       puzzleId: id,
       variant,
       difficulty,
@@ -664,8 +704,10 @@ export const useGameStore = create<GameState>((set, get) => ({
         }
       }
       samuraiConsistencyCheck(board)
+      const gameBoard: GameBoard = { kind: 'samurai', board }
       set({
-        board: { kind: 'samurai', board },
+        board: gameBoard,
+        solution: solveBoard(gameBoard),
         puzzleId: saved.id,
         variant: saved.variant,
         difficulty: saved.difficulty,
@@ -750,8 +792,10 @@ export const useGameStore = create<GameState>((set, get) => ({
     const grid = gridFromSnapshot(saved.givens, saved.variant, saved.cells, opts)
     const history: HistoryEntry[] = saved.history.map(savedHistoryToEntry)
     const shape = shapeForVariant(saved.variant)
+    const gameBoard: GameBoard = { kind: 'grid', grid }
     set({
-      board: { kind: 'grid', grid },
+      board: gameBoard,
+      solution: solveBoard(gameBoard),
       puzzleId: saved.id,
       variant: saved.variant,
       difficulty: saved.difficulty,
