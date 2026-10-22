@@ -9,12 +9,8 @@
 ## Hosting
 
 - **GitHub:** https://github.com/jegangn/Logikku (remote `origin`, branch `main`)
-- **Vercel:** https://logikku.vercel.app/ (auto-deploys on push to `main`)
+- **Vercel:** https://logikku.vercel.app/ (auto-deploys on push to `main`, so pushing is deploying)
 - **Custom domain:** `logikku.com` to be added in Vercel later (see `docs/DEPLOYMENT.md`)
-
-## Auto-push (mandatory)
-
-After every change in this repo, immediately `git add` → `git commit` → `git push origin main`. No branches, no PRs, no asking. Vercel auto-deploys on push, so pushing IS deploying. Exception: if a commit would obviously break the live site (broken HTML, syntax error, missing asset reference), fix it first, then push the working version. This restates Rule 7 of `C:\dev\CLAUDE.md` for emphasis — it applies here without exception.
 
 ## Non-negotiables
 
@@ -58,23 +54,26 @@ src/
   ui/              # React components, Tailwind only
     board/         # grid rendering + variant overlays
     panels/        # input pad, undo, settings, etc.
+    pages/         # Home, Play, VariantDetail, Settings, Stats, Privacy, About
   state/           # Zustand stores (game, settings, stats)
   storage/         # idb wrappers, JSON backup/restore
+  audio/           # sounds (SoundController, playSound)
+  i18n/            # en + ms strings
   puzzles/         # generated puzzle banks (committed JSON)
   pwa/             # service worker hooks, install prompt
   test/            # vitest setup
 e2e/               # Playwright specs
 gen/               # Python + Z3 generator (not in app bundle)
-docs/              # ARCHITECTURE, VARIANTS, GENERATION, GOTCHAS, NAMING
+scripts/, tools/   # PWA assets, Lighthouse/UI checks, grading, vercel.json tests
+docs/              # ARCHITECTURE, VARIANTS, GENERATION, GOTCHAS, NAMING, DEPLOYMENT, USER_GUIDE, REDESIGN-SPEC; superpowers/ specs + plans
 prompts/           # phase-00 .. phase-20 implementation prompts
 ```
 
 ## Workflow
 
-1. Each phase is driven by `prompts/phase-NN-*.md`. Open the prompt, follow it, deliver the listed artifacts.
-2. Phase 0 must be merged before any variant work. Every variant phase depends on the constraint registry.
-3. Every phase ends with: typecheck green, vitest green, build green, and (for UI phases) a manual iPad-Safari smoke test.
-4. No phase ships without test coverage of its engine-level changes. UI components can rely on integration/E2E tests.
+1. Phases 0–20 (`prompts/phase-NN-*.md`) are all done; phase 20 (launch) merged 23/05/2026. Later work (sound system, back button, beige redesign + 3-mistake limit) has specs and plans in `docs/superpowers/`.
+2. Every change ends with: typecheck green, vitest green, build green, and (for UI changes) a manual iPad-Safari smoke test.
+3. No change ships without test coverage of its engine-level changes. UI components can rely on integration/E2E tests.
 
 ## Coding rules
 
@@ -118,6 +117,10 @@ bun run e2e      # playwright (auto-starts dev server)
 bun run typecheck
 bun run lint
 ```
+
+- `bun run e2e` can't start its own server: Playwright's `webServer` runs `bun run dev` through the Windows shell, where bun isn't on PATH. Start the dev server with `preview_start` (launch config `dev`, port 5181), then `LOGIKKU_E2E_URL=http://localhost:5181 bun run e2e <specs> --project=ipad`; `reuseExistingServer` picks it up. Both `ipad` and `chromium` profiles run.
+- `preview_screenshot` times out (30 s) here although the app renders: verify through `preview_eval` (DOM, computed styles). `preview_eval` dies with "Inspected target navigated" if the same call navigates: navigate in one call, inspect in the next.
+- Driving the board: cells are SVG `<g data-testid="cell-R-C" data-given data-conflict>`, pad keys `button[data-digit="N"]`; a guaranteed mistake is a digit already given in the same row, placed in an empty cell.
 
 ## When in doubt
 
